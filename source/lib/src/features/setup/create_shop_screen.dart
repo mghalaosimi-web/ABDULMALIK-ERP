@@ -66,7 +66,9 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
     final ar = ref.watch(localeProvider).languageCode == 'ar';
-    if (_branchName.text == 'الفرع الرئيسي' || _branchName.text == 'Main branch') {\n      _branchName.text = ar ? 'الفرع الرئيسي' : 'Main branch';\n    }
+    if (_branchName.text == 'الفرع الرئيسي' || _branchName.text == 'Main branch') {
+      _branchName.text = ar ? 'الفرع الرئيسي' : 'Main branch';
+    }
     final isServer = ref.read(appConfigProvider).mode == AppMode.server;
 
     if (!isServer) {
@@ -106,7 +108,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
             SectionTitle(ar ? 'بيانات المحل' : 'Shop details'),
             TextFormField(
               controller: _shopName,
-              decoration: const InputDecoration(labelText: ar ? 'اسم المحل *' : 'Shop name *', prefixIcon: Icon(Icons.storefront_rounded)),
+              decoration: InputDecoration(labelText: ar ? 'اسم المحل *' : 'Shop name *', prefixIcon: Icon(Icons.storefront_rounded)),
               validator: (v) => _required(v, ar ? 'اسم المحل' : 'shop name'),
             ),
             const SizedBox(height: 12),
@@ -138,7 +140,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
               child: TextFormField(
                 controller: _username,
                 autocorrect: false,
-                decoration: const InputDecoration(
+                decoration: InputDecoration(
                   labelText: ar ? 'اسم المستخدم (بالإنجليزي) *' : 'Username (English) *',
                   prefixIcon: Icon(Icons.alternate_email_rounded),
                 ),
@@ -165,7 +167,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
             TextFormField(
               controller: _confirm,
               obscureText: !_showPassword,
-              decoration: const InputDecoration(labelText: ar ? 'تأكيد كلمة السر *' : 'Confirm password *', prefixIcon: Icon(Icons.lock_outline_rounded)),
+              decoration: InputDecoration(labelText: ar ? 'تأكيد كلمة السر *' : 'Confirm password *', prefixIcon: Icon(Icons.lock_outline_rounded)),
               validator: (v) => v != _password.text ? (ar ? 'كلمة السر مش زي اللي فوق' : 'Passwords do not match') : null,
               onFieldSubmitted: (_) => _submit(),
             ),
