@@ -115,23 +115,23 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
             TextFormField(
               controller: _shopPhone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(labelText: ar ? 'رقم تليفون المحل' : 'Shop phone', prefixIcon: Icon(Icons.call_rounded)),
+              decoration: InputDecoration(labelText: ar ? 'رقم تليفون المحل' : 'Shop phone', prefixIcon: Icon(Icons.call_rounded)),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _shopAddress,
-              decoration: const InputDecoration(labelText: ar ? 'العنوان' : 'Address', prefixIcon: Icon(Icons.place_rounded)),
+              decoration: InputDecoration(labelText: ar ? 'العنوان' : 'Address', prefixIcon: Icon(Icons.place_rounded)),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _branchName,
-              decoration: const InputDecoration(labelText: ar ? 'اسم الفرع' : 'Branch name', prefixIcon: Icon(Icons.account_tree_rounded)),
+              decoration: InputDecoration(labelText: ar ? 'اسم الفرع' : 'Branch name', prefixIcon: Icon(Icons.account_tree_rounded)),
             ),
             const SizedBox(height: 8),
             SectionTitle(ar ? 'حساب صاحب المحل' : 'Shop owner account'),
             TextFormField(
               controller: _ownerName,
-              decoration: const InputDecoration(labelText: ar ? 'اسمك *' : 'Your name *', prefixIcon: Icon(Icons.person_rounded)),
+              decoration: InputDecoration(labelText: ar ? 'اسمك *' : 'Your name *', prefixIcon: Icon(Icons.person_rounded)),
               validator: (v) => _required(v, ar ? 'اسمك' : 'your name'),
             ),
             const SizedBox(height: 12),
