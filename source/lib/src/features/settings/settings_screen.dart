@@ -18,7 +18,6 @@ import '../messages/sms_gateway.dart';
 import '../receipts/print_service.dart';
 import 'audit_screen.dart';
 import 'backup_screen.dart';
-import 'license_screen.dart';
 import 'logs_screen.dart';
 import 'message_settings_screen.dart';
 import 'shop_settings_screen.dart';
@@ -134,14 +133,6 @@ class SettingsScreen extends ConsumerWidget {
                   subtitle: Text(ar ? 'اللوجو، والتليفون، والعنوان، ومقاس الورق، والشروط' : 'Logo, phone, address, paper size and receipt terms'),
                   trailing: const Icon(Icons.chevron_left_rounded),
                   onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const ShopSettingsScreen())),
-                ),
-                const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.workspace_premium_rounded),
-                  title: Text(ar ? 'الاشتراك' : 'License'),
-                  subtitle: Text(ar ? 'حالة الاشتراك، وكود الجهاز، والتفعيل' : 'License status, device ID and activation'),
-                  trailing: const Icon(Icons.chevron_left_rounded),
-                  onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const LicenseScreen())),
                 ),
                 const Divider(height: 1),
                 if (firebaseApiKey.isNotEmpty) const _CloudStatusTile(),
