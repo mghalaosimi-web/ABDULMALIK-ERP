@@ -51,6 +51,10 @@ flutter:
   assets:
     - assets/fonts/Cairo-Regular.ttf
     - assets/fonts/Cairo-Bold.ttf
+    - assets/branding/abdulmalik-communications.png
+    - assets/branding/abdulmalik-mark.png
+    - assets/icon/app_icon.png
+    - assets/icon/app_icon_foreground.png
   fonts:
     - family: Cairo
       fonts:
