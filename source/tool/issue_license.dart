@@ -9,7 +9,7 @@ import 'package:uuid/uuid.dart';
 /// Usage:
 ///   dart run tool/issue_license.dart DEVICE-CODE "Shop name" lifetime
 ///   dart run tool/issue_license.dart DEVICE-CODE "Shop name" yearly 2027-12-31
-/// Optional final arguments: max devices (default 3), max branches (default 1).
+/// Optional final arguments: max devices (default 3), max branches (default 1). For lifetime plans, omit the expiry date.
 ///
 /// Run from the source directory. The private key is read from ../signing and is
 /// deliberately not bundled with the app or stored in this repository.
