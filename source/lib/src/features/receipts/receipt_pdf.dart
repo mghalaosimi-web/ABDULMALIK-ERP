@@ -126,7 +126,7 @@ Future<Uint8List> buildReceiptPdf(TicketDetail detail, ShopProfile shop, {String
         pw.Text(shop.receiptTerms.trim(), style: st(6.5)),
       ],
       pw.SizedBox(height: 6),
-      pw.Center(child: pw.Text('FixTrack', style: st(6).copyWith(color: PdfColors.grey600))),
+      pw.Center(child: pw.Text('ABDULMALIK ERP', style: st(6).copyWith(color: PdfColors.grey600))),
     ],
   );
 
@@ -240,7 +240,7 @@ Future<Uint8List> buildSalePdf(SaleDetail detail, ShopProfile shop, {String? pap
       pw.Center(child: pw.Text('شكراً لزيارتكم', style: st(9, bold: true))),
       pw.Center(child: pw.Text('الاستبدال والاسترجاع بالفاتورة', style: st(7))),
       pw.SizedBox(height: 4),
-      pw.Center(child: pw.Text('FixTrack', style: st(6).copyWith(color: PdfColors.grey600))),
+      pw.Center(child: pw.Text('ABDULMALIK ERP', style: st(6).copyWith(color: PdfColors.grey600))),
     ],
   );
 
@@ -351,7 +351,7 @@ Future<Uint8List> buildUsedPurchasePdf(PhoneUnit u, ShopProfile shop) async {
     pw.SizedBox(height: 14),
     pw.Text('توقيع المحل: ..................', style: st(8)),
     pw.SizedBox(height: 8),
-    pw.Center(child: pw.Text('FixTrack', style: st(6).copyWith(color: PdfColors.grey600))),
+    pw.Center(child: pw.Text('ABDULMALIK ERP', style: st(6).copyWith(color: PdfColors.grey600))),
   ]);
   doc.addPage(pw.Page(
     pageFormat: paperFormat(size),
