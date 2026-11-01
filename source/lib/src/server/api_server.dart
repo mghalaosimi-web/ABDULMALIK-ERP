@@ -64,12 +64,12 @@ class AuthUser {
 
 /// سيرفر المحل: بيشتغل على كمبيوتر المحل، وكل الموبايلات والكمبيوترات التانية بتكلمه.
 class FixTrackServer {
-  FixTrackServer({required this.dataDir, this.requestedPort = serverPort, this.cloudSync = true});
+  FixTrackServer({required this.dataDir, this.requestedPort = serverPort, this.cloudSync = false});
 
   final String dataDir;
   final int requestedPort;
 
-  /// المزامنة مع صفحة التتبع على Firebase (بتتقفل في الاختبارات).
+  /// Cloud sync is opt-in. Keep disabled until the owner configures a dedicated Firebase project.
   final bool cloudSync;
   FirebaseSync? _cloud;
   Timer? _jobsTimer;
