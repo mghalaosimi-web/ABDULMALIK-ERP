@@ -41,6 +41,7 @@ class WelcomeScreen extends ConsumerWidget {
           const SizedBox(height: 12),
           if (AppConfig.canHostServer) ...[
             _ModeCard(
+              isArabic: ar,
               icon: Icons.dns_rounded,
               title: ar ? 'هذا الجهاز هو الخادم الرئيسي للمحل' : 'This device will be the shop server',
               subtitle: ar ? 'ستُحفظ بيانات المحل على هذا الكمبيوتر، ويمكن للأجهزة الأخرى الاتصال به. اختر هذا الخيار إذا كان أول جهاز في المحل.' : 'Shop data will be stored on this computer. Other devices can connect to it. Choose this if this is the first device.',
@@ -50,6 +51,7 @@ class WelcomeScreen extends ConsumerWidget {
             const SizedBox(height: 12),
           ],
           _ModeCard(
+            isArabic: ar,
             icon: Icons.wifi_rounded,
             title: ar ? 'الاتصال بخادم المحل' : 'Connect to an existing shop server',
             subtitle: ar ? 'يوجد كمبيوتر آخر يعمل كخادم للمحل، وتريد ربط هذا الجهاز به عبر شبكة Wi-Fi نفسها.' : 'Another computer already runs the shop server. Connect this device over the same Wi-Fi network.',
@@ -63,6 +65,7 @@ class WelcomeScreen extends ConsumerWidget {
 
 class _ModeCard extends StatelessWidget {
   const _ModeCard({
+    required this.isArabic,
     required this.icon,
     required this.title,
     required this.subtitle,
@@ -70,6 +73,7 @@ class _ModeCard extends StatelessWidget {
     this.recommended = false,
   });
 
+  final bool isArabic;
   final IconData icon;
   final String title;
   final String subtitle;
@@ -111,7 +115,7 @@ class _ModeCard extends StatelessWidget {
                               color: brandOrange.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Text(ar ? 'موصى به' : 'Recommended', style: text.labelSmall?.bold.copyWith(color: brandOrange)),
+                            child: Text(isArabic ? 'موصى به' : 'Recommended', style: text.labelSmall?.bold.copyWith(color: brandOrange)),
                           ),
                       ],
                     ),
