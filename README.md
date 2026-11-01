@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="source/assets/icon/app_icon.png" width="96" alt="FixTrack logo">
+<img src="source/assets/icon/app_icon.png" width="96" alt="ABDULMALIK ERP logo">
 
-# FixTrack
+# ABDULMALIK ERP
 
 **Phone repair shop & POS management — Windows + Android, offline-first**
 
@@ -11,7 +11,7 @@
 ![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter)
 ![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Android-informational)
 ![Tests](https://img.shields.io/badge/tests-72%20passing-success)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Version](https://img.shields.io/badge/version-1.0.5-blue)
 
 </div>
 
@@ -21,7 +21,7 @@
 
 ## What is it?
 
-FixTrack replaces the generic cashier software that phone shops in Egypt run today. One app handles
+ABDULMALIK ERP replaces the generic cashier software that phone shops in Egypt run today. One app handles
 the **repair workflow** (intake → stages → customer approval → delivery with warranty) **and** the
 **shop counter** (accessories by barcode, new phones by IMEI, buying used phones, mobile-wallet and
 recharge services), with reports for the owner.
@@ -69,13 +69,13 @@ The cloud (Firebase free tier) is used only for the customer tracking page and f
 ```
             ┌───────────────────── Shop (LAN, works offline) ─────────────────────┐
             │                                                                     │
-  Android ──┼──► Windows PC: FixTrack desktop app                                 │
+  Android ──┼──► Windows PC: ABDULMALIK ERP desktop app                                 │
   phones    │      ├─ Flutter UI                                                  │
   (Wi-Fi)   │      └─ shelf HTTP server (isolate) ── SQLite ── daily zip backups  │
             └───────────────┬─────────────────────────────────────────────────────┘
                             │ only when online
                             ▼
-                Firebase (free Spark plan)
+                Optional cloud integration (not configured in this deployment)
                 ├─ Hosting: customer tracking page (QR) + user guide
                 └─ Firestore: approvals, pickup booking, branch sync
 ```
@@ -88,7 +88,7 @@ The cloud (Firebase free tier) is used only for the customer tracking page and f
 ## Project layout
 
 ```
-source/                 the FixTrack app (Windows + Android)
+source/                 the ABDULMALIK ERP app (Windows + Android)
   lib/src/server/       local API server, database, auth, licensing
   lib/src/features/     screens: tickets, pos, inventory, phones, services, reports, branches…
   firebase/             tracking page + Firestore rules
@@ -116,7 +116,7 @@ Signing keys (`android/key.properties`, keystore, `license-private.key`) are int
 
 ## بالعربي
 
-**FixTrack** برنامج لمحلات صيانة وبيع الموبايلات، شغال على **ويندوز وأندرويد**. بيغني المحل عن برنامج الكاشير القديم:
+**ABDULMALIK ERP** برنامج لمحلات صيانة وبيع الموبايلات، شغال على **ويندوز وأندرويد**. بيغني المحل عن برنامج الكاشير القديم:
 
 - **الصيانة:** استلام الجهاز، ومراحل الشغل، وموافقة العميل على التكلفة، والتسليم بالضمان، وعمولة الفني.
 - **إيصال فيه QR:** العميل بيتابع جهازه من الموبايل، وبيوصله واتساب أو SMS أول ما الجهاز يجهز.
@@ -124,4 +124,18 @@ Signing keys (`android/key.properties`, keystore, `license-private.key`) are int
 - **المخزون:** الموردين وفواتير الشراء، ونقل الأصناف من البرنامج القديم بملف Excel.
 - **التقارير والفروع:** تقارير لصاحب المحل بتتصدر Excel أو PDF، وربط بين الفروع.
 
-كمبيوتر المحل هو السيرفر، والموبايلات بتتصل بيه على نفس الواي فاي، فالبرنامج **شغال من غير إنترنت**.
+كمبيوتر المحل هو السيرفر، والموبايلات بتتصل بيه على نفس الواي فاي، والوظائف المحلية الأساسية مصممة للعمل دون إنترنت. التكامل السحابي معطل افتراضياً إلى حين إعداد مشروع Firebase مملوك للمشغّل.
+
+
+## Product identity and upstream provenance
+
+ABDULMALIK ERP is the maintained product identity for this deployment. This repository
+retains the upstream Git history and original copyright notices; product branding changes
+do not transfer authorship of upstream code. The maintainer states that permission for
+this single-shop adaptation has been obtained. Keep the written permission with project
+records. Internal database filenames, API identifiers, Android package IDs, and protocol
+markers remain compatible with existing installations and must not be renamed casually.
+
+The current release is a rebrand and language-preference foundation, not a claim that every
+screen has been fully translated. Arabic and English locale selection is persisted; complete
+English translation of all business screens remains a tracked follow-up.
