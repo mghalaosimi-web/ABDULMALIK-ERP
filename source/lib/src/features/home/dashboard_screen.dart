@@ -173,12 +173,13 @@ class _TicketPreview extends ConsumerWidget {
   }
 }
 
-class _ConnectionChip extends StatelessWidget {
+class _ConnectionChip extends ConsumerWidget {
   const _ConnectionChip({required this.isServer});
   final bool isServer;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ar = ref.watch(localeProvider).languageCode == 'ar';
     const green = Color(0xFF16A34A);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -188,7 +189,7 @@ class _ConnectionChip extends StatelessWidget {
         children: [
           const Icon(Icons.circle, size: 10, color: green),
           const SizedBox(width: 6),
-          Text(isServer ? (Intl.defaultLocale == 'en' ? 'Server running' : 'السيرفر شغال') : (Intl.defaultLocale == 'en' ? 'Connected to server' : 'متصل بالسيرفر'), style: const TextStyle(color: green).semiBold),
+          Text(isServer ? (ar ? 'السيرفر شغال' : 'Server running') : (ar ? 'متصل بالسيرفر' : 'Connected to server'), style: const TextStyle(color: green).semiBold),
         ],
       ),
     );
