@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:fixtrack/src/core/license.dart';
+import 'package:abdulmalik_erp/src/core/license.dart';
 import 'package:uuid/uuid.dart';
 
 /// Issues an offline activation code using the owner-only Ed25519 private key.
