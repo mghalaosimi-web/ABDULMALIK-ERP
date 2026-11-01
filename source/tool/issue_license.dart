@@ -7,15 +7,14 @@ import 'package:uuid/uuid.dart';
 /// Issues an offline activation code using the owner-only Ed25519 private key.
 ///
 /// Usage:
-///   dart run tool/issue_license.dart DEVICE-CODE "Shop name" lifetime
-///   dart run tool/issue_license.dart DEVICE-CODE "Shop name" yearly 2027-12-31
-/// Optional final arguments: max devices (default 3), max branches (default 1). For lifetime plans, omit the expiry date.
+///   dart run tool/issue_license.dart DEVICE-CODE "Shop name" lifetime [DEVICES] [BRANCHES]
+///   dart run tool/issue_license.dart DEVICE-CODE "Shop name" yearly 2027-12-31 [DEVICES] [BRANCHES]
 ///
 /// Run from the source directory. The private key is read from ../signing and is
 /// deliberately not bundled with the app or stored in this repository.
 Future<void> main(List<String> args) async {
   if (args.length < 3 || args.length > 6) {
-    stderr.writeln('Usage: dart run tool/issue_license.dart DEVICE "SHOP NAME" PLAN [YYYY-MM-DD|-] [DEVICES] [BRANCHES]');
+    stderr.writeln('Usage: dart run tool/issue_license.dart DEVICE "SHOP NAME" PLAN [YYYY-MM-DD] [DEVICES] [BRANCHES]');
     exitCode = 64;
     return;
   }
@@ -42,9 +41,16 @@ Future<void> main(List<String> args) async {
     return;
   }
 
+  final optionIndex = plan == 'lifetime' ? 3 : 4;
+  if (args.length > optionIndex + 2) {
+    stderr.writeln('Too many arguments.');
+    exitCode = 64;
+    return;
+  }
+
   DateTime? expires;
   if (plan != 'lifetime') {
-    if (args.length < 4 || args[3] == '-') {
+    if (args.length < 4) {
       stderr.writeln('An expiry date (YYYY-MM-DD) is required for non-lifetime plans.');
       exitCode = 64;
       return;
@@ -59,8 +65,8 @@ Future<void> main(List<String> args) async {
     expires = DateTime.utc(date.year, date.month, date.day, 23, 59, 59);
   }
 
-  final devices = args.length > 4 ? int.tryParse(args[4]) : 3;
-  final branches = args.length > 5 ? int.tryParse(args[5]) : 1;
+  final devices = args.length > optionIndex ? int.tryParse(args[optionIndex]) : 3;
+  final branches = args.length > optionIndex + 1 ? int.tryParse(args[optionIndex + 1]) : 1;
   if (devices == null || devices < 1 || devices > 100 ||
       branches == null || branches < 1 || branches > 20) {
     stderr.writeln('Devices must be 1..100 and branches must be 1..20.');
@@ -76,8 +82,14 @@ Future<void> main(List<String> args) async {
     return;
   }
 
-  final encodedSeed = (await keyFile.readAsString()).trim();
-  final seed = base64.decode(encodedSeed);
+  late final List<int> seed;
+  try {
+    seed = base64.decode((await keyFile.readAsString()).trim());
+  } catch (_) {
+    stderr.writeln('Private key file is not valid Base64.');
+    exitCode = 65;
+    return;
+  }
   if (seed.length != 32) {
     stderr.writeln('Invalid Ed25519 private seed: expected 32 bytes.');
     exitCode = 65;
@@ -95,6 +107,5 @@ Future<void> main(List<String> args) async {
     issued: DateTime.now().toUtc(),
   );
 
-  final code = await signLicense(license, seed);
-  stdout.writeln(code);
+  stdout.writeln(await signLicense(license, seed));
 }
