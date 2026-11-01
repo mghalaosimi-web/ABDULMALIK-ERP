@@ -1,7 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fixtrack/src/core/diagnostics.dart';
+import 'package:abdulmalik_erp/src/core/diagnostics.dart';
 
 void main() {
   test('the watchdog records a UI freeze and when it recovered', () async {
