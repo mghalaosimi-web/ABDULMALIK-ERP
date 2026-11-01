@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/models.dart';
 import '../../core/session.dart';
+import '../../core/locale.dart';
 import '../../core/theme.dart';
 import '../../widgets/common.dart';
 import '../branches/branches_screen.dart';
@@ -35,21 +36,21 @@ class _Destination {
 
 const _staff = {Role.owner, Role.reception};
 
-final _destinations = <_Destination>[
-  _Destination('الرئيسية', Icons.space_dashboard_outlined, Icons.space_dashboard_rounded, () => const DashboardScreen()),
-  _Destination('الكاشير', Icons.point_of_sale_outlined, Icons.point_of_sale_rounded, () => const PosScreen(), roles: _staff),
-  _Destination('الصيانة', Icons.phone_android_outlined, Icons.phone_android_rounded, () => const TicketsScreen()),
-  _Destination('المخزون', Icons.inventory_2_outlined, Icons.inventory_2_rounded, () => const ProductsScreen(), roles: _staff),
-  _Destination('الفواتير', Icons.receipt_long_outlined, Icons.receipt_long_rounded, () => const SalesScreen(), roles: _staff),
-  _Destination('الموبايلات', Icons.phone_iphone_outlined, Icons.phone_iphone_rounded, () => const PhonesScreen(), roles: _staff),
-  _Destination('المحافظ', Icons.account_balance_outlined, Icons.account_balance_rounded, () => const ServicesScreen(), roles: _staff),
-  _Destination('المشتريات', Icons.local_shipping_outlined, Icons.local_shipping_rounded, () => const PurchasesScreen(), roles: _staff),
-  _Destination('الخزنة', Icons.account_balance_wallet_outlined, Icons.account_balance_wallet_rounded, () => const CashScreen(), roles: _staff),
-  _Destination('العملاء', Icons.people_outline_rounded, Icons.people_rounded, () => const CustomersScreen(), roles: _staff),
-  _Destination('الفروع', Icons.hub_outlined, Icons.hub_rounded, () => const BranchesScreen(), roles: _staff),
-  _Destination('التقارير', Icons.insights_outlined, Icons.insights_rounded, () => const ReportsScreen(), roles: {Role.owner}),
-  _Destination('الموظفين', Icons.badge_outlined, Icons.badge_rounded, () => const UsersScreen(), roles: {Role.owner}),
-  _Destination('الإعدادات', Icons.settings_outlined, Icons.settings_rounded, () => const SettingsScreen()),
+List<_Destination> _destinations(bool ar) => [
+  _Destination(ar ? 'الرئيسية' : 'Dashboard', Icons.space_dashboard_outlined, Icons.space_dashboard_rounded, () => const DashboardScreen()),
+  _Destination(ar ? 'الكاشير' : 'Cashier', Icons.point_of_sale_outlined, Icons.point_of_sale_rounded, () => const PosScreen(), roles: _staff),
+  _Destination(ar ? 'الصيانة' : 'Repairs', Icons.phone_android_outlined, Icons.phone_android_rounded, () => const TicketsScreen()),
+  _Destination(ar ? 'المخزون' : 'Inventory', Icons.inventory_2_outlined, Icons.inventory_2_rounded, () => const ProductsScreen(), roles: _staff),
+  _Destination(ar ? 'الفواتير' : 'Invoices', Icons.receipt_long_outlined, Icons.receipt_long_rounded, () => const SalesScreen(), roles: _staff),
+  _Destination(ar ? 'الموبايلات' : 'Phones', Icons.phone_iphone_outlined, Icons.phone_iphone_rounded, () => const PhonesScreen(), roles: _staff),
+  _Destination(ar ? 'المحافظ' : 'Wallets', Icons.account_balance_outlined, Icons.account_balance_rounded, () => const ServicesScreen(), roles: _staff),
+  _Destination(ar ? 'المشتريات' : 'Purchases', Icons.local_shipping_outlined, Icons.local_shipping_rounded, () => const PurchasesScreen(), roles: _staff),
+  _Destination(ar ? 'الخزنة' : 'Cash drawer', Icons.account_balance_wallet_outlined, Icons.account_balance_wallet_rounded, () => const CashScreen(), roles: _staff),
+  _Destination(ar ? 'العملاء' : 'Customers', Icons.people_outline_rounded, Icons.people_rounded, () => const CustomersScreen(), roles: _staff),
+  _Destination(ar ? 'الفروع' : 'Branches', Icons.hub_outlined, Icons.hub_rounded, () => const BranchesScreen(), roles: _staff),
+  _Destination(ar ? 'التقارير' : 'Reports', Icons.insights_outlined, Icons.insights_rounded, () => const ReportsScreen(), roles: {Role.owner}),
+  _Destination(ar ? 'الموظفين' : 'Staff', Icons.badge_outlined, Icons.badge_rounded, () => const UsersScreen(), roles: {Role.owner}),
+  _Destination(ar ? 'الإعدادات' : 'Settings', Icons.settings_outlined, Icons.settings_rounded, () => const SettingsScreen()),
 ];
 
 /// الهيكل الأساسي بعد الدخول: قائمة جانبية على الشاشات الكبيرة، وشريط تحت على الموبايل.
@@ -68,7 +69,8 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final user = ref.watch(sessionProvider).value!.user!;
     // بوابة الـ SMS (لو متفعّلة على الموبايل ده) بتشتغل طول ما البرنامج مفتوح
     ref.watch(smsGatewayProvider);
-    final items = _destinations.where((d) => d.roles == null || d.roles!.contains(user.role)).toList();
+    final ar = ref.watch(localeProvider).languageCode == 'ar';
+    final items = _destinations(ar).where((d) => d.roles == null || d.roles!.contains(user.role)).toList();
     final index = _index.clamp(0, items.length - 1);
     final page = KeyedSubtree(key: ValueKey(items[index].label), child: items[index].builder());
     final wide = MediaQuery.sizeOf(context).width >= 840;
@@ -106,7 +108,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
             if (more.isNotEmpty)
               NavigationDestination(
                 icon: const Icon(Icons.more_horiz_rounded),
-                label: inMore ? items[index].label : 'المزيد',
+                label: inMore ? items[index].label : (ar ? 'المزيد' : 'More'),
               ),
           ],
         ),
@@ -175,11 +177,11 @@ class _BrandName extends StatelessWidget {
         TextSpan(
           children: [
             TextSpan(
-              text: 'Fix',
+              text: 'ABDULMALIK ',
               style: TextStyle(color: Theme.of(context).colorScheme.onSurface),
             ),
             const TextSpan(
-              text: 'Track',
+              text: 'ERP',
               style: TextStyle(color: brandOrange),
             ),
           ],
@@ -208,7 +210,7 @@ class _UserFooter extends ConsumerWidget {
         title: Text(user.name, maxLines: 1, overflow: TextOverflow.ellipsis),
         subtitle: Text(user.role.label),
         trailing: IconButton(
-          tooltip: 'خروج',
+          tooltip: ref.watch(localeProvider).languageCode == 'ar' ? 'خروج' : 'Log out',
           icon: const Icon(Icons.logout_rounded),
           onPressed: () => ref.read(sessionProvider.notifier).logout(),
         ),
