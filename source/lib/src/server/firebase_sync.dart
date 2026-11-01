@@ -103,7 +103,7 @@ class FirebaseSync {
     var password = db.setting('cloud_password');
     var endpoint = 'signInWithPassword';
     if (email == null || password == null) {
-      email = 'shop-${db.setting('server_id')}@shops.fixtrack.app';
+      email = 'shop-${db.setting('server_id')}@shops.abdulmalik-erp.com';
       password = randomToken();
       db.setSetting('cloud_email', email);
       db.setSetting('cloud_password', password);
