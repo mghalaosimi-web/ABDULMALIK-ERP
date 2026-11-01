@@ -137,7 +137,7 @@ void main() {
     final ext = await Directory.systemTemp.createTemp('fixtrack_ext');
     final res = await api.patch('/api/backups/settings', {'backupDir': ext.path});
     expect(res['backupDir'], ext.path);
-    expect(Directory('${ext.path}/FixTrack Backups').listSync().length, 1);
+    expect(Directory('${ext.path}/ABDULMALIK ERP Backups').listSync().length, 1);
     await ext.delete(recursive: true);
   });
 }
