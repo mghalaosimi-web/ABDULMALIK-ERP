@@ -4,138 +4,144 @@
 
 # ABDULMALIK ERP
 
-**Phone repair shop & POS management — Windows + Android, offline-first**
+**Windows desktop ERP for one phone repair and retail shop**
 
-نظام متكامل لإدارة محلات صيانة وبيع الموبايلات: صيانة + كاشير + مخزون + تقارير + فروع
+نظام إدارة محل صيانة وبيع الهواتف: الصيانة، الكاشير، المخزون، الفواتير، العملاء، التقارير والنسخ الاحتياطي.
 
-![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter)
-![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Android-informational)
-![Tests](https://img.shields.io/badge/tests-72%20passing-success)
-![Version](https://img.shields.io/badge/version-1.0.5-blue)
+![Flutter](https://img.shields.io/badge/Flutter-desktop-02569B?logo=flutter)
+![Platform](https://img.shields.io/badge/current%20release-Windows%20x64-blue)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
 
 </div>
 
-<p align="center">
-  <img src="source/test_visual/shots/dashboard_desktop.png" width="820" alt="Dashboard">
-</p>
+## Current delivery scope
 
-## What is it?
+The active delivery target is **Windows x64 only**. Android/mobile packaging and mobile-specific work are intentionally deferred until the Windows application, installer, licensing, and shop workflows are verified.
 
-ABDULMALIK ERP replaces the generic cashier software that phone shops in Egypt run today. One app handles
-the **repair workflow** (intake → stages → customer approval → delivery with warranty) **and** the
-**shop counter** (accessories by barcode, new phones by IMEI, buying used phones, mobile-wallet and
-recharge services), with reports for the owner.
+- Local SQLite database on the shop PC.
+- Local HTTP service for LAN connectivity, ready for a later mobile client.
+- Repair intake and workflow, customers, products, barcode sales, phones/IMEI, purchases, cash drawer, wallets/services, reports, users/roles, audit history and backup/restore.
+- Arabic/English locale foundation, RTL/LTR switching, Arabic/English date formatting and Windows installer language selection.
+- Offline Ed25519 activation with a 14-day trial and device-bound license.
+- No external service is required for the core local Windows workflow.
 
-The shop's Windows PC is the server: it runs a local HTTP server inside the desktop app, and every
-Android phone in the shop connects to it over Wi-Fi. Everything keeps working without internet.
-The cloud (Firebase free tier) is used only for the customer tracking page and for linking branches.
+## Cloud integration — future development base
 
-## Features
+Firebase code, Firestore rules, sync routines and the tracking/branch architecture are retained as a **development base**. Cloud credentials are intentionally empty and cloud sync is disabled by default. No connection to the previous owner's Firebase project is performed.
 
-| Area | What it does |
-|---|---|
-| **Repairs** | Device intake with customer, fault, photos and PIN; stages (received → diagnosing → waiting approval → repairing → ready → delivered); parts per ticket; technician assignment & commissions; repair warranty and warranty returns |
-| **Receipts & tracking** | Printed receipt (80/58 mm ESC/POS thermal printers or A4/PDF) with a QR code → customer tracks the repair online and approves the cost |
-| **Messages** | WhatsApp (pre-filled `wa.me`, no ban risk) and automatic SMS from the shop's Android SIM; pickup reminders after 3/7/14/30 days |
-| **POS / cashier** | Barcode scanning (USB scanner or phone camera), sales invoices & returns, customer credit & collection, cash drawer sessions with expenses and day close |
-| **Phones** | New phones tracked per IMEI, used-phone purchase with national-ID photo and seller declaration, IMEI history check |
-| **Wallets & services** | Vodafone Cash / InstaPay / recharge / bills with commission tracking and drawer effects |
-| **Inventory & purchases** | Products, stock moves, suppliers, purchase invoices, barcode labels, **Excel/CSV import with column mapping** from the shop's old program |
-| **Reports** | Owner dashboard, sales/repairs/profit reports with Excel and PDF export |
-| **Branches** | Link branches through Firestore: day summaries, cross-branch stock lookup and transfers |
-| **Users & security** | Roles (owner, reception, technician), audit log, PIN delivery, daily zip backups + restore |
-| **Licensing** | Ed25519-signed offline activation codes, 14-day trial, device limit, clock-tamper check |
+When cloud work begins, create a Firebase project owned by the ABDULMALIK ERP maintainer, configure its API key/project ID, review Firestore security rules and privacy requirements, then explicitly enable cloud sync. Until then, the Windows application remains local/offline-first.
 
-## Screenshots
+## Build Windows
 
-| Repair intake | Repair details (phone, dark) | Cashier |
-|---|---|---|
-| ![Intake](source/test_visual/shots/intake_desktop.png) | ![Detail](source/test_visual/shots/detail_phone_dark.png) | ![POS](source/test_visual/shots/pos_desktop.png) |
+Requirements:
+- Windows 10/11 x64
+- Flutter stable SDK with Windows desktop support
+- Visual Studio 2022 Build Tools with Desktop development with C++
+- Inno Setup 6
 
-| Reports | Wallets | Buying a used phone |
-|---|---|---|
-| ![Reports](source/test_visual/shots/reports_desktop.png) | ![Wallets](source/test_visual/shots/wallets_desktop.png) | ![Buy used](source/test_visual/shots/buy_used_desktop.png) |
+From the `source` directory:
 
-<p align="center">
-  <img src="source/test_visual/shots/dashboard_phone.png" width="240" alt="Phone dashboard">
-  &nbsp;
-  <img src="source/test_visual/shots/intake_phone.png" width="240" alt="Phone intake">
-  &nbsp;
-  <img src="source/test_visual/shots/pos_phone.png" width="240" alt="Phone POS">
-</p>
-
-## Architecture
-
-```
-            ┌───────────────────── Shop (LAN, works offline) ─────────────────────┐
-            │                                                                     │
-  Android ──┼──► Windows PC: ABDULMALIK ERP desktop app                                 │
-  phones    │      ├─ Flutter UI                                                  │
-  (Wi-Fi)   │      └─ shelf HTTP server (isolate) ── SQLite ── daily zip backups  │
-            └───────────────┬─────────────────────────────────────────────────────┘
-                            │ only when online
-                            ▼
-                Optional cloud integration (not configured in this deployment)
-                ├─ Hosting: customer tracking page (QR) + user guide
-                └─ Firestore: approvals, pickup booking, branch sync
+```powershell
+flutter doctor -v
+powershell -ExecutionPolicy Bypass -File .\tool\build_release.ps1
 ```
 
-- **Flutter 3.47** single codebase, **Riverpod 3** state management
-- **shelf** server running in a background isolate, raw **sqlite3** with `user_version` migrations
-- Own lightweight XLSX reader/writer and PDF export, ESC/POS printing
-- Bundled fonts and assets (no runtime downloads) so it runs on old/low-end devices
-
-## Project layout
+The release script restores dependencies, runs static analysis and tests, builds the Windows x64 Release bundle, downloads the official Microsoft Visual C++ x64 runtime installer, and compiles:
 
 ```
-source/                 the ABDULMALIK ERP app (Windows + Android)
-  lib/src/server/       local API server, database, auth, licensing
-  lib/src/features/     screens: tickets, pos, inventory, phones, services, reports, branches…
-  firebase/             tracking page + Firestore rules
-  installer/            Inno Setup script (Windows installer)
-  test/                 72 server/API tests
-  test_cloud/           live Firestore tests (branches)
-  test_visual/          screenshot tests (images above)
-license-maker/          owner-only tool that signs activation codes (needs the private key, not in this repo)
+builds/ABDULMALIK-ERP-Setup-1.1.0.exe
 ```
 
-## Build & run
+The installer supports Arabic and English setup wizard languages, desktop shortcut selection, optional Windows startup, firewall rule setup, and preserves shop data during uninstall.
 
-```bash
-cd source
-flutter pub get
-flutter run -d windows        # desktop app (also the shop server)
-flutter test                  # 72 tests
-flutter build apk --release   # Android app
+A GitHub Actions workflow runs the same Windows build on pushes to `main` and `abdulmalik/development`, and publishes the installer as a 30-day workflow artifact. Open the repository Actions tab and download `ABDULMALIK-ERP-Windows-Setup` after a successful run.
+
+## Offline license management
+
+The application contains only the **public Ed25519 key**. The private key is owner-only and must never be committed to GitHub, sent with the installer, or stored on the shop PC.
+
+1. Extract the supplied `ABDULMALIK-ERP-Signing-Keys.zip` in a secure offline location.
+2. Keep `license-private.key` in at least two encrypted/offline backups.
+3. For issuing codes, place a copy at repository-root `signing/license-private.key` on the owner's trusted workstation. The root `.gitignore` excludes the entire `signing/` folder.
+4. In PowerShell, from `source`, issue a lifetime license:
+
+```powershell
+dart run tool/issue_license.dart ABCDE-FGHIJ "Shop name" lifetime
 ```
 
-The Windows installer is built with `source/tool/build_release.ps1` (Inno Setup).
-Signing keys (`android/key.properties`, keystore, `license-private.key`) are intentionally **not** in the repository.
+For a dated license:
+
+```powershell
+dart run tool/issue_license.dart ABCDE-FGHIJ "Shop name" yearly 2027-12-31 3 1
+```
+
+Arguments are device code, shop name, plan, optional expiry date, maximum devices (default 3), and maximum branches (default 1). Valid plans: `monthly`, `yearly`, `lifetime`, `custom`. The expiry date is inclusive through 23:59:59 UTC.
+
+The license is signed offline and bound to the shop server's device code. The private key never needs to be on the target shop PC. Losing the private key means no new activation codes can be issued for this public key. Rotating it invalidates existing licenses unless a migration strategy is implemented.
+
+## Repository layout
+
+```
+source/
+  lib/src/server/       Local API server, SQLite database, authentication, licensing
+  lib/src/features/     Repair, POS, inventory, customers, reports and settings UI
+  lib/src/core/         App configuration, locale, formatting, cryptographic license verification
+  installer/            Inno Setup Windows installer
+  tool/                 Windows build and offline license issuance tools
+  firebase/              Retained cloud integration development base
+  test/                  Unit and API tests
+signing/                 Owner-only private key folder (gitignored; never commit)
+.github/workflows/       Windows CI and installer artifact pipeline
+```
+
+## Data safety
+
+- SQLite data and backups live in the app's Windows application-data directory, not the installation folder.
+- Uninstall does not delete shop data.
+- Back up the database regularly and verify restore before using the system for live shop operations.
+- Test the installer and restore procedure on a separate Windows user/profile before the production shop PC.
+
+## Provenance
+
+This repository preserves the upstream Git history and original copyright notices. Product branding changes do not transfer authorship of upstream code. The maintainer has stated that permission for this single-shop adaptation was obtained; retain the written permission with project records.
 
 ---
 
-## بالعربي
+## بالعربية
 
-**ABDULMALIK ERP** برنامج لمحلات صيانة وبيع الموبايلات، شغال على **ويندوز وأندرويد**. بيغني المحل عن برنامج الكاشير القديم:
+### نطاق الإصدار الحالي
 
-- **الصيانة:** استلام الجهاز، ومراحل الشغل، وموافقة العميل على التكلفة، والتسليم بالضمان، وعمولة الفني.
-- **إيصال فيه QR:** العميل بيتابع جهازه من الموبايل، وبيوصله واتساب أو SMS أول ما الجهاز يجهز.
-- **الكاشير:** بيع بالباركود، وموبايلات جديدة بالـIMEI، وشراء موبايلات مستعملة بصورة البطاقة، وفودافون كاش والشحن.
-- **المخزون:** الموردين وفواتير الشراء، ونقل الأصناف من البرنامج القديم بملف Excel.
-- **التقارير والفروع:** تقارير لصاحب المحل بتتصدر Excel أو PDF، وربط بين الفروع.
+الإصدار الجاري تجهيزه هو **Windows x64 فقط**. تم تأجيل تطبيق الهاتف حتى اكتمال برنامج ويندوز واختبار قاعدة البيانات والترخيص والمثبت.
 
-كمبيوتر المحل هو السيرفر، والموبايلات بتتصل بيه على نفس الواي فاي، والوظائف المحلية الأساسية مصممة للعمل دون إنترنت. التكامل السحابي معطل افتراضياً إلى حين إعداد مشروع Firebase مملوك للمشغّل.
+البرنامج يعتمد على قاعدة SQLite محلية، ويشغّل خدمة محلية على كمبيوتر المحل. يمكن للأجهزة المتصلة بالشبكة المحلية الاستفادة منها مستقبلاً، لكن إصدار الهاتف مؤجل.
 
+### البناء
 
-## Product identity and upstream provenance
+من مجلد `source` في PowerShell:
 
-ABDULMALIK ERP is the maintained product identity for this deployment. This repository
-retains the upstream Git history and original copyright notices; product branding changes
-do not transfer authorship of upstream code. The maintainer states that permission for
-this single-shop adaptation has been obtained. Keep the written permission with project
-records. Internal database filenames, API identifiers, Android package IDs, and protocol
-markers remain compatible with existing installations and must not be renamed casually.
+```powershell
+flutter doctor -v
+powershell -ExecutionPolicy Bypass -File .\tool\build_release.ps1
+```
 
-The current release is a rebrand and language-preference foundation, not a claim that every
-screen has been fully translated. Arabic and English locale selection is persisted; complete
-English translation of all business screens remains a tracked follow-up.
+يقوم السكربت باستعادة الحزم، والتحليل الساكن، والاختبارات، وبناء نسخة Windows Release، ثم إنشاء مثبت EXE. لا يعتبر الإصدار جاهزاً حتى تنجح جميع هذه الخطوات.
+
+### السحابي
+
+احتفظنا بكود Firebase وFirestore وقواعد الأمان ومزامنة الفروع وصفحة تتبع العميل كقاعدة تطوير مستقبلية. بيانات الاتصال السحابية فارغة والمزامنة معطلة افتراضياً. لن يتصل النظام بمشروع Firebase القديم. عند بدء التطوير السحابي سننشئ مشروعاً مستقلاً ونراجع قواعد الأمان قبل تفعيله.
+
+### مفاتيح التفعيل
+
+- التطبيق يحتوي المفتاح العام فقط للتحقق من صحة التوقيع.
+- المفتاح الخاص موجود في ملف مستقل يجب حفظه في مكانين آمنين وغير متصلين بالإنترنت.
+- لا ترفع المفتاح الخاص إلى GitHub ولا تضعه داخل ملف EXE.
+- أداة `issue_license.dart` تنشئ أكواد التفعيل محلياً دون خادم أو اشتراك مدفوع.
+- كود التفعيل مرتبط ببصمة جهاز خادم المحل.
+
+### حماية البيانات
+
+إلغاء تثبيت البرنامج لا يحذف قاعدة بيانات المحل. مع ذلك يجب اختبار النسخ الاحتياطي والاستعادة على نسخة تجريبية قبل تشغيل النظام الفعلي.
+
+### حقوق المصدر
+
+تم الإبقاء على سجل Git وإشعارات حقوق المصدر الأصلي. تغيير هوية المنتج لا يعني انتقال ملكية تأليف الكود السابق. احتفظ بموافقة صاحب المشروع الأصلية ضمن مستندات المشروع.
