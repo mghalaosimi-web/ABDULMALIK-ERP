@@ -49,8 +49,8 @@ class FixTrackLogo extends StatelessWidget {
           textDirection: TextDirection.ltr,
           child: Text.rich(
             TextSpan(children: [
-              TextSpan(text: 'Fix', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
-              const TextSpan(text: 'Track', style: TextStyle(color: brandOrange)),
+              TextSpan(text: 'ABDULMALIK ', style: TextStyle(color: Theme.of(context).colorScheme.onSurface)),
+              const TextSpan(text: 'ERP', style: TextStyle(color: brandOrange)),
             ]),
             style: Theme.of(context).textTheme.headlineSmall?.bold,
           ),
