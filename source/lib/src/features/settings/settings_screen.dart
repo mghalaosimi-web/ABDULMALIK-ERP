@@ -114,7 +114,7 @@ class SettingsScreen extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: SegmentedButton<ThemeMode>(
-                segments: const [
+                segments: [
                   ButtonSegment(value: ThemeMode.system, label: Text(ar ? 'تلقائي' : 'System'), icon: Icon(Icons.brightness_auto_rounded)),
                   ButtonSegment(value: ThemeMode.light, label: Text(ar ? 'فاتح' : 'Light'), icon: Icon(Icons.light_mode_rounded)),
                   ButtonSegment(value: ThemeMode.dark, label: Text(ar ? 'غامق' : 'Dark'), icon: Icon(Icons.dark_mode_rounded)),
@@ -138,8 +138,8 @@ class SettingsScreen extends ConsumerWidget {
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.workspace_premium_rounded),
-                  title: const Text('الاشتراك'),
-                  subtitle: const Text('حالة الاشتراك، وكود الجهاز، والتفعيل'),
+                  title: Text(ar ? 'الاشتراك' : 'License'),
+                  subtitle: Text(ar ? 'حالة الاشتراك، وكود الجهاز، والتفعيل' : 'License status, device ID and activation'),
                   trailing: const Icon(Icons.chevron_left_rounded),
                   onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const LicenseScreen())),
                 ),
@@ -148,42 +148,42 @@ class SettingsScreen extends ConsumerWidget {
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.backup_rounded),
-                  title: const Text('النسخ الاحتياطي'),
-                  subtitle: const Text('نسخة كل يوم لوحدها، وترجيع نسخة قديمة'),
+                  title: Text(ar ? 'النسخ الاحتياطي' : 'Backups'),
+                  subtitle: Text(ar ? 'نسخة كل يوم لوحدها، وترجيع نسخة قديمة' : 'Daily backups and restore'),
                   trailing: const Icon(Icons.chevron_left_rounded),
                   onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const BackupScreen())),
                 ),
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.forum_rounded),
-                  title: const Text('رسائل العملاء'),
-                  subtitle: const Text('إمتى تتبعت رسالة، واتساب ولا SMS، ونص كل رسالة'),
+                  title: Text(ar ? 'رسائل العملاء' : 'Customer messages'),
+                  subtitle: Text(ar ? 'إمتى تتبعت رسالة، واتساب ولا SMS، ونص كل رسالة' : 'Schedule, channel and message templates'),
                   trailing: const Icon(Icons.chevron_left_rounded),
                   onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const MessageSettingsScreen())),
                 ),
               ]),
             ),
           ],
-          const SectionTitle('الجهاز ده'),
+          SectionTitle(ar ? 'الجهاز ده' : 'This device'),
           const _DeviceSettingsCard(),
           if (user.isOwner) ...[
-            const SectionTitle('المتابعة'),
+            SectionTitle(ar ? 'المتابعة' : 'Activity'),
             Card(
               child: ListTile(
                 leading: const Icon(Icons.history_rounded),
-                title: const Text('سجل النشاط'),
-                subtitle: const Text('مين عمل إيه وإمتى'),
+                title: Text(ar ? 'سجل النشاط' : 'Activity log'),
+                subtitle: Text(ar ? 'مين عمل إيه وإمتى' : 'Who did what and when'),
                 trailing: const Icon(Icons.chevron_left_rounded),
                 onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const AuditScreen())),
               ),
             ),
           ],
-          const SectionTitle('المشاكل'),
+          SectionTitle(ar ? 'المشاكل' : 'Diagnostics'),
           Card(
             child: ListTile(
               leading: const Icon(Icons.bug_report_outlined),
-              title: const Text('سجل المشاكل'),
-              subtitle: const Text('لو البرنامج علّق أو ظهر خطأ، من هنا تبعت التفاصيل لصاحب البرنامج'),
+              title: Text(ar ? 'سجل المشاكل' : 'Diagnostic log'),
+              subtitle: Text(ar ? 'لو البرنامج علّق أو ظهر خطأ، من هنا تبعت التفاصيل لصاحب البرنامج' : 'Review app errors and diagnostic details'),
               trailing: const Icon(Icons.chevron_left_rounded),
               onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const LogsScreen())),
             ),
