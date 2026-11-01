@@ -18,7 +18,6 @@ import '../core/app_info.dart';
 import '../core/diagnostics.dart';
 import '../core/firebase_config.dart';
 import '../core/format.dart';
-import '../core/license.dart';
 import '../core/messages.dart';
 import '../core/ticket_status.dart';
 import 'db.dart';
