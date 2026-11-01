@@ -4,8 +4,8 @@ import 'dart:io';
 
 /// البورت اللي السيرفر بيسمع عليه طلبات "فين السيرفر؟" من الموبايلات.
 const discoveryPort = 8744;
-const _request = 'FIXTRACK_DISCOVER';
-const _replyPrefix = 'FIXTRACK_HERE:';
+const _request = 'ABDULMALIK_ERP_DISCOVER';
+const _replyPrefix = 'ABDULMALIK_ERP_HERE:';
 
 /// بيشتغل على السيرفر: يرد على أي موبايل بيدوّر على سيرفر في الشبكة.
 class DiscoveryResponder {
