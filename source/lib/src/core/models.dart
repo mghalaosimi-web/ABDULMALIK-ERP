@@ -57,7 +57,7 @@ class ServerInfo {
   });
 
   factory ServerInfo.fromJson(Map<String, dynamic> j) {
-    if (j['app'] != 'fixtrack') throw const FormatException('not a FixTrack server');
+    if (j['app'] != 'abdulmalik_erp') throw const FormatException('not an ABDULMALIK ERP server');
     return ServerInfo(
       serverId: j['serverId'] as String? ?? '',
       setupDone: j['setupDone'] as bool? ?? false,

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/app_config.dart';
 import '../../core/session.dart';
+import '../../core/locale.dart';
 import '../../core/theme.dart';
 import '../../widgets/common.dart';
 
@@ -59,11 +60,15 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
     }
   }
 
-  String? _required(String? v, String label) => (v == null || v.trim().isEmpty) ? 'لازم تكتب $label' : null;
+  String? _required(String? v, String label) => (v == null || v.trim().isEmpty) ? (ref.read(localeProvider).languageCode == 'ar' ? 'لازم تكتب $label' : 'Please enter $label') : null;
 
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final ar = ref.watch(localeProvider).languageCode == 'ar';
+    if (_branchName.text == 'الفرع الرئيسي' || _branchName.text == 'Main branch') {
+      _branchName.text = ar ? 'الفرع الرئيسي' : 'Main branch';
+    }
     final isServer = ref.read(appConfigProvider).mode == AppMode.server;
 
     if (!isServer) {
@@ -71,17 +76,17 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const FixTrackLogo(size: 56),
+            const AbdulmalikErpLogo(size: 56),
             const SizedBox(height: 24),
-            Text('السيرفر لسه ما اتجهزش', style: text.titleLarge?.bold, textAlign: TextAlign.center),
+            Text(ar ? 'الخادم لم يجهز بعد' : 'The server is not ready yet', style: text.titleLarge?.bold, textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            const Text('لازم تسجل بيانات المحل الأول من برنامج الكمبيوتر اللي شغال كسيرفر، وبعدها ارجع هنا.',
+            Text(ar ? 'سجّل بيانات المحل أولاً من برنامج الكمبيوتر الذي يعمل كخادم، ثم ارجع إلى هنا.' : 'Register the shop first from the computer running as the server, then return here.',
                 textAlign: TextAlign.center),
             const SizedBox(height: 20),
-            FilledButton(onPressed: () => ref.read(sessionProvider.notifier).retry(), child: const Text('حاول تاني')),
+            FilledButton(onPressed: () => ref.read(sessionProvider.notifier).retry(), child: Text(ar ? 'حاول مرة أخرى' : 'Try again')),
             TextButton(
               onPressed: () => ref.read(sessionProvider.notifier).resetConnection(),
-              child: const Text('اختار سيرفر تاني'),
+              child: Text(ar ? 'اختيار خادم آخر' : 'Choose another server'),
             ),
           ],
         ),
@@ -95,39 +100,39 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const FixTrackLogo(size: 56),
+            const AbdulmalikErpLogo(size: 56),
             const SizedBox(height: 24),
-            Text('أهلاً بيك! يلا نسجل المحل', style: text.titleLarge?.bold),
+            Text(ar ? 'أهلاً بك! لنُسجّل بيانات المحل' : 'Welcome! Set up your shop', style: text.titleLarge?.bold),
             const SizedBox(height: 4),
-            const Text('البيانات دي هتظهر في الوصولات ورسايل العملاء، وتقدر تعدلها بعدين من الإعدادات.'),
-            const SectionTitle('بيانات المحل'),
+            Text(ar ? 'ستظهر هذه البيانات في الفواتير ورسائل العملاء، ويمكنك تعديلها لاحقاً من الإعدادات.' : 'These details appear on receipts and customer messages. You can edit them later in Settings.'),
+            SectionTitle(ar ? 'بيانات المحل' : 'Shop details'),
             TextFormField(
               controller: _shopName,
-              decoration: const InputDecoration(labelText: 'اسم المحل *', prefixIcon: Icon(Icons.storefront_rounded)),
-              validator: (v) => _required(v, 'اسم المحل'),
+              decoration: InputDecoration(labelText: ar ? 'اسم المحل *' : 'Shop name *', prefixIcon: Icon(Icons.storefront_rounded)),
+              validator: (v) => _required(v, ar ? 'اسم المحل' : 'shop name'),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _shopPhone,
               keyboardType: TextInputType.phone,
-              decoration: const InputDecoration(labelText: 'رقم تليفون المحل', prefixIcon: Icon(Icons.call_rounded)),
+              decoration: InputDecoration(labelText: ar ? 'رقم تليفون المحل' : 'Shop phone', prefixIcon: Icon(Icons.call_rounded)),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _shopAddress,
-              decoration: const InputDecoration(labelText: 'العنوان', prefixIcon: Icon(Icons.place_rounded)),
+              decoration: InputDecoration(labelText: ar ? 'العنوان' : 'Address', prefixIcon: Icon(Icons.place_rounded)),
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _branchName,
-              decoration: const InputDecoration(labelText: 'اسم الفرع', prefixIcon: Icon(Icons.account_tree_rounded)),
+              decoration: InputDecoration(labelText: ar ? 'اسم الفرع' : 'Branch name', prefixIcon: Icon(Icons.account_tree_rounded)),
             ),
             const SizedBox(height: 8),
-            const SectionTitle('حساب صاحب المحل'),
+            SectionTitle(ar ? 'حساب صاحب المحل' : 'Shop owner account'),
             TextFormField(
               controller: _ownerName,
-              decoration: const InputDecoration(labelText: 'اسمك *', prefixIcon: Icon(Icons.person_rounded)),
-              validator: (v) => _required(v, 'اسمك'),
+              decoration: InputDecoration(labelText: ar ? 'اسمك *' : 'Your name *', prefixIcon: Icon(Icons.person_rounded)),
+              validator: (v) => _required(v, ar ? 'اسمك' : 'your name'),
             ),
             const SizedBox(height: 12),
             Directionality(
@@ -135,13 +140,13 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
               child: TextFormField(
                 controller: _username,
                 autocorrect: false,
-                decoration: const InputDecoration(
-                  labelText: 'اسم المستخدم (بالإنجليزي) *',
+                decoration: InputDecoration(
+                  labelText: ar ? 'اسم المستخدم (بالإنجليزي) *' : 'Username (English) *',
                   prefixIcon: Icon(Icons.alternate_email_rounded),
                 ),
                 validator: (v) => RegExp(r'^[a-zA-Z0-9_.]{3,30}$').hasMatch(v?.trim() ?? '')
                     ? null
-                    : 'من 3 لـ 30 حرف إنجليزي أو أرقام',
+                     : (ar ? 'من 3 لـ 30 حرف إنجليزي أو أرقام' : 'Use 3–30 English letters, numbers or underscores'),
               ),
             ),
             const SizedBox(height: 12),
@@ -149,30 +154,30 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
               controller: _password,
               obscureText: !_showPassword,
               decoration: InputDecoration(
-                labelText: 'كلمة السر *',
+                labelText: ar ? 'كلمة السر *' : 'Password *',
                 prefixIcon: const Icon(Icons.lock_rounded),
                 suffixIcon: IconButton(
                   icon: Icon(_showPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded),
                   onPressed: () => setState(() => _showPassword = !_showPassword),
                 ),
               ),
-              validator: (v) => (v ?? '').length < 6 ? '6 حروف أو أرقام على الأقل' : null,
+              validator: (v) => (v ?? '').length < 6 ? (ar ? '6 حروف أو أرقام على الأقل' : 'Use at least 6 characters') : null,
             ),
             const SizedBox(height: 12),
             TextFormField(
               controller: _confirm,
               obscureText: !_showPassword,
-              decoration: const InputDecoration(labelText: 'تأكيد كلمة السر *', prefixIcon: Icon(Icons.lock_outline_rounded)),
-              validator: (v) => v != _password.text ? 'كلمة السر مش زي اللي فوق' : null,
+              decoration: InputDecoration(labelText: ar ? 'تأكيد كلمة السر *' : 'Confirm password *', prefixIcon: Icon(Icons.lock_outline_rounded)),
+              validator: (v) => v != _password.text ? (ar ? 'كلمة السر مش زي اللي فوق' : 'Passwords do not match') : null,
               onFieldSubmitted: (_) => _submit(),
             ),
             if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],
             const SizedBox(height: 20),
-            BusyButton(label: 'تسجيل المحل والبدء', busy: _busy, onPressed: _submit),
+            BusyButton(label: ar ? 'تسجيل المحل والبدء' : 'Create shop and continue', busy: _busy, onPressed: _submit),
             const SizedBox(height: 8),
             TextButton(
               onPressed: _busy ? null : () => ref.read(sessionProvider.notifier).resetConnection(),
-              child: const Text('رجوع'),
+              child: Text(ar ? 'رجوع' : 'Back'),
             ),
           ],
         ),

@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:fixtrack/src/core/api_client.dart';
-import 'package:fixtrack/src/core/ticket_status.dart';
-import 'package:fixtrack/src/server/api_server.dart';
-import 'package:fixtrack/src/server/secret_box.dart';
+import 'package:abdulmalik_erp/src/core/api_client.dart';
+import 'package:abdulmalik_erp/src/core/ticket_status.dart';
+import 'package:abdulmalik_erp/src/server/api_server.dart';
+import 'package:abdulmalik_erp/src/server/secret_box.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

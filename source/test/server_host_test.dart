@@ -1,8 +1,8 @@
 import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
-import 'package:fixtrack/src/core/api_client.dart';
-import 'package:fixtrack/src/server/server_host.dart';
+import 'package:abdulmalik_erp/src/core/api_client.dart';
+import 'package:abdulmalik_erp/src/server/server_host.dart';
 
 void main() {
   test('the server restarts by itself after it dies, with the same data', () async {

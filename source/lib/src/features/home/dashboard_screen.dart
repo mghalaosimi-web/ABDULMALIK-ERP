@@ -5,13 +5,13 @@ import '../../core/app_config.dart';
 import '../../core/format.dart';
 import '../../core/models.dart';
 import '../../core/session.dart';
+import '../../core/locale.dart';
 import '../../core/theme.dart';
 import '../../core/ticket_models.dart';
 import '../../widgets/common.dart';
 import '../../widgets/ticket_widgets.dart';
 import '../../core/messages.dart';
 import '../messages/message_dialog.dart';
-import '../settings/license_screen.dart';
 import '../tickets/providers.dart';
 import '../tickets/tickets_screen.dart';
 
@@ -29,20 +29,21 @@ class DashboardScreen extends ConsumerWidget {
     final user = session.user!;
     final info = session.info!;
     final text = Theme.of(context).textTheme;
+    final ar = ref.watch(localeProvider).languageCode == 'ar';
     final scheme = Theme.of(context).colorScheme;
     final isServer = ref.read(appConfigProvider).mode == AppMode.server;
     final stats = ref.watch(dashboardProvider);
     final s = stats.value;
     final canIntake = user.role != Role.technician;
-    final greeting = DateTime.now().hour < 12 ? 'صباح الخير' : 'مساء الخير';
+    final greeting = ar ? (DateTime.now().hour < 12 ? 'صباح الخير' : 'مساء الخير') : (DateTime.now().hour < 12 ? 'Good morning' : 'Good evening');
 
     return Scaffold(
-      appBar: AppBar(title: Text('$greeting، ${user.name.split(' ').first} 👋')),
+      appBar: AppBar(title: Text(ar ? '$greeting، ${user.name.split(' ').first} 👋' : '$greeting, ${user.name.split(' ').first} 👋')),
       floatingActionButton: canIntake
           ? FloatingActionButton.extended(
               onPressed: () => openIntake(context),
               icon: const Icon(Icons.add_rounded),
-              label: const Text('استلام جهاز'),
+              label: Text(ar ? 'استلام جهاز' : 'New repair'),
             )
           : null,
       body: RefreshIndicator(
@@ -50,7 +51,6 @@ class DashboardScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 96),
           children: [
-            const LicenseBanner(),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(20),
@@ -81,10 +81,10 @@ class DashboardScreen extends ConsumerWidget {
             LayoutBuilder(builder: (context, c) {
               final columns = c.maxWidth >= 900 ? 4 : 2;
               final cards = [
-                _StatCard(icon: Icons.move_to_inbox_rounded, label: 'اتسلم النهارده', value: s?.receivedToday, color: brandBlue, onTap: () => _openList(context, 'active')),
-                _StatCard(icon: Icons.build_circle_rounded, label: 'تحت الشغل', value: s?.inProgress, color: const Color(0xFF7C3AED), onTap: () => _openList(context, 'open')),
-                _StatCard(icon: Icons.check_circle_rounded, label: 'مستني الاستلام', value: s?.awaitingPickup, color: const Color(0xFF16A34A), onTap: () => _openList(context, 'pickup')),
-                _StatCard(icon: Icons.warning_amber_rounded, label: 'متأخر', value: s?.overdue, color: brandOrange, onTap: () => _openList(context, 'overdue')),
+                _StatCard(icon: Icons.move_to_inbox_rounded, label: ar ? 'اتسلم النهارده' : 'Received today', value: s?.receivedToday, color: brandBlue, onTap: () => _openList(context, 'active')),
+                _StatCard(icon: Icons.build_circle_rounded, label: ar ? 'تحت الشغل' : 'In progress', value: s?.inProgress, color: const Color(0xFF7C3AED), onTap: () => _openList(context, 'open')),
+                _StatCard(icon: Icons.check_circle_rounded, label: ar ? 'مستني الاستلام' : 'Ready for pickup', value: s?.awaitingPickup, color: const Color(0xFF16A34A), onTap: () => _openList(context, 'pickup')),
+                _StatCard(icon: Icons.warning_amber_rounded, label: ar ? 'متأخر' : 'Overdue', value: s?.overdue, color: brandOrange, onTap: () => _openList(context, 'overdue')),
               ];
               return GridView.count(
                 crossAxisCount: columns,
@@ -102,7 +102,7 @@ class DashboardScreen extends ConsumerWidget {
                 clipBehavior: Clip.antiAlias,
                 child: ListTile(
                   leading: const Icon(Icons.event_available_rounded, color: Color(0xFF16A34A)),
-                  title: Text('${s!.pickupsToday} عميل حاجز ييجي يستلم النهارده'),
+                  title: Text(ar ? '${s!.pickupsToday} عميل حاجز ييجي يستلم النهارده' : '${s!.pickupsToday} customers scheduled to pick up today'),
                   trailing: const Icon(Icons.chevron_left_rounded),
                   onTap: () => _openList(context, 'pickupToday'),
                 ),
@@ -113,9 +113,9 @@ class DashboardScreen extends ConsumerWidget {
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.point_of_sale_rounded, color: brandBlue),
-                  title: const Text('مبيعات النهارده'),
-                  subtitle: Text('${s!.salesTodayCount ?? 0} فاتورة'
-                      '${s.lowStockCount > 0 ? ' • ${s.lowStockCount} صنف قرّب يخلص' : ''}'),
+                  title: Text(ar ? 'مبيعات النهارده' : 'Sales today'),
+                  subtitle: Text(ar ? '${s!.salesTodayCount ?? 0} فاتورة' : '${s!.salesTodayCount ?? 0} invoices'
+                      '${s.lowStockCount > 0 ? ' • ${s.lowStockCount} ${ar ? 'صنف قرّب يخلص' : 'items low in stock'}' : ''}'),
                   trailing: Text(money(s.salesTodayCents!), style: text.titleLarge?.bold),
                 ),
               ),
@@ -125,17 +125,17 @@ class DashboardScreen extends ConsumerWidget {
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF16A34A)),
-                  title: const Text('اتحصّل النهارده'),
-                  subtitle: Text('اتسلم للعملاء ${s!.deliveredToday} ${s.deliveredToday == 1 ? 'جهاز' : 'أجهزة'}'),
+                  title: Text(ar ? 'اتحصّل النهارده' : 'Collected today'),
+                  subtitle: Text('اتسلم للعملاء ${s!.deliveredToday} ${s.deliveredToday == 1 ? (ar ? 'جهاز' : 'device') : (ar ? 'أجهزة' : 'devices')}'),
                   trailing: Text(money(s.collectedTodayCents!), style: text.titleLarge?.bold),
                 ),
               ),
             ],
             if (canIntake) const _RemindersSection(),
-            _TicketPreview(title: 'استلامات النهارده', scope: 'pickupToday', onMore: () => _openList(context, 'pickupToday')),
-            _TicketPreview(title: 'متأخر', scope: 'overdue', onMore: () => _openList(context, 'overdue')),
-            _TicketPreview(title: 'مستني الاستلام', scope: 'pickup', onMore: () => _openList(context, 'pickup')),
-            _TicketPreview(title: user.role == Role.technician ? 'الأجهزة اللي عليا' : 'آخر الأجهزة', scope: 'open', onMore: () => _openList(context, 'open')),
+            _TicketPreview(title: ar ? 'استلامات النهارده' : 'Today’s pickups', scope: 'pickupToday', onMore: () => _openList(context, 'pickupToday')),
+            _TicketPreview(title: ar ? 'متأخر' : 'Overdue', scope: 'overdue', onMore: () => _openList(context, 'overdue')),
+            _TicketPreview(title: ar ? 'مستني الاستلام' : 'Ready for pickup', scope: 'pickup', onMore: () => _openList(context, 'pickup')),
+            _TicketPreview(title: user.role == Role.technician ? (ar ? 'الأجهزة اللي عليا' : 'My assigned repairs') : (ar ? 'آخر الأجهزة' : 'Recent repairs'), scope: 'open', onMore: () => _openList(context, 'open')),
           ],
         ),
       ),
@@ -159,7 +159,7 @@ class _TicketPreview extends ConsumerWidget {
         const SizedBox(height: 12),
         Row(children: [
           Expanded(child: SectionTitle('$title (${list.length})')),
-          if (list.length > 4) TextButton(onPressed: onMore, child: const Text('عرض الكل')),
+          if (list.length > 4) TextButton(onPressed: onMore, child: Text(ref.watch(localeProvider).languageCode == 'ar' ? 'عرض الكل' : 'View all')),
         ]),
         for (final t in list.take(4))
           Padding(
@@ -171,12 +171,13 @@ class _TicketPreview extends ConsumerWidget {
   }
 }
 
-class _ConnectionChip extends StatelessWidget {
+class _ConnectionChip extends ConsumerWidget {
   const _ConnectionChip({required this.isServer});
   final bool isServer;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ar = ref.watch(localeProvider).languageCode == 'ar';
     const green = Color(0xFF16A34A);
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
@@ -186,7 +187,7 @@ class _ConnectionChip extends StatelessWidget {
         children: [
           const Icon(Icons.circle, size: 10, color: green),
           const SizedBox(width: 6),
-          Text(isServer ? 'السيرفر شغال' : 'متصل بالسيرفر', style: const TextStyle(color: green).semiBold),
+          Text(isServer ? (ar ? 'السيرفر شغال' : 'Server running') : (ar ? 'متصل بالسيرفر' : 'Connected to server'), style: const TextStyle(color: green).semiBold),
         ],
       ),
     );

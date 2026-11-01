@@ -58,14 +58,14 @@ extension _BackupRoutes on FixTrackServer {
   Future<String> _createBackup({bool manual = false}) async {
     final stamp = DateTime.now();
     String two(int n) => n.toString().padLeft(2, '0');
-    final name = 'fixtrack-${stamp.year}-${two(stamp.month)}-${two(stamp.day)}-${two(stamp.hour)}${two(stamp.minute)}.zip';
+    final name = 'abdulmalik-erp-${stamp.year}-${two(stamp.month)}-${two(stamp.day)}-${two(stamp.hour)}${two(stamp.minute)}.zip';
 
     // نسخة متسقة من قاعدة البيانات حتى لو فيه شغل شغال
     final snapshot = File(p.join(_backupDir.path, '.snapshot.db'));
     if (snapshot.existsSync()) snapshot.deleteSync();
     db.raw.execute('VACUUM INTO ?', [snapshot.path]);
 
-    final info = jsonEncode({'app': 'fixtrack', 'version': appVersion, 'createdAt': stamp.toUtc().toIso8601String(), 'serverId': db.setting('server_id')});
+    final info = jsonEncode({'app': 'abdulmalik_erp', 'version': appVersion, 'createdAt': stamp.toUtc().toIso8601String(), 'serverId': db.setting('server_id')});
     final outPath = p.join(_backupDir.path, name);
     final snapshotPath = snapshot.path, data = dataDir;
     // الضغط بيحصل في Isolate لوحده: السيرفر يفضل يرد على الأجهزة، ومن غير ما الصور كلها تتحمّل في الذاكرة
@@ -78,7 +78,7 @@ extension _BackupRoutes on FixTrackServer {
     String? externalError;
     if (external != null && external.isNotEmpty) {
       try {
-        final dir = Directory(p.join(external, 'FixTrack Backups'))..createSync(recursive: true);
+        final dir = Directory(p.join(external, 'ABDULMALIK ERP Backups'))..createSync(recursive: true);
         out.copySync(p.join(dir.path, name));
         final old = dir.listSync().whereType<File>().where((f) => f.path.endsWith('.zip')).toList()..sort((a, b) => b.path.compareTo(a.path));
         for (final f in old.skip(_keepBackups * 2)) {
@@ -105,7 +105,7 @@ extension _BackupRoutes on FixTrackServer {
     final file = File(p.join(_backupDir.path, name));
     if (!name.endsWith('.zip') || !file.existsSync()) throw ApiError(404, 'النسخة دي مش موجودة');
     final valid = await zipHasFile(file.path, 'fixtrack.db');
-    if (!valid) throw ApiError(400, 'الملف ده مش نسخة احتياطية من FixTrack');
+    if (!valid) throw ApiError(400, 'الملف ده مش نسخة احتياطية من ABDULMALIK ERP');
     File(p.join(dataDir, 'restore.pending')).writeAsStringSync(file.path);
     _audit(u.id, 'backup.restore', 'backup', null, name);
     return {'ok': true, 'message': 'اقفل البرنامج على كمبيوتر السيرفر وافتحه تاني عشان الاسترجاع يتم'};

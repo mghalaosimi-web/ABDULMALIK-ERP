@@ -3,6 +3,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'core/session.dart';
+import 'core/app_info.dart';
+import 'core/locale.dart';
 import 'core/theme.dart';
 import 'features/auth/login_screen.dart';
 import 'features/home/home_shell.dart';
@@ -17,10 +19,10 @@ class FixTrackApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     return MaterialApp(
-      title: 'FixTrack',
+      title: appName,
       debugShowCheckedModeBanner: false,
-      locale: const Locale('pt', 'BR'),
-      supportedLocales: const [Locale('pt', 'BR'), Locale('en')],
+      locale: ref.watch(localeProvider),
+      supportedLocales: const [Locale('ar'), Locale('en')],
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       theme: buildTheme(Brightness.light),
       darkTheme: buildTheme(Brightness.dark),

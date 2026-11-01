@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_config.dart';
+import '../../core/locale.dart';
 import '../../core/app_info.dart';
 import '../../core/firebase_config.dart';
 import '../../core/format.dart';
@@ -17,7 +18,6 @@ import '../messages/sms_gateway.dart';
 import '../receipts/print_service.dart';
 import 'audit_screen.dart';
 import 'backup_screen.dart';
-import 'license_screen.dart';
 import 'logs_screen.dart';
 import 'message_settings_screen.dart';
 import 'shop_settings_screen.dart';
@@ -34,13 +34,15 @@ class SettingsScreen extends ConsumerWidget {
     final config = ref.read(appConfigProvider);
     final isServer = config.mode == AppMode.server;
     final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
+    final ar = locale.languageCode == 'ar';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الإعدادات')),
+      appBar: AppBar(title: Text(ar ? 'الإعدادات' : 'Settings')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
         children: [
-          const SectionTitle('حسابي'),
+          SectionTitle(ar ? 'حسابي' : 'My account'),
           Card(
             child: Column(children: [
               ListTile(
@@ -51,25 +53,25 @@ class SettingsScreen extends ConsumerWidget {
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.password_rounded),
-                title: const Text('تغيير كلمة السر'),
+                title: Text(ar ? 'تغيير كلمة السر' : 'Change password'),
                 trailing: const Icon(Icons.chevron_left_rounded),
                 onTap: () => showDialog<void>(context: context, builder: (_) => const _ChangePasswordDialog()),
               ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.logout_rounded),
-                title: const Text('تسجيل خروج'),
+                title: Text(ar ? 'تسجيل خروج' : 'Log out'),
                 onTap: () => ref.read(sessionProvider.notifier).logout(),
               ),
             ]),
           ),
-          const SectionTitle('الاتصال'),
+          SectionTitle(ar ? 'الاتصال' : 'Connection'),
           Card(
             child: Column(children: [
               ListTile(
                 leading: Icon(isServer ? Icons.dns_rounded : Icons.wifi_rounded),
-                title: Text(isServer ? 'الجهاز ده هو سيرفر المحل' : 'متصل بسيرفر المحل'),
-                subtitle: Text(isServer ? 'لازم البرنامج يفضل مفتوح على الجهاز ده عشان الأجهزة التانية تشتغل' : session.api!.baseUrl,
+                title: Text(isServer ? (ar ? 'الجهاز ده هو سيرفر المحل' : 'This PC is the shop server') : (ar ? 'متصل بسيرفر المحل' : 'Connected to shop server')),
+                subtitle: Text(isServer ? (ar ? 'لازم البرنامج يفضل مفتوح على الجهاز ده عشان الأجهزة التانية تشتغل' : 'Keep this app running on this PC so other devices can connect') : session.api!.baseUrl,
                     textDirection: isServer ? null : TextDirection.ltr, textAlign: TextAlign.right),
               ),
               if (isServer) ...[
@@ -79,8 +81,8 @@ class SettingsScreen extends ConsumerWidget {
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.swap_horiz_rounded),
-                title: Text(isServer ? 'تغيير طريقة تشغيل الجهاز' : 'تغيير السيرفر'),
-                subtitle: isServer ? const Text('بيانات المحل مش هتتمسح من الجهاز') : null,
+                title: Text(isServer ? (ar ? 'تغيير طريقة تشغيل الجهاز' : 'Change device mode') : (ar ? 'تغيير السيرفر' : 'Change server')),
+                subtitle: isServer ? Text(ar ? 'بيانات المحل مش هتتمسح من الجهاز' : 'Shop data will remain on this PC') : null,
                 onTap: () async {
                   final ok = await _confirm(context,
                       isServer
@@ -91,15 +93,30 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ]),
           ),
-          const SectionTitle('الشكل'),
+          const SectionTitle('اللغة / Language'),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: 'ar', label: Text('العربية')),
+                  ButtonSegment(value: 'en', label: Text('English')),
+                ],
+                selected: {locale.languageCode},
+                onSelectionChanged: (selection) =>
+                    ref.read(localeProvider.notifier).setLanguage(selection.first),
+              ),
+            ),
+          ),
+          SectionTitle(ar ? 'الشكل' : 'Appearance'),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: SegmentedButton<ThemeMode>(
-                segments: const [
-                  ButtonSegment(value: ThemeMode.system, label: Text('تلقائي'), icon: Icon(Icons.brightness_auto_rounded)),
-                  ButtonSegment(value: ThemeMode.light, label: Text('فاتح'), icon: Icon(Icons.light_mode_rounded)),
-                  ButtonSegment(value: ThemeMode.dark, label: Text('غامق'), icon: Icon(Icons.dark_mode_rounded)),
+                segments: [
+                  ButtonSegment(value: ThemeMode.system, label: Text(ar ? 'تلقائي' : 'System'), icon: Icon(Icons.brightness_auto_rounded)),
+                  ButtonSegment(value: ThemeMode.light, label: Text(ar ? 'فاتح' : 'Light'), icon: Icon(Icons.light_mode_rounded)),
+                  ButtonSegment(value: ThemeMode.dark, label: Text(ar ? 'غامق' : 'Dark'), icon: Icon(Icons.dark_mode_rounded)),
                 ],
                 selected: {themeMode},
                 onSelectionChanged: (s) => ref.read(themeModeProvider.notifier).set(s.first),
@@ -107,79 +124,73 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           if (user.isOwner) ...[
-            const SectionTitle('المحل'),
+            SectionTitle(ar ? 'المحل' : 'Shop'),
             Card(
               child: Column(children: [
                 ListTile(
                   leading: const Icon(Icons.storefront_rounded),
-                  title: const Text('بيانات المحل والوصل'),
-                  subtitle: const Text('اللوجو، والتليفون، والعنوان، ومقاس الورق، والشروط'),
+                  title: Text(ar ? 'بيانات المحل والوصل' : 'Shop and receipt settings'),
+                  subtitle: Text(ar ? 'اللوجو، والتليفون، والعنوان، ومقاس الورق، والشروط' : 'Logo, phone, address, paper size and receipt terms'),
                   trailing: const Icon(Icons.chevron_left_rounded),
                   onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const ShopSettingsScreen())),
                 ),
                 const Divider(height: 1),
-                ListTile(
-                  leading: const Icon(Icons.workspace_premium_rounded),
-                  title: const Text('الاشتراك'),
-                  subtitle: const Text('حالة الاشتراك، وكود الجهاز، والتفعيل'),
-                  trailing: const Icon(Icons.chevron_left_rounded),
-                  onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const LicenseScreen())),
-                ),
-                const Divider(height: 1),
-                const _CloudStatusTile(),
+                if (firebaseApiKey.isNotEmpty) const _CloudStatusTile(),
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.backup_rounded),
-                  title: const Text('النسخ الاحتياطي'),
-                  subtitle: const Text('نسخة كل يوم لوحدها، وترجيع نسخة قديمة'),
+                  title: Text(ar ? 'النسخ الاحتياطي' : 'Backups'),
+                  subtitle: Text(ar ? 'نسخة كل يوم لوحدها، وترجيع نسخة قديمة' : 'Daily backups and restore'),
                   trailing: const Icon(Icons.chevron_left_rounded),
                   onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const BackupScreen())),
                 ),
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.forum_rounded),
-                  title: const Text('رسائل العملاء'),
-                  subtitle: const Text('إمتى تتبعت رسالة، واتساب ولا SMS، ونص كل رسالة'),
+                  title: Text(ar ? 'رسائل العملاء' : 'Customer messages'),
+                  subtitle: Text(ar ? 'إمتى تتبعت رسالة، واتساب ولا SMS، ونص كل رسالة' : 'Schedule, channel and message templates'),
                   trailing: const Icon(Icons.chevron_left_rounded),
                   onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const MessageSettingsScreen())),
                 ),
               ]),
             ),
           ],
-          const SectionTitle('الجهاز ده'),
+          SectionTitle(ar ? 'الجهاز ده' : 'This device'),
           const _DeviceSettingsCard(),
           if (user.isOwner) ...[
-            const SectionTitle('المتابعة'),
+            SectionTitle(ar ? 'المتابعة' : 'Activity'),
             Card(
               child: ListTile(
                 leading: const Icon(Icons.history_rounded),
-                title: const Text('سجل النشاط'),
-                subtitle: const Text('مين عمل إيه وإمتى'),
+                title: Text(ar ? 'سجل النشاط' : 'Activity log'),
+                subtitle: Text(ar ? 'مين عمل إيه وإمتى' : 'Who did what and when'),
                 trailing: const Icon(Icons.chevron_left_rounded),
                 onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const AuditScreen())),
               ),
             ),
           ],
-          const SectionTitle('المشاكل'),
+          SectionTitle(ar ? 'المشاكل' : 'Diagnostics'),
           Card(
             child: ListTile(
               leading: const Icon(Icons.bug_report_outlined),
-              title: const Text('سجل المشاكل'),
-              subtitle: const Text('لو البرنامج علّق أو ظهر خطأ، من هنا تبعت التفاصيل لصاحب البرنامج'),
+              title: Text(ar ? 'سجل المشاكل' : 'Diagnostic log'),
+              subtitle: Text(ar ? 'لو البرنامج علّق أو ظهر خطأ، من هنا تبعت التفاصيل لصاحب البرنامج' : 'Review app errors and diagnostic details'),
               trailing: const Icon(Icons.chevron_left_rounded),
               onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const LogsScreen())),
             ),
           ),
-          const SectionTitle('المساعدة'),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.menu_book_rounded),
-              title: const Text('دليل الاستخدام'),
-              subtitle: const Text('شرح كل حاجة في البرنامج خطوة بخطوة'),
-              trailing: const Icon(Icons.open_in_new_rounded),
-              onTap: () => launchUrl(Uri.parse('$trackingSiteUrl/guide'), mode: LaunchMode.externalApplication),
+          if (trackingSiteUrl.isNotEmpty) ...[
+            const SectionTitle('المساعدة'),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.menu_book_rounded),
+                title: const Text('دليل الاستخدام'),
+                subtitle: const Text('شرح كل حاجة في البرنامج خطوة بخطوة'),
+                trailing: const Icon(Icons.open_in_new_rounded),
+                onTap: () => launchUrl(Uri.parse('$trackingSiteUrl/guide'), mode: LaunchMode.externalApplication),
+              ),
             ),
-          ),
+          ],
           const SizedBox(height: 24),
           Center(
             child: Text('$appName $appVersion',

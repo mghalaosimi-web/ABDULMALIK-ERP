@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:fixtrack/src/core/api_client.dart';
-import 'package:fixtrack/src/server/api_server.dart';
+import 'package:abdulmalik_erp/src/core/api_client.dart';
+import 'package:abdulmalik_erp/src/server/api_server.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -80,7 +80,7 @@ void main() {
     expect(shop['pickupHours'], {'days': [0, 6], 'from': '10:00', 'to': '18:00', 'slotMinutes': 60});
   });
 
-  test('tracking link defaults to the FixTrack site', () async {
-    expect((await api.get('/api/shop'))['trackingBaseUrl'], 'https://fixtrack-7fcf9.web.app');
+  test('tracking link is disabled when no tracking site is configured', () async {
+    expect((await api.get('/api/shop'))['trackingBaseUrl'], isNull);
   });
 }

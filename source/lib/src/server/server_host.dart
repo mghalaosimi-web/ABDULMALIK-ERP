@@ -34,7 +34,7 @@ class ServerHost {
     final isolate = await Isolate.spawn(
       _serverMain,
       [ready.sendPort, dataDir, port],
-      debugName: 'fixtrack-server',
+      debugName: 'abdulmalik-erp-server',
       // خطأ في حتة مش هيوقّع السيرفر كله، بيتسجل بس
       errorsAreFatal: false,
       onExit: exit.sendPort,

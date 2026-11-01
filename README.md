@@ -1,127 +1,131 @@
 <div align="center">
 
-<img src="source/assets/icon/app_icon.png" width="96" alt="FixTrack logo">
+<img src="source/assets/icon/app_icon.png" width="96" alt="ABDULMALIK ERP logo">
 
-# FixTrack
+# ABDULMALIK ERP
 
-**Phone repair shop & POS management — Windows + Android, offline-first**
+**Windows desktop ERP for one phone repair and retail shop**
 
-نظام متكامل لإدارة محلات صيانة وبيع الموبايلات: صيانة + كاشير + مخزون + تقارير + فروع
+نظام إدارة محل صيانة وبيع الهواتف: الصيانة، الكاشير، المخزون، الفواتير، العملاء، التقارير والنسخ الاحتياطي.
 
-![Flutter](https://img.shields.io/badge/Flutter-3.47-02569B?logo=flutter)
-![Platforms](https://img.shields.io/badge/platforms-Windows%20%7C%20Android-informational)
-![Tests](https://img.shields.io/badge/tests-72%20passing-success)
-![Version](https://img.shields.io/badge/version-1.0.0-blue)
+![Flutter](https://img.shields.io/badge/Flutter-desktop-02569B?logo=flutter)
+![Platform](https://img.shields.io/badge/current%20release-Windows%20x64-blue)
+![Version](https://img.shields.io/badge/version-1.1.0-blue)
 
 </div>
 
-<p align="center">
-  <img src="source/test_visual/shots/dashboard_desktop.png" width="820" alt="Dashboard">
-</p>
+## Current delivery scope
 
-## What is it?
+The active delivery target is **Windows x64 only**. Android/mobile packaging and mobile-specific work are intentionally deferred until the Windows application, installer, and shop workflows are verified.
 
-FixTrack replaces the generic cashier software that phone shops in Egypt run today. One app handles
-the **repair workflow** (intake → stages → customer approval → delivery with warranty) **and** the
-**shop counter** (accessories by barcode, new phones by IMEI, buying used phones, mobile-wallet and
-recharge services), with reports for the owner.
+- Local SQLite database on the shop PC.
+- Local HTTP service for LAN connectivity, ready for a later mobile client.
+- Repair intake and workflow, customers, products, barcode sales, phones/IMEI, purchases, cash drawer, wallets/services, reports, users/roles, audit history and backup/restore.
+- Arabic/English locale foundation, RTL/LTR switching, Arabic/English date formatting and Windows installer language selection.
+- Open initial edition: no activation code, subscription, trial expiry, or device-count restrictions. Licensing is deferred to a future major update.
+- No external service is required for the core local Windows workflow.
 
-The shop's Windows PC is the server: it runs a local HTTP server inside the desktop app, and every
-Android phone in the shop connects to it over Wi-Fi. Everything keeps working without internet.
-The cloud (Firebase free tier) is used only for the customer tracking page and for linking branches.
+## Cloud integration — future development base
 
-## Features
+Firebase code, Firestore rules and sync routines are retained as a **development base**. Public tracking is disabled in this release; its public page is a static notice and makes no Firebase requests. Cloud credentials are intentionally empty and cloud sync is disabled by default. No connection to the previous owner's Firebase project is performed.
 
-| Area | What it does |
-|---|---|
-| **Repairs** | Device intake with customer, fault, photos and PIN; stages (received → diagnosing → waiting approval → repairing → ready → delivered); parts per ticket; technician assignment & commissions; repair warranty and warranty returns |
-| **Receipts & tracking** | Printed receipt (80/58 mm ESC/POS thermal printers or A4/PDF) with a QR code → customer tracks the repair online and approves the cost |
-| **Messages** | WhatsApp (pre-filled `wa.me`, no ban risk) and automatic SMS from the shop's Android SIM; pickup reminders after 3/7/14/30 days |
-| **POS / cashier** | Barcode scanning (USB scanner or phone camera), sales invoices & returns, customer credit & collection, cash drawer sessions with expenses and day close |
-| **Phones** | New phones tracked per IMEI, used-phone purchase with national-ID photo and seller declaration, IMEI history check |
-| **Wallets & services** | Vodafone Cash / InstaPay / recharge / bills with commission tracking and drawer effects |
-| **Inventory & purchases** | Products, stock moves, suppliers, purchase invoices, barcode labels, **Excel/CSV import with column mapping** from the shop's old program |
-| **Reports** | Owner dashboard, sales/repairs/profit reports with Excel and PDF export |
-| **Branches** | Link branches through Firestore: day summaries, cross-branch stock lookup and transfers |
-| **Users & security** | Roles (owner, reception, technician), audit log, PIN delivery, daily zip backups + restore |
-| **Licensing** | Ed25519-signed offline activation codes, 14-day trial, device limit, clock-tamper check |
+When cloud work begins, create a Firebase project owned by the ABDULMALIK ERP maintainer, configure its API key/project ID, review Firestore security rules and privacy requirements, then explicitly enable cloud sync. Until then, the Windows application remains local/offline-first.
 
-## Screenshots
+## Build Windows
 
-| Repair intake | Repair details (phone, dark) | Cashier |
-|---|---|---|
-| ![Intake](source/test_visual/shots/intake_desktop.png) | ![Detail](source/test_visual/shots/detail_phone_dark.png) | ![POS](source/test_visual/shots/pos_desktop.png) |
+Requirements:
+- Windows 10/11 x64
+- Flutter stable SDK with Windows desktop support
+- Visual Studio 2022 Build Tools with Desktop development with C++
+- Inno Setup 6
 
-| Reports | Wallets | Buying a used phone |
-|---|---|---|
-| ![Reports](source/test_visual/shots/reports_desktop.png) | ![Wallets](source/test_visual/shots/wallets_desktop.png) | ![Buy used](source/test_visual/shots/buy_used_desktop.png) |
+From the `source` directory:
 
-<p align="center">
-  <img src="source/test_visual/shots/dashboard_phone.png" width="240" alt="Phone dashboard">
-  &nbsp;
-  <img src="source/test_visual/shots/intake_phone.png" width="240" alt="Phone intake">
-  &nbsp;
-  <img src="source/test_visual/shots/pos_phone.png" width="240" alt="Phone POS">
-</p>
-
-## Architecture
-
-```
-            ┌───────────────────── Shop (LAN, works offline) ─────────────────────┐
-            │                                                                     │
-  Android ──┼──► Windows PC: FixTrack desktop app                                 │
-  phones    │      ├─ Flutter UI                                                  │
-  (Wi-Fi)   │      └─ shelf HTTP server (isolate) ── SQLite ── daily zip backups  │
-            └───────────────┬─────────────────────────────────────────────────────┘
-                            │ only when online
-                            ▼
-                Firebase (free Spark plan)
-                ├─ Hosting: customer tracking page (QR) + user guide
-                └─ Firestore: approvals, pickup booking, branch sync
+```powershell
+flutter doctor -v
+powershell -ExecutionPolicy Bypass -File .\tool\build_release.ps1
 ```
 
-- **Flutter 3.47** single codebase, **Riverpod 3** state management
-- **shelf** server running in a background isolate, raw **sqlite3** with `user_version` migrations
-- Own lightweight XLSX reader/writer and PDF export, ESC/POS printing
-- Bundled fonts and assets (no runtime downloads) so it runs on old/low-end devices
-
-## Project layout
+The release script restores dependencies, runs static analysis and tests, builds the Windows x64 Release bundle, downloads the official Microsoft Visual C++ x64 runtime installer, and compiles:
 
 ```
-source/                 the FixTrack app (Windows + Android)
-  lib/src/server/       local API server, database, auth, licensing
-  lib/src/features/     screens: tickets, pos, inventory, phones, services, reports, branches…
-  firebase/             tracking page + Firestore rules
-  installer/            Inno Setup script (Windows installer)
-  test/                 72 server/API tests
-  test_cloud/           live Firestore tests (branches)
-  test_visual/          screenshot tests (images above)
-license-maker/          owner-only tool that signs activation codes (needs the private key, not in this repo)
+builds/ABDULMALIK-ERP-Setup-1.1.0.exe
 ```
 
-## Build & run
+The installer supports Arabic and English setup wizard languages, desktop shortcut selection, optional Windows startup, firewall rule setup, and preserves shop data during uninstall.
 
-```bash
-cd source
-flutter pub get
-flutter run -d windows        # desktop app (also the shop server)
-flutter test                  # 72 tests
-flutter build apk --release   # Android app
+A GitHub Actions workflow runs the same Windows build on pushes to `main` and `abdulmalik/development`, and publishes the installer as a 30-day workflow artifact. Open the repository Actions tab and download `ABDULMALIK-ERP-Windows-Setup` after a successful run.
+
+## Licensing roadmap
+
+The initial release is intentionally open for use. Activation keys, subscription plans, device limits, and offline license issuance are deferred; they do not block installation or daily shop operations in this edition.
+
+## Repository layout
+
+```
+source/
+  lib/src/server/       Local API server, SQLite database, authentication
+  lib/src/features/     Repair, POS, inventory, customers, reports and settings UI
+  lib/src/core/         App configuration, locale, formatting and cryptographic utilities
+  installer/            Inno Setup Windows installer
+  tool/                 Windows build and maintenance tools
+  firebase/              Retained cloud integration development base
+  test/                  Unit and API tests
+signing/                 Owner-only private key folder (gitignored; never commit)
+.github/workflows/       Windows CI and installer artifact pipeline
 ```
 
-The Windows installer is built with `source/tool/build_release.ps1` (Inno Setup).
-Signing keys (`android/key.properties`, keystore, `license-private.key`) are intentionally **not** in the repository.
+## Data safety
+
+- SQLite data and backups live in the app's Windows application-data directory, not the installation folder.
+- Uninstall does not delete shop data.
+- Back up the database regularly and verify restore before using the system for live shop operations.
+- Test the installer and restore procedure on a separate Windows user/profile before the production shop PC.
+
+## Provenance
+
+This repository preserves the upstream Git history and original copyright notices. Product branding changes do not transfer authorship of upstream code. The maintainer has stated that permission for this single-shop adaptation was obtained; retain the written permission with project records.
 
 ---
 
-## بالعربي
+## بالعربية
 
-**FixTrack** برنامج لمحلات صيانة وبيع الموبايلات، شغال على **ويندوز وأندرويد**. بيغني المحل عن برنامج الكاشير القديم:
+### نطاق الإصدار الحالي
 
-- **الصيانة:** استلام الجهاز، ومراحل الشغل، وموافقة العميل على التكلفة، والتسليم بالضمان، وعمولة الفني.
-- **إيصال فيه QR:** العميل بيتابع جهازه من الموبايل، وبيوصله واتساب أو SMS أول ما الجهاز يجهز.
-- **الكاشير:** بيع بالباركود، وموبايلات جديدة بالـIMEI، وشراء موبايلات مستعملة بصورة البطاقة، وفودافون كاش والشحن.
-- **المخزون:** الموردين وفواتير الشراء، ونقل الأصناف من البرنامج القديم بملف Excel.
-- **التقارير والفروع:** تقارير لصاحب المحل بتتصدر Excel أو PDF، وربط بين الفروع.
+الإصدار الجاري تجهيزه هو **Windows x64 فقط**. تم تأجيل تطبيق الهاتف حتى اكتمال برنامج ويندوز واختبار قاعدة البيانات والمثبت.
 
-كمبيوتر المحل هو السيرفر، والموبايلات بتتصل بيه على نفس الواي فاي، فالبرنامج **شغال من غير إنترنت**.
+البرنامج يعتمد على قاعدة SQLite محلية، ويشغّل خدمة محلية على كمبيوتر المحل. يمكن للأجهزة المتصلة بالشبكة المحلية الاستفادة منها مستقبلاً، لكن إصدار الهاتف مؤجل.
+
+### البناء
+
+من مجلد `source` في PowerShell:
+
+```powershell
+flutter doctor -v
+powershell -ExecutionPolicy Bypass -File .\tool\build_release.ps1
+```
+
+يقوم السكربت باستعادة الحزم، والتحليل الساكن، والاختبارات، وبناء نسخة Windows Release، ثم إنشاء مثبت EXE. لا يعتبر الإصدار جاهزاً حتى تنجح جميع هذه الخطوات.
+
+### السحابي
+
+احتفظنا بكود Firebase وFirestore وقواعد الأمان والمزامنة كقاعدة تطوير مستقبلية. التتبع العام معطّل في هذا الإصدار وصفحته تعرض إشعاراً ثابتاً ولا تتصل بمشروع Firebase السابق. بيانات الاتصال السحابية فارغة والمزامنة معطلة افتراضياً. عند بدء التطوير السحابي سننشئ مشروعاً مستقلاً ونراجع قواعد الأمان قبل تفعيله.
+
+### الإصدار المفتوح والتراخيص
+
+الإصدار الحالي مفتوح للاستخدام دون كود تفعيل أو اشتراك أو فترة تجريبية أو حدود ترخيص للأجهزة والفروع. تم تأجيل نظام التراخيص وأدوات إصدار المفاتيح إلى تحديث رئيسي مستقبلي.
+
+قد تبقى بعض ملفات وأدوات الترخيص القديمة داخل المستودع لأغراض التوافق والتطوير المستقبلي، لكنها ليست مطلوبة لتثبيت الإصدار الحالي أو تشغيل وظائفه اليومية. لا تستخدم أدوات إصدار المفاتيح أو تعليمات التفعيل القديمة مع هذا الإصدار.
+
+### حماية البيانات
+
+إلغاء تثبيت البرنامج لا يحذف قاعدة بيانات المحل. مع ذلك يجب اختبار النسخ الاحتياطي والاستعادة على نسخة تجريبية قبل تشغيل النظام الفعلي.
+
+### حقوق المصدر
+
+تم الإبقاء على سجل Git وإشعارات حقوق المصدر الأصلي. تغيير هوية المنتج لا يعني انتقال ملكية تأليف الكود السابق. احتفظ بموافقة صاحب المشروع الأصلية ضمن مستندات المشروع.
+
+
+### Legacy compatibility policy
+
+The fixtrack.db database filename and the fixtrack-enc / fixtrack-mac key-derivation labels are intentionally retained because changing them without a verified data migration could make existing shop data or encrypted values unreadable. Android package/channel identifiers are also retained while Android delivery is deferred. These are compatibility identifiers, not current product branding.

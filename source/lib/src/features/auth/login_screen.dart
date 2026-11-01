@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/app_config.dart';
 import '../../core/session.dart';
+import '../../core/locale.dart';
 import '../../core/theme.dart';
 import '../../widgets/common.dart';
 
@@ -35,7 +36,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     if (_username.text.trim().isEmpty || _password.text.isEmpty) {
-      setState(() => _error = 'اكتب اسم المستخدم وكلمة السر');
+      setState(() => _error = ref.read(localeProvider).languageCode == 'ar' ? 'اكتب اسم المستخدم وكلمة السر' : 'Enter your username and password');
       return;
     }
     setState(() {
@@ -54,6 +55,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final ar = ref.watch(localeProvider).languageCode == 'ar';
     final scheme = Theme.of(context).colorScheme;
     final info = ref.watch(sessionProvider).value?.info;
     final isClient = ref.read(appConfigProvider).mode == AppMode.client;
@@ -64,7 +66,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const FixTrackLogo(size: 64),
+            const AbdulmalikErpLogo(size: 64),
             const SizedBox(height: 20),
             if (info?.shopName != null) ...[
               Text(info!.shopName!, textAlign: TextAlign.center, style: text.titleLarge?.bold),
@@ -79,7 +81,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                 autofillHints: const [AutofillHints.username],
                 autocorrect: false,
                 textInputAction: TextInputAction.next,
-                decoration: const InputDecoration(labelText: 'اسم المستخدم', prefixIcon: Icon(Icons.person_rounded)),
+                decoration: InputDecoration(labelText: ar ? 'اسم المستخدم' : 'Username', prefixIcon: const Icon(Icons.person_rounded)),
               ),
             ),
             const SizedBox(height: 12),
@@ -88,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               obscureText: !_showPassword,
               autofillHints: const [AutofillHints.password],
               decoration: InputDecoration(
-                labelText: 'كلمة السر',
+                labelText: ar ? 'كلمة السر' : 'Password',
                 prefixIcon: const Icon(Icons.lock_rounded),
                 suffixIcon: IconButton(
                   icon: Icon(_showPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded),
@@ -99,13 +101,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             ),
             if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],
             const SizedBox(height: 20),
-            BusyButton(label: 'دخول', busy: _busy, onPressed: _submit),
+            BusyButton(label: ar ? 'دخول' : 'Sign in', busy: _busy, onPressed: _submit),
             if (isClient) ...[
               const SizedBox(height: 8),
               TextButton.icon(
                 onPressed: _busy ? null : () => ref.read(sessionProvider.notifier).resetConnection(),
                 icon: const Icon(Icons.swap_horiz_rounded),
-                label: const Text('تغيير السيرفر'),
+                label: Text(ar ? 'تغيير السيرفر' : 'Change server'),
               ),
             ],
           ],

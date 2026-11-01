@@ -18,7 +18,6 @@ import '../core/app_info.dart';
 import '../core/diagnostics.dart';
 import '../core/firebase_config.dart';
 import '../core/format.dart';
-import '../core/license.dart';
 import '../core/messages.dart';
 import '../core/ticket_status.dart';
 import 'db.dart';
@@ -64,12 +63,12 @@ class AuthUser {
 
 /// سيرفر المحل: بيشتغل على كمبيوتر المحل، وكل الموبايلات والكمبيوترات التانية بتكلمه.
 class FixTrackServer {
-  FixTrackServer({required this.dataDir, this.requestedPort = serverPort, this.cloudSync = true});
+  FixTrackServer({required this.dataDir, this.requestedPort = serverPort, this.cloudSync = false});
 
   final String dataDir;
   final int requestedPort;
 
-  /// المزامنة مع صفحة التتبع على Firebase (بتتقفل في الاختبارات).
+  /// Cloud sync is opt-in. Keep disabled until the owner configures a dedicated Firebase project.
   final bool cloudSync;
   FirebaseSync? _cloud;
   Timer? _jobsTimer;
@@ -227,7 +226,7 @@ class FixTrackServer {
           // ده مش خطأ: الـ WebSocket بياخد الاتصال، وshelf لازم يشوف الاستثناء ده عشان يكمّل
           rethrow;
         } catch (e, st) {
-          stderr.writeln('Server error on ${req.method} ${req.url}: $e\n$st');
+          stderr.writeln('Server error on ${req.method} /${req.url.path}: $e\n$st');
           _log.error('${req.method} /${req.url.path}: $e', st);
           return _json(500, {'error': 'حصل خطأ في السيرفر، جرّب تاني'});
         }
@@ -248,8 +247,8 @@ class FixTrackServer {
   AuthUser _authenticate(Request req) {
     final header = req.headers['authorization'];
     final token = header != null && header.startsWith('Bearer ')
-        ? header.substring(7)
-        : req.url.queryParameters['token'];
+        ? header.substring(7).trim()
+        : null;
     if (token == null || token.isEmpty) throw ApiError(401, 'لازم تسجل دخول الأول');
 
     final tokenHash = sha256Hex(token);
@@ -275,7 +274,7 @@ class FixTrackServer {
     final shop = db.selectOne('SELECT name FROM shop LIMIT 1');
     final branch = db.selectOne('SELECT name FROM branches WHERE is_local = 1 LIMIT 1');
     return {
-      'app': 'fixtrack',
+      'app': 'abdulmalik_erp',
       'api': apiVersion,
       'version': appVersion,
       'serverId': db.setting('server_id'),
@@ -286,6 +285,11 @@ class FixTrackServer {
   }
 
   Future<Object?> _setup(Request req) async {
+    final connection = req.context['shelf.io.connection_info'];
+    final remoteAddress = connection is HttpConnectionInfo ? connection.remoteAddress : null;
+    if (remoteAddress == null || !remoteAddress.isLoopback) {
+      throw ApiError(403, 'الإعداد الأولي مسموح من كمبيوتر السيرفر فقط');
+    }
     final body = await _body(req);
     if (db.selectOne('SELECT id FROM shop LIMIT 1') != null) {
       throw ApiError(409, 'المحل متسجل بالفعل على السيرفر ده');
@@ -311,7 +315,6 @@ class FixTrackServer {
       );
     });
     _audit(userId, 'shop.setup', 'shop', shopId, shopName);
-    db.setSetting('trial_started', nowIso());
     final user = db.selectOne('SELECT * FROM users WHERE id = ?', [userId])!;
     return {'token': _createSession(userId, body['deviceName']), 'user': _publicUser(user)};
   }

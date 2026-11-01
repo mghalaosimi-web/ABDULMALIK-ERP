@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/session.dart';
+import '../../core/locale.dart';
 import '../../core/theme.dart';
 import '../../server/discovery.dart';
 import '../../widgets/common.dart';
@@ -53,7 +54,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
 
   Future<void> _connect(String url) async {
     if (url.trim().isEmpty) {
-      setState(() => _error = 'Digite o endereço do servidor primeiro');
+      setState(() => _error = ref.read(localeProvider).languageCode == 'ar' ? 'اكتب عنوان الخادم أولاً' : 'Enter the server address first');
       return;
     }
     setState(() {
@@ -72,6 +73,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
   @override
   Widget build(BuildContext context) {
     final text = Theme.of(context).textTheme;
+    final ar = ref.watch(localeProvider).languageCode == 'ar';
     final scheme = Theme.of(context).colorScheme;
     final found = _found ?? const [];
 
@@ -79,32 +81,32 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const FixTrackLogo(size: 56),
+          const AbdulmalikErpLogo(size: 56),
           const SizedBox(height: 24),
-          Text('Conectar ao servidor da loja', style: text.titleLarge?.bold),
+          Text(ar ? 'الاتصال بخادم المحل' : 'Connect to shop server', style: text.titleLarge?.bold),
           const SizedBox(height: 4),
-          Text('Verifique se este dispositivo está na mesma rede Wi-Fi da loja e se o programa está aberto no computador principal.',
+          Text(ar ? 'تأكد أن هذا الجهاز متصل بشبكة Wi-Fi نفسها وأن البرنامج مفتوح على الكمبيوتر الرئيسي.' : 'Make sure this device is on the shop Wi-Fi network and the app is running on the main PC.',
               style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant)),
           const SizedBox(height: 20),
           Row(
             children: [
-              Expanded(child: Text('Servidores encontrados', style: text.titleSmall?.bold)),
+              Expanded(child: Text(ar ? 'الخوادم التي تم العثور عليها' : 'Discovered servers', style: text.titleSmall?.bold)),
               TextButton.icon(
                 onPressed: _searching ? null : _search,
                 icon: const Icon(Icons.refresh_rounded),
-                label: const Text('Buscar novamente'),
+                label: Text(ar ? 'بحث مرة أخرى' : 'Search again'),
               ),
             ],
           ),
           const SizedBox(height: 8),
           if (_searching)
-            const Card(
+            Card(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Column(children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 12),
-                  Text('Procurando servidores na rede...'),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 12),
+                  Text(ar ? 'جارٍ البحث عن الخوادم في الشبكة...' : 'Searching for servers on the network...'),
                 ]),
               ),
             )
@@ -113,8 +115,9 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(18),
                 child: Text(
-                  'Nenhum servidor encontrado. Verifique o Wi-Fi ou informe o endereço abaixo '
-                  '(no computador: Configurações → Conexão).',
+                  ar
+                      ? 'لم يتم العثور على خادم. تحقق من شبكة Wi-Fi أو أدخل العنوان أدناه (على الكمبيوتر: الإعدادات ← الاتصال).'
+                      : 'No server found. Check Wi-Fi or enter the address below (on the PC: Settings → Connection).',
                   style: text.bodyMedium,
                 ),
               ),
@@ -130,7 +133,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
                       backgroundColor: scheme.primaryContainer,
                       child: Icon(Icons.storefront_rounded, color: scheme.onPrimaryContainer),
                     ),
-                    title: Text(s.shopName.isEmpty ? 'Nova loja (ainda não cadastrada)' : s.shopName, style: text.titleSmall?.bold),
+                    title: Text(s.shopName.isEmpty ? (ar ? 'محل جديد (لم يتم تسجيله بعد)' : 'New shop (not registered yet)') : s.shopName, style: text.titleSmall?.bold),
                     subtitle: Text([if (s.branchName.isNotEmpty) s.branchName, Uri.parse(s.url).host].join(' • ')),
                     trailing: _connectingTo == s.url
                         ? const SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2.5))
@@ -140,7 +143,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
                 ),
               ),
           const SizedBox(height: 20),
-          Text('Ou digite o endereço manualmente', style: text.titleSmall?.bold),
+          Text(ar ? 'أو أدخل العنوان يدوياً' : 'Or enter the address manually', style: text.titleSmall?.bold),
           const SizedBox(height: 8),
           Directionality(
             textDirection: TextDirection.ltr,
@@ -153,7 +156,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
           ),
           const SizedBox(height: 12),
           BusyButton(
-            label: 'Conectar',
+            label: ar ? 'اتصال' : 'Connect',
             busy: _connectingTo == _address.text && _connectingTo != null,
             onPressed: _connectingTo == null ? () => _connect(_address.text) : null,
           ),
@@ -161,7 +164,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
           const SizedBox(height: 16),
           TextButton(
             onPressed: () => ref.read(sessionProvider.notifier).resetConnection(),
-            child: const Text('Voltar'),
+            child: Text(ar ? 'رجوع' : 'Back'),
           ),
         ],
       ),

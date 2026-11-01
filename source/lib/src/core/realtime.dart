@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/io.dart';
 
 import 'session.dart';
 
@@ -15,14 +15,14 @@ final realtimeProvider = StreamProvider<RealtimeEvent>((ref) {
   if (session?.status != SessionStatus.ready || api == null) return const Stream.empty();
 
   final controller = StreamController<RealtimeEvent>();
-  WebSocketChannel? channel;
+  IOWebSocketChannel? channel;
   Timer? reconnect;
   var disposed = false;
   var connectedBefore = false;
 
   void connect() {
     if (disposed) return;
-    channel = WebSocketChannel.connect(api.webSocketUri());
+    channel = IOWebSocketChannel.connect(api.webSocketUri(), headers: api.webSocketHeaders());
     // أول ما الاتصال يرجع بعد ما قطع (السيرفر رجع، أو الواي فاي رجع): كل الشاشات تتحدّث
     channel!.ready.then((_) {
       if (connectedBefore && !disposed) controller.add(RealtimeEvent('*'));

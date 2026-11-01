@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:fixtrack/src/core/api_client.dart';
-import 'package:fixtrack/src/server/api_server.dart';
+import 'package:abdulmalik_erp/src/core/api_client.dart';
+import 'package:abdulmalik_erp/src/server/api_server.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -41,15 +41,42 @@ void main() {
     }
   }
 
+  test('websocket token is carried only in Authorization header', () {
+    final client = ApiClient('http://127.0.0.1:${server.port}');
+    client.token = 'sensitive-session-token';
+    final uri = client.webSocketUri();
+    expect(uri.query, isEmpty);
+    expect(uri.toString(), isNot(contains('sensitive-session-token')));
+    expect(client.webSocketHeaders()['authorization'], 'Bearer sensitive-session-token');
+    client.close();
+  });
+
   test('info reports setup state', () async {
     var info = await api.get('/api/info');
-    expect(info['app'], 'fixtrack');
+    expect(info['app'], 'abdulmalik_erp');
     expect(info['setupDone'], false);
     await setupShop();
     info = await api.get('/api/info');
     expect(info['setupDone'], true);
     expect(info['shopName'], 'محل النور');
     expect(info['branchName'], 'الفرع الرئيسي');
+  });
+
+  test('session token in URL query is rejected', () async {
+    final token = await setupShop();
+    final uri = Uri.parse(api.baseUrl).replace(
+      path: '/api/auth/me',
+      queryParameters: {'token': token},
+    );
+    final client = HttpClient();
+    try {
+      final request = await client.getUrl(uri);
+      final response = await request.close();
+      expect(response.statusCode, 401);
+      await response.drain<void>();
+    } finally {
+      client.close(force: true);
+    }
   });
 
   test('setup only works once', () async {

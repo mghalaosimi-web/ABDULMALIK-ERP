@@ -1,8 +1,8 @@
-/// مشروع Firebase بتاع FixTrack (واحد لكل المحلات). المفتاح ده عام ومعمول يتحط في التطبيقات؛
-/// الحماية الحقيقية في قواعد Firestore (firebase/firestore.rules).
-const firebaseProjectId = 'fixtrack-7fcf9';
-const firebaseApiKey = 'AIzaSyAfTHWsrWDC0IUNrBFHsOc72tlpcqw1QzE';
-const trackingSiteUrl = 'https://fixtrack-7fcf9.web.app';
+/// Cloud integration is intentionally disabled until ABDULMALIK ERP has its own
+/// Firebase project and credentials. The local SQLite/LAN workflow remains available.
+const firebaseProjectId = '';
+const firebaseApiKey = '';
+const trackingSiteUrl = '';
 
 /// مواعيد الاستلام الافتراضية لو المحل ما حددش: كل الأيام ما عدا الجمعة، من 12 الضهر لـ 10 بالليل.
 const defaultPickupHours = {

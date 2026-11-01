@@ -1,9 +1,6 @@
-const appName = 'FixTrack';
-const appVersion = '1.0.4';
-
-/// بيزيد لما شكل الـ API يتغير بطريقة مش متوافقة مع النسخ القديمة.
+const appName = 'ABDULMALIK ERP';
+const appVersion = '1.1.0';
+/// API compatibility remains unchanged for existing local installations.
 const apiVersion = 1;
-
-/// رقم واتساب صاحب البرنامج اللي المحلات بتبعتله كود الجهاز عشان التفعيل (بصيغة دولية من غير +).
-/// لو فاضي، زرار "ابعت لصاحب البرنامج" مش بيظهر.
-const supportWhatsApp = '201212256869';
+/// Support contact is intentionally unset until the owner supplies an official number.
+const supportWhatsApp = '';
