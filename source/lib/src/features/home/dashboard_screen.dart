@@ -12,7 +12,6 @@ import '../../widgets/common.dart';
 import '../../widgets/ticket_widgets.dart';
 import '../../core/messages.dart';
 import '../messages/message_dialog.dart';
-import '../settings/license_screen.dart';
 import '../tickets/providers.dart';
 import '../tickets/tickets_screen.dart';
 
@@ -52,7 +51,6 @@ class DashboardScreen extends ConsumerWidget {
         child: ListView(
           padding: const EdgeInsets.fromLTRB(20, 4, 20, 96),
           children: [
-            const LicenseBanner(),
             Card(
               child: Padding(
                 padding: const EdgeInsets.all(20),
