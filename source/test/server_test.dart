@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:fixtrack/src/core/api_client.dart';
-import 'package:fixtrack/src/server/api_server.dart';
+import 'package:abdulmalik_erp/src/core/api_client.dart';
+import 'package:abdulmalik_erp/src/server/api_server.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -43,7 +43,7 @@ void main() {
 
   test('info reports setup state', () async {
     var info = await api.get('/api/info');
-    expect(info['app'], 'fixtrack');
+    expect(info['app'], 'abdulmalik_erp');
     expect(info['setupDone'], false);
     await setupShop();
     info = await api.get('/api/info');
