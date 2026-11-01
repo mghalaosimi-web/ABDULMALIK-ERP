@@ -168,7 +168,7 @@ class _LicenseScreenState extends ConsumerState<LicenseScreen> {
                       maxLines: 5,
                       textDirection: TextDirection.ltr,
                       style: const TextStyle(fontSize: 12),
-                      decoration: const InputDecoration(hintText: 'الصق كود التفعيل هنا (بيبدأ بـ FT1.)'),
+                      decoration: const InputDecoration(hintText: 'الصق كود التفعيل هنا (بيبدأ بـ AERP1.)'),
                     ),
                     if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],
                     const SizedBox(height: 12),
