@@ -199,6 +199,8 @@ class _UserFooter extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final scheme = Theme.of(context).colorScheme;
+    final ar = ref.watch(localeProvider).languageCode == 'ar';
+    final roleLabel = ar ? user.role.label : switch (user.role) { Role.owner => 'Owner', Role.reception => 'Reception', Role.technician => 'Technician' };
     return Padding(
       padding: const EdgeInsets.all(12),
       child: ListTile(
@@ -208,7 +210,7 @@ class _UserFooter extends ConsumerWidget {
           child: Text(user.name.characters.first, style: TextStyle(color: scheme.onSecondaryContainer)),
         ),
         title: Text(user.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-        final roleLabel = ar ? user.role.label : switch (user.role) { Role.owner => 'Owner', Role.reception => 'Reception', Role.technician => 'Technician' };\n    subtitle: Text(roleLabel),
+        subtitle: Text(roleLabel),
         trailing: IconButton(
           tooltip: ref.watch(localeProvider).languageCode == 'ar' ? 'خروج' : 'Log out',
           icon: const Icon(Icons.logout_rounded),
