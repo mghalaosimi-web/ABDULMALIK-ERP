@@ -208,7 +208,7 @@ class _UserFooter extends ConsumerWidget {
           child: Text(user.name.characters.first, style: TextStyle(color: scheme.onSecondaryContainer)),
         ),
         title: Text(user.name, maxLines: 1, overflow: TextOverflow.ellipsis),
-        subtitle: Text(user.role.label),
+        final roleLabel = ar ? user.role.label : switch (user.role) { Role.owner => 'Owner', Role.reception => 'Reception', Role.technician => 'Technician' };\n    subtitle: Text(roleLabel),
         trailing: IconButton(
           tooltip: ref.watch(localeProvider).languageCode == 'ar' ? 'خروج' : 'Log out',
           icon: const Icon(Icons.logout_rounded),
