@@ -169,6 +169,40 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ],
+          SectionTitle(ar ? 'التواصل وتطوير النظام' : 'Support and product development'),
+          Card(
+            child: Column(children: [
+              ListTile(
+                leading: const Icon(Icons.business_rounded),
+                title: const Text('العصيمي للبرمجيات والحلول التقنية المتطورة'),
+                subtitle: const Text('خدمات التطوير الرقمي'),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.chat_rounded, color: Color(0xFF25D366)),
+                title: Text(ar ? 'التواصل عبر واتساب' : 'Contact via WhatsApp'),
+                subtitle: const Text('+967 776 778 675', textDirection: TextDirection.ltr),
+                trailing: const Icon(Icons.open_in_new_rounded),
+                onTap: () => launchUrl(Uri.parse('https://wa.me/967776778675'), mode: LaunchMode.externalApplication),
+              ),
+              const Divider(height: 1),
+              ListTile(
+                leading: const Icon(Icons.code_rounded),
+                title: Text(ar ? 'عن المطور' : 'About the developer'),
+                subtitle: const Text('m.gh.al'),
+                onTap: () => showDialog<void>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: const Text('m.gh.al — مطور برمجيات'),
+                    content: const SingleChildScrollView(
+                      child: Text('مطور برمجيات متخصص في تطوير الحلول التقنية المتكاملة، وتصميم وبناء الأنظمة الإدارية والتجارية المتقدمة، مع اهتمام بتطوير تطبيقات الويب والأنظمة المكتبية وقواعد البيانات. أعمل في مجال تطوير البرمجيات الشامل (Full-Stack Development)، وأركز على بناء حلول احترافية تجمع بين الأداء والاستقرار والأمان وسهولة الاستخدام.\n\nمجالات العمل: أنظمة ERP، وتطوير الواجهات الأمامية والخلفية، وNext.js، وNode.js، وواجهات API، وقواعد البيانات، وتطبيقات سطح المكتب، وهندسة البرمجيات.'),
+                    ),
+                    actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('إغلاق'))],
+                  ),
+                ),
+              ),
+            ]),
+          ),
           SectionTitle(ar ? 'المشاكل' : 'Diagnostics'),
           Card(
             child: ListTile(

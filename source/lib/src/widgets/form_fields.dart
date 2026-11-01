@@ -63,7 +63,7 @@ class MoneyField extends StatelessWidget {
       autofocus: autofocus,
       keyboardType: const TextInputType.numberWithOptions(decimal: true),
       inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9٠-٩.,٫]'))],
-      decoration: InputDecoration(labelText: label, suffixText: 'ج.م', prefixIcon: const Icon(Icons.payments_outlined)),
+      decoration: InputDecoration(labelText: label, suffixText: 'ر.س', prefixIcon: const Icon(Icons.payments_outlined)),
       onChanged: onChanged,
       validator: (v) {
         final cents = parseMoney(v ?? '');

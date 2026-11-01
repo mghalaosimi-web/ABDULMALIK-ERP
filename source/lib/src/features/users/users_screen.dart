@@ -258,7 +258,7 @@ class _UserDialogState extends ConsumerState<UserDialog> {
                       keyboardType: const TextInputType.numberWithOptions(decimal: true),
                       decoration: InputDecoration(
                         labelText: _commissionType == 'percent' ? 'النسبة من ربح الصيانة (بعد القطع)' : 'المبلغ لكل جهاز اتسلم',
-                        suffixText: _commissionType == 'percent' ? '%' : 'ج.م',
+                        suffixText: _commissionType == 'percent' ? '%' : 'ر.س',
                       ),
                     ),
                   ],

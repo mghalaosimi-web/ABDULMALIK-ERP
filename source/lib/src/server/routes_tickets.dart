@@ -692,7 +692,7 @@ extension _TicketRoutes on FixTrackServer {
 
   String _money(int cents) {
     final pounds = cents / 100;
-    return '${pounds == pounds.roundToDouble() ? pounds.toStringAsFixed(0) : pounds.toStringAsFixed(2)} ج.م';
+    return '${pounds == pounds.roundToDouble() ? pounds.toStringAsFixed(0) : pounds.toStringAsFixed(2)} ر.س';
   }
 
   List<String> _stringList(Object? raw) {

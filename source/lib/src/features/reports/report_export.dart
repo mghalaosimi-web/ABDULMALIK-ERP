@@ -22,7 +22,7 @@ Future<void> exportReportExcel(BuildContext context, Map<String, dynamic> r, Str
     final expenses = r['expenses'] as Map<String, dynamic>;
     final w = XlsxWriter()
       ..addSheet('الملخص', [
-        ['البند', 'القيمة (ج.م)'],
+        ['البند', 'القيمة (ر.س)'],
         ['الفترة', label],
         ['صافي الربح', _p(r['netProfitCents'])],
         ['المبيعات', _p(sales['revenueCents'])],
