@@ -16,13 +16,13 @@
 
 ## Current delivery scope
 
-The active delivery target is **Windows x64 only**. Android/mobile packaging and mobile-specific work are intentionally deferred until the Windows application, installer, licensing, and shop workflows are verified.
+The active delivery target is **Windows x64 only**. Android/mobile packaging and mobile-specific work are intentionally deferred until the Windows application, installer, and shop workflows are verified.
 
 - Local SQLite database on the shop PC.
 - Local HTTP service for LAN connectivity, ready for a later mobile client.
 - Repair intake and workflow, customers, products, barcode sales, phones/IMEI, purchases, cash drawer, wallets/services, reports, users/roles, audit history and backup/restore.
 - Arabic/English locale foundation, RTL/LTR switching, Arabic/English date formatting and Windows installer language selection.
-- Offline Ed25519 activation with a 14-day trial and device-bound license.
+- Open initial edition: no activation code, subscription, trial expiry, or device-count restrictions. Licensing is deferred to a future major update.
 - No external service is required for the core local Windows workflow.
 
 ## Cloud integration — future development base
@@ -56,29 +56,9 @@ The installer supports Arabic and English setup wizard languages, desktop shortc
 
 A GitHub Actions workflow runs the same Windows build on pushes to `main` and `abdulmalik/development`, and publishes the installer as a 30-day workflow artifact. Open the repository Actions tab and download `ABDULMALIK-ERP-Windows-Setup` after a successful run.
 
-## Offline license management
+## Licensing roadmap
 
-The application contains only the **public Ed25519 key**. The private key is owner-only and must never be committed to GitHub, sent with the installer, or stored on the shop PC.
-
-1. On the owner's trusted workstation, run `dart run tool/generate_license_keys.dart` from `source` exactly once. The script creates `../signing/license-private.key` and prints the Base64 public key.
-2. Replace `licensePublicKey` in `lib/src/core/license.dart` with that printed public key, then commit only the public key change.
-3. Keep `signing/license-private.key` in at least two encrypted/offline backups. The root `.gitignore` excludes the entire `signing/` folder; verify with `git status` that it is not staged.
-4. Never regenerate the key after issuing real licenses. Losing the private key means no new activation codes can be issued for this public key.
-5. In PowerShell, from `source`, issue a lifetime license:
-
-```powershell
-dart run tool/issue_license.dart ABCDE-FGHJK "Shop name" lifetime
-```
-
-For a dated license:
-
-```powershell
-dart run tool/issue_license.dart ABCDE-FGHJK "Shop name" yearly 2027-12-31 3 1
-```
-
-Arguments are device code, shop name, plan, optional expiry date, maximum devices (default 3), and maximum branches (default 1). Valid plans: `monthly`, `yearly`, `lifetime`, `custom`. The expiry date is inclusive through 23:59:59 UTC.
-
-The license is signed offline and bound to the shop server's device code. The private key never needs to be on the target shop PC. Rotating it invalidates existing licenses unless a migration strategy is implemented.
+The initial release is intentionally open for use. Activation keys, subscription plans, device limits, and offline license issuance are deferred; they do not block installation or daily shop operations in this edition.
 
 ## Repository layout
 
@@ -112,7 +92,7 @@ This repository preserves the upstream Git history and original copyright notice
 
 ### نطاق الإصدار الحالي
 
-الإصدار الجاري تجهيزه هو **Windows x64 فقط**. تم تأجيل تطبيق الهاتف حتى اكتمال برنامج ويندوز واختبار قاعدة البيانات والترخيص والمثبت.
+الإصدار الجاري تجهيزه هو **Windows x64 فقط**. تم تأجيل تطبيق الهاتف حتى اكتمال برنامج ويندوز واختبار قاعدة البيانات والمثبت.
 
 البرنامج يعتمد على قاعدة SQLite محلية، ويشغّل خدمة محلية على كمبيوتر المحل. يمكن للأجهزة المتصلة بالشبكة المحلية الاستفادة منها مستقبلاً، لكن إصدار الهاتف مؤجل.
 
