@@ -100,12 +100,12 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
           ),
           const SizedBox(height: 8),
           if (_searching)
-            const Card(
+            Card(
               child: Padding(
-                padding: EdgeInsets.all(24),
+                padding: const EdgeInsets.all(24),
                 child: Column(children: [
-                  CircularProgressIndicator(),
-                  SizedBox(height: 12),
+                  const CircularProgressIndicator(),
+                  const SizedBox(height: 12),
                   Text(ar ? 'جارٍ البحث عن الخوادم في الشبكة...' : 'Searching for servers on the network...'),
                 ]),
               ),
@@ -115,8 +115,9 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
               child: Padding(
                 padding: const EdgeInsets.all(18),
                 child: Text(
-                  (ar ? 'لم يتم العثور على خادم. تحقق من شبكة Wi-Fi أو أدخل العنوان أدناه ' : 'No server found. Check Wi-Fi or enter the address below '
-                  (ar ? '(على الكمبيوتر: الإعدادات ← الاتصال).' : '(on the PC: Settings → Connection).'),
+                  ar
+                      ? 'لم يتم العثور على خادم. تحقق من شبكة Wi-Fi أو أدخل العنوان أدناه (على الكمبيوتر: الإعدادات ← الاتصال).'
+                      : 'No server found. Check Wi-Fi or enter the address below (on the PC: Settings → Connection).',
                   style: text.bodyMedium,
                 ),
               ),
