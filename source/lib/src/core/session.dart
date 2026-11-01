@@ -74,7 +74,7 @@ class SessionController extends AsyncNotifier<Session> {
     } on ApiException catch (e) {
       return Session(SessionStatus.unreachable, api: api, error: e.message);
     } on FormatException {
-      return Session(SessionStatus.unreachable, api: api, error: 'العنوان ده مش سيرفر FixTrack');
+      return Session(SessionStatus.unreachable, api: api, error: 'العنوان ده مش سيرفر ABDULMALIK ERP');
     }
 
     if (!info.setupDone) return Session(SessionStatus.needsSetup, api: api, info: info);
@@ -132,7 +132,7 @@ class SessionController extends AsyncNotifier<Session> {
     try {
       return ServerInfo.fromJson(await api.get('/api/info'));
     } on FormatException {
-      throw ApiException('العنوان ده مش سيرفر FixTrack');
+      throw ApiException('العنوان ده مش سيرفر ABDULMALIK ERP');
     } finally {
       api.close();
     }
