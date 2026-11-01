@@ -41,7 +41,7 @@ void main() {
       final parts = code.split('.');
       final payload = jsonDecode(utf8.decode(base64Url.decode(parts[1].padRight((parts[1].length + 3) ~/ 4 * 4, '='))));
       payload['exp'] = '2099-01-01T00:00:00.000Z'; // حد بيحاول يطوّل الاشتراك
-      final forged = 'FT1.${base64Url.encode(utf8.encode(jsonEncode(payload))).replaceAll('=', '')}.${parts[2]}';
+      final forged = 'AERP1.${base64Url.encode(utf8.encode(jsonEncode(payload))).replaceAll('=', '')}.${parts[2]}';
       expect(() => verifyLicense(forged, deviceCode: 'ABCDE-FGHJK', publicKey: pub), throwsA(isA<LicenseException>()));
     });
 
@@ -64,7 +64,7 @@ void main() {
     late ApiClient api;
 
     setUp(() async {
-      dir = await Directory.systemTemp.createTemp('fixtrack_license');
+      dir = await Directory.systemTemp.createTemp('abdulmalik_erp_license');
       server = FixTrackServer(dataDir: dir.path, requestedPort: 0, cloudSync: false);
       await server.start();
       api = ApiClient('http://127.0.0.1:${server.port}');
@@ -134,7 +134,7 @@ void main() {
 
     test('garbage or foreign codes are rejected', () async {
       try {
-        await api.post('/api/license', {'code': 'FT1.abc.def'});
+        await api.post('/api/license', {'code': 'AERP1.abc.def'});
         fail('should reject');
       } on ApiException catch (e) {
         expect(e.status, 400);
