@@ -10,7 +10,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   // نسخة واحدة بس من البرنامج (هي اللي فيها السيرفر). لو اتفتح تاني، نظهر الشباك المفتوح.
   HANDLE instance_mutex = ::CreateMutexW(nullptr, TRUE, L"Local\\FixTrack-SingleInstance");
   if (::GetLastError() == ERROR_ALREADY_EXISTS) {
-    HWND existing = ::FindWindowW(L"FLUTTER_RUNNER_WIN32_WINDOW", L"FixTrack");
+    HWND existing = ::FindWindowW(L"FLUTTER_RUNNER_WIN32_WINDOW", L"ABDULMALIK ERP");
     if (existing) {
       ::ShowWindow(existing, ::IsIconic(existing) ? SW_RESTORE : SW_SHOW);
       ::SetForegroundWindow(existing);
@@ -38,7 +38,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 800);
-  if (!window.Create(L"FixTrack", origin, size)) {
+  if (!window.Create(L"ABDULMALIK ERP", origin, size)) {
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);
