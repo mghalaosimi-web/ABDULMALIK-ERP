@@ -60,6 +60,8 @@ Name: "{autodesktop}\ABDULMALIK ERP"; Filename: "{app}\abdulmalik_erp.exe"; Task
 Name: "{commonstartup}\ABDULMALIK ERP"; Filename: "{app}\abdulmalik_erp.exe"; Tasks: autostart
 
 [Run]
+; Install the Microsoft Visual C++ x64 runtime before launching the app.
+Filename: "{app}\\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; StatusMsg: "Installing Microsoft Visual C++ Runtime..."; Flags: runhidden waituntilterminated
 ; الـ Firewall: بنسمح للبرنامج بس (مش بورتات مفتوحة لأي حاجة) عشان الموبايلات تتصل بالسيرفر.
 ; profile=any لأن شبكة الواي فاي في محلات كتير Windows بيعتبرها "عامة".
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""ABDULMALIK ERP"""; Flags: runhidden waituntilterminated
