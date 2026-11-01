@@ -111,7 +111,7 @@ class _ModeCard extends StatelessWidget {
                               color: brandOrange.withValues(alpha: 0.15),
                               borderRadius: BorderRadius.circular(20),
                             ),
-                            child: Text('Dispositivo principal', style: text.labelSmall?.bold.copyWith(color: brandOrange)),
+                            child: Text(ar ? 'موصى به' : 'Recommended', style: text.labelSmall?.bold.copyWith(color: brandOrange)),
                           ),
                       ],
                     ),
