@@ -36,13 +36,14 @@ class SettingsScreen extends ConsumerWidget {
     final isServer = config.mode == AppMode.server;
     final themeMode = ref.watch(themeModeProvider);
     final locale = ref.watch(localeProvider);
+    final ar = locale.languageCode == 'ar';
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الإعدادات')),
+      appBar: AppBar(title: Text(ar ? 'الإعدادات' : 'Settings')),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
         children: [
-          const SectionTitle('حسابي'),
+          SectionTitle(ar ? 'حسابي' : 'My account'),
           Card(
             child: Column(children: [
               ListTile(
@@ -53,25 +54,25 @@ class SettingsScreen extends ConsumerWidget {
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.password_rounded),
-                title: const Text('تغيير كلمة السر'),
+                title: Text(ar ? 'تغيير كلمة السر' : 'Change password'),
                 trailing: const Icon(Icons.chevron_left_rounded),
                 onTap: () => showDialog<void>(context: context, builder: (_) => const _ChangePasswordDialog()),
               ),
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.logout_rounded),
-                title: const Text('تسجيل خروج'),
+                title: Text(ar ? 'تسجيل خروج' : 'Log out'),
                 onTap: () => ref.read(sessionProvider.notifier).logout(),
               ),
             ]),
           ),
-          const SectionTitle('الاتصال'),
+          SectionTitle(ar ? 'الاتصال' : 'Connection'),
           Card(
             child: Column(children: [
               ListTile(
                 leading: Icon(isServer ? Icons.dns_rounded : Icons.wifi_rounded),
-                title: Text(isServer ? 'الجهاز ده هو سيرفر المحل' : 'متصل بسيرفر المحل'),
-                subtitle: Text(isServer ? 'لازم البرنامج يفضل مفتوح على الجهاز ده عشان الأجهزة التانية تشتغل' : session.api!.baseUrl,
+                title: Text(isServer ? (ar ? 'الجهاز ده هو سيرفر المحل' : 'This PC is the shop server') : (ar ? 'متصل بسيرفر المحل' : 'Connected to shop server')),
+                subtitle: Text(isServer ? (ar ? 'لازم البرنامج يفضل مفتوح على الجهاز ده عشان الأجهزة التانية تشتغل' : 'Keep this app running on this PC so other devices can connect') : session.api!.baseUrl,
                     textDirection: isServer ? null : TextDirection.ltr, textAlign: TextAlign.right),
               ),
               if (isServer) ...[
@@ -81,8 +82,8 @@ class SettingsScreen extends ConsumerWidget {
               const Divider(height: 1),
               ListTile(
                 leading: const Icon(Icons.swap_horiz_rounded),
-                title: Text(isServer ? 'تغيير طريقة تشغيل الجهاز' : 'تغيير السيرفر'),
-                subtitle: isServer ? const Text('بيانات المحل مش هتتمسح من الجهاز') : null,
+                title: Text(isServer ? (ar ? 'تغيير طريقة تشغيل الجهاز' : 'Change device mode') : (ar ? 'تغيير السيرفر' : 'Change server')),
+                subtitle: isServer ? Text(ar ? 'بيانات المحل مش هتتمسح من الجهاز' : 'Shop data will remain on this PC') : null,
                 onTap: () async {
                   final ok = await _confirm(context,
                       isServer
@@ -108,15 +109,15 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ),
-          const SectionTitle('الشكل'),
+          SectionTitle(ar ? 'الشكل' : 'Appearance'),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(12),
               child: SegmentedButton<ThemeMode>(
                 segments: const [
-                  ButtonSegment(value: ThemeMode.system, label: Text('تلقائي'), icon: Icon(Icons.brightness_auto_rounded)),
-                  ButtonSegment(value: ThemeMode.light, label: Text('فاتح'), icon: Icon(Icons.light_mode_rounded)),
-                  ButtonSegment(value: ThemeMode.dark, label: Text('غامق'), icon: Icon(Icons.dark_mode_rounded)),
+                  ButtonSegment(value: ThemeMode.system, label: Text(ar ? 'تلقائي' : 'System'), icon: Icon(Icons.brightness_auto_rounded)),
+                  ButtonSegment(value: ThemeMode.light, label: Text(ar ? 'فاتح' : 'Light'), icon: Icon(Icons.light_mode_rounded)),
+                  ButtonSegment(value: ThemeMode.dark, label: Text(ar ? 'غامق' : 'Dark'), icon: Icon(Icons.dark_mode_rounded)),
                 ],
                 selected: {themeMode},
                 onSelectionChanged: (s) => ref.read(themeModeProvider.notifier).set(s.first),
@@ -124,13 +125,13 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           if (user.isOwner) ...[
-            const SectionTitle('المحل'),
+            SectionTitle(ar ? 'المحل' : 'Shop'),
             Card(
               child: Column(children: [
                 ListTile(
                   leading: const Icon(Icons.storefront_rounded),
-                  title: const Text('بيانات المحل والوصل'),
-                  subtitle: const Text('اللوجو، والتليفون، والعنوان، ومقاس الورق، والشروط'),
+                  title: Text(ar ? 'بيانات المحل والوصل' : 'Shop and receipt settings'),
+                  subtitle: Text(ar ? 'اللوجو، والتليفون، والعنوان، ومقاس الورق، والشروط' : 'Logo, phone, address, paper size and receipt terms'),
                   trailing: const Icon(Icons.chevron_left_rounded),
                   onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const ShopSettingsScreen())),
                 ),
