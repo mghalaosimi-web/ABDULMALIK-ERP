@@ -21,7 +21,7 @@ String money(int cents) => _locale == 'en'
 
 /// Parses amounts such as 2,500, ٢٥٠٠, or 2500.5 into minor currency units.
 int? parseMoney(String input) {
-  final cleaned = latinDigits(input).replaceAll(RegExp(r'[,\\s٬ج.م]'), '').replaceAll('٫', '.');
+  final cleaned = latinDigits(input).replaceAll(',', '').replaceAll('٬', '').replaceAll('ج.م', '').replaceAll(' ', '').replaceAll('٫', '.');
   if (cleaned.isEmpty) return 0;
   final v = double.tryParse(cleaned);
   if (v == null || v < 0) return null;
