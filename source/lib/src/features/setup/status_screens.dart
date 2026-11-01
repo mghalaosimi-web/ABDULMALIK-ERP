@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../core/locale.dart';
 import '../../core/session.dart';
 import '../../core/theme.dart';
 import '../../widgets/common.dart';
@@ -42,6 +43,7 @@ class _ProblemScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final text = Theme.of(context).textTheme;
     final scheme = Theme.of(context).colorScheme;
+    final ar = ref.watch(localeProvider).languageCode == 'ar';
     return CenteredPanel(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -55,7 +57,7 @@ class _ProblemScreen extends ConsumerWidget {
           FilledButton.icon(
             onPressed: () => ref.read(sessionProvider.notifier).retry(),
             icon: const Icon(Icons.refresh_rounded),
-            label: const Text('Tentar novamente'),
+            label: Text(ar ? 'حاول مرة أخرى' : 'Try again'),
           ),
           const SizedBox(height: 8),
           OutlinedButton(
@@ -68,28 +70,34 @@ class _ProblemScreen extends ConsumerWidget {
   }
 }
 
-class ServerFailedScreen extends StatelessWidget {
+class ServerFailedScreen extends ConsumerWidget {
   const ServerFailedScreen({super.key, required this.message});
   final String message;
 
   @override
-  Widget build(BuildContext context) => _ProblemScreen(
-        icon: Icons.dns_rounded,
-        title: 'Não foi possível iniciar o servidor',
-        message: message,
-        secondaryLabel: 'Alterar modo de funcionamento',
-      );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ar = ref.watch(localeProvider).languageCode == 'ar';
+    return _ProblemScreen(
+      icon: Icons.dns_rounded,
+      title: ar ? 'تعذر تشغيل الخادم' : 'Could not start the server',
+      message: message,
+      secondaryLabel: ar ? 'تغيير وضع الجهاز' : 'Change device mode',
+    );
+  }
 }
 
-class UnreachableScreen extends StatelessWidget {
+class UnreachableScreen extends ConsumerWidget {
   const UnreachableScreen({super.key, required this.message});
   final String message;
 
   @override
-  Widget build(BuildContext context) => _ProblemScreen(
-        icon: Icons.wifi_off_rounded,
-        title: 'Sem conexão com o servidor',
-        message: message,
-        secondaryLabel: 'Escolher outro servidor',
-      );
+  Widget build(BuildContext context, WidgetRef ref) {
+    final ar = ref.watch(localeProvider).languageCode == 'ar';
+    return _ProblemScreen(
+      icon: Icons.wifi_off_rounded,
+      title: ar ? 'لا يوجد اتصال بالخادم' : 'No connection to the server',
+      message: message,
+      secondaryLabel: ar ? 'اختيار خادم آخر' : 'Choose another server',
+    );
+  }
 }
