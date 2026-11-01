@@ -9,7 +9,7 @@ import 'dart:convert';
 import 'package:crypto/crypto.dart';
 import 'package:cryptography/cryptography.dart';
 
-const licensePublicKey = 'dEKYFRf2id+ZsPtFD3/jcnj1urVDWzJRUT390BtwACk=';
+const licensePublicKey = 'JqpIQ3klwMJMsUGqoJzVF1YZF/hR2hEWWwTp2t/TNzc=';
 const trialDays = 14;
 
 class LicenseData {
@@ -77,7 +77,7 @@ class LicenseException implements Exception {
 /// "كود الجهاز" اللي المحل بيبعته لصاحب البرنامج: 10 حروف من بصمة السيرفر (XXXXX-XXXXX).
 String deviceCodeFor(String serverId) {
   const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  final digest = sha256.convert(utf8.encode('fixtrack-device:$serverId')).bytes;
+  final digest = sha256.convert(utf8.encode('abdulmalik-erp-device:$serverId')).bytes;
   final chars = [for (var i = 0; i < 10; i++) alphabet[digest[i] % alphabet.length]].join();
   return '${chars.substring(0, 5)}-${chars.substring(5)}';
 }
@@ -90,13 +90,13 @@ Future<String> signLicense(LicenseData data, List<int> privateSeed) async {
   final payload = utf8.encode(jsonEncode(data.toJson()));
   final pair = await Ed25519().newKeyPairFromSeed(privateSeed);
   final sig = await Ed25519().sign(payload, keyPair: pair);
-  return 'FT1.${_b64(payload)}.${_b64(sig.bytes)}';
+  return 'AERP1.${_b64(payload)}.${_b64(sig.bytes)}';
 }
 
 /// بيتأكد من التوقيع ومن إن الكود لنفس الجهاز. بيرمي LicenseException برسالة للمستخدم.
 Future<LicenseData> verifyLicense(String code, {required String deviceCode, String publicKey = licensePublicKey}) async {
   final parts = code.trim().replaceAll(RegExp(r'\s'), '').split('.');
-  if (parts.length != 3 || parts[0] != 'FT1') throw LicenseException('كود التفعيل ده مش صحيح');
+  if (parts.length != 3 || parts[0] != 'AERP1') throw LicenseException('كود التفعيل ده مش صحيح');
   final List<int> payload, sig;
   try {
     payload = _unb64(parts[1]);
