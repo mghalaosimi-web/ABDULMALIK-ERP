@@ -28,7 +28,7 @@ MinVersion=10.0
 OutputDir={#OutputDir}
 OutputBaseFilename=ABDULMALIK-ERP-Setup-{#AppVersion}
 SetupIconFile=..\windows\runner\resources\app_icon.ico
-UninstallDisplayIcon={app}\fixtrack.exe
+UninstallDisplayIcon={app}\abdulmalik_erp.exe
 Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
@@ -55,16 +55,16 @@ Name: "autostart"; Description: "{cm:AutoStart}"
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\ABDULMALIK ERP"; Filename: "{app}\fixtrack.exe"
-Name: "{autodesktop}\ABDULMALIK ERP"; Filename: "{app}\fixtrack.exe"; Tasks: desktopicon
-Name: "{commonstartup}\ABDULMALIK ERP"; Filename: "{app}\fixtrack.exe"; Tasks: autostart
+Name: "{group}\ABDULMALIK ERP"; Filename: "{app}\abdulmalik_erp.exe"
+Name: "{autodesktop}\ABDULMALIK ERP"; Filename: "{app}\abdulmalik_erp.exe"; Tasks: desktopicon
+Name: "{commonstartup}\ABDULMALIK ERP"; Filename: "{app}\abdulmalik_erp.exe"; Tasks: autostart
 
 [Run]
 ; الـ Firewall: بنسمح للبرنامج بس (مش بورتات مفتوحة لأي حاجة) عشان الموبايلات تتصل بالسيرفر.
 ; profile=any لأن شبكة الواي فاي في محلات كتير Windows بيعتبرها "عامة".
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""ABDULMALIK ERP"""; Flags: runhidden waituntilterminated
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""ABDULMALIK ERP"" dir=in action=allow program=""{app}\fixtrack.exe"" enable=yes profile=any"; Flags: runhidden waituntilterminated
-Filename: "{app}\fixtrack.exe"; Description: "{cm:LaunchApp}"; Flags: nowait postinstall skipifsilent
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""ABDULMALIK ERP"" dir=in action=allow program=""{app}\abdulmalik_erp.exe"" enable=yes profile=any"; Flags: runhidden waituntilterminated
+Filename: "{app}\abdulmalik_erp.exe"; Description: "{cm:LaunchApp}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""ABDULMALIK ERP"""; Flags: runhidden waituntilterminated; RunOnceId: "RemoveFirewallRule"
