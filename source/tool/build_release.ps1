@@ -49,7 +49,7 @@ try {
     $iscc = $isccCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
     if (-not $iscc) { throw 'Inno Setup 6 ISCC.exe was not found.' }
 
-    & $iscc "/DAppVersion=$version" "/DOutputDir=$builds" (Join-Path $sourceRoot 'installer\fixtrack.iss')
+    & $iscc "/DAppVersion=$version" "/DOutputDir=$builds" (Join-Path $sourceRoot 'installer\abdulmalik_erp.iss')
     if ($LASTEXITCODE -ne 0) { throw 'Inno Setup compilation failed.' }
 
     $installer = Join-Path $builds "ABDULMALIK-ERP-Setup-$version.exe"

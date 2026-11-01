@@ -129,7 +129,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
                   children: [
                     const Padding(
                       padding: EdgeInsets.fromLTRB(20, 24, 20, 20),
-                      child: Row(children: [FixTrackLogo(size: 36, showName: false), SizedBox(width: 10), _BrandName()]),
+                      child: Row(children: [AbdulmalikErpLogo(size: 36, showName: false), SizedBox(width: 10), _BrandName()]),
                     ),
                     Expanded(
                       child: ListView(

@@ -27,7 +27,7 @@ The active delivery target is **Windows x64 only**. Android/mobile packaging and
 
 ## Cloud integration — future development base
 
-Firebase code, Firestore rules, sync routines and the tracking/branch architecture are retained as a **development base**. Cloud credentials are intentionally empty and cloud sync is disabled by default. No connection to the previous owner's Firebase project is performed.
+Firebase code, Firestore rules and sync routines are retained as a **development base**. Public tracking is disabled in this release; its public page is a static notice and makes no Firebase requests. Cloud credentials are intentionally empty and cloud sync is disabled by default. No connection to the previous owner's Firebase project is performed.
 
 When cloud work begins, create a Firebase project owned by the ABDULMALIK ERP maintainer, configure its API key/project ID, review Firestore security rules and privacy requirements, then explicitly enable cloud sync. Until then, the Windows application remains local/offline-first.
 
@@ -64,11 +64,11 @@ The initial release is intentionally open for use. Activation keys, subscription
 
 ```
 source/
-  lib/src/server/       Local API server, SQLite database, authentication, licensing
+  lib/src/server/       Local API server, SQLite database, authentication
   lib/src/features/     Repair, POS, inventory, customers, reports and settings UI
-  lib/src/core/         App configuration, locale, formatting, cryptographic license verification
+  lib/src/core/         App configuration, locale, formatting and cryptographic utilities
   installer/            Inno Setup Windows installer
-  tool/                 Windows build and offline license issuance tools
+  tool/                 Windows build and maintenance tools
   firebase/              Retained cloud integration development base
   test/                  Unit and API tests
 signing/                 Owner-only private key folder (gitignored; never commit)
@@ -109,7 +109,7 @@ powershell -ExecutionPolicy Bypass -File .\tool\build_release.ps1
 
 ### السحابي
 
-احتفظنا بكود Firebase وFirestore وقواعد الأمان ومزامنة الفروع وصفحة تتبع العميل كقاعدة تطوير مستقبلية. بيانات الاتصال السحابية فارغة والمزامنة معطلة افتراضياً. لن يتصل النظام بمشروع Firebase القديم. عند بدء التطوير السحابي سننشئ مشروعاً مستقلاً ونراجع قواعد الأمان قبل تفعيله.
+احتفظنا بكود Firebase وFirestore وقواعد الأمان والمزامنة كقاعدة تطوير مستقبلية. التتبع العام معطّل في هذا الإصدار وصفحته تعرض إشعاراً ثابتاً ولا تتصل بمشروع Firebase السابق. بيانات الاتصال السحابية فارغة والمزامنة معطلة افتراضياً. عند بدء التطوير السحابي سننشئ مشروعاً مستقلاً ونراجع قواعد الأمان قبل تفعيله.
 
 ### الإصدار المفتوح والتراخيص
 
@@ -124,3 +124,8 @@ powershell -ExecutionPolicy Bypass -File .\tool\build_release.ps1
 ### حقوق المصدر
 
 تم الإبقاء على سجل Git وإشعارات حقوق المصدر الأصلي. تغيير هوية المنتج لا يعني انتقال ملكية تأليف الكود السابق. احتفظ بموافقة صاحب المشروع الأصلية ضمن مستندات المشروع.
+
+
+### Legacy compatibility policy
+
+The fixtrack.db database filename and the fixtrack-enc / fixtrack-mac key-derivation labels are intentionally retained because changing them without a verified data migration could make existing shop data or encrypted values unreadable. Android package/channel identifiers are also retained while Android delivery is deferred. These are compatibility identifiers, not current product branding.

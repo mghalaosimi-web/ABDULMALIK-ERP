@@ -226,7 +226,7 @@ class FixTrackServer {
           // ده مش خطأ: الـ WebSocket بياخد الاتصال، وshelf لازم يشوف الاستثناء ده عشان يكمّل
           rethrow;
         } catch (e, st) {
-          stderr.writeln('Server error on ${req.method} ${req.url}: $e\n$st');
+          stderr.writeln('Server error on ${req.method} /${req.url.path}: $e\n$st');
           _log.error('${req.method} /${req.url.path}: $e', st);
           return _json(500, {'error': 'حصل خطأ في السيرفر، جرّب تاني'});
         }
@@ -247,8 +247,8 @@ class FixTrackServer {
   AuthUser _authenticate(Request req) {
     final header = req.headers['authorization'];
     final token = header != null && header.startsWith('Bearer ')
-        ? header.substring(7)
-        : req.url.queryParameters['token'];
+        ? header.substring(7).trim()
+        : null;
     if (token == null || token.isEmpty) throw ApiError(401, 'لازم تسجل دخول الأول');
 
     final tokenHash = sha256Hex(token);
@@ -285,6 +285,11 @@ class FixTrackServer {
   }
 
   Future<Object?> _setup(Request req) async {
+    final connection = req.context['shelf.io.connection_info'];
+    final remoteAddress = connection is HttpConnectionInfo ? connection.remoteAddress : null;
+    if (remoteAddress == null || !remoteAddress.isLoopback) {
+      throw ApiError(403, 'الإعداد الأولي مسموح من كمبيوتر السيرفر فقط');
+    }
     final body = await _body(req);
     if (db.selectOne('SELECT id FROM shop LIMIT 1') != null) {
       throw ApiError(409, 'المحل متسجل بالفعل على السيرفر ده');
@@ -310,7 +315,6 @@ class FixTrackServer {
       );
     });
     _audit(userId, 'shop.setup', 'shop', shopId, shopName);
-    db.setSetting('trial_started', nowIso());
     final user = db.selectOne('SELECT * FROM users WHERE id = ?', [userId])!;
     return {'token': _createSession(userId, body['deviceName']), 'user': _publicUser(user)};
   }

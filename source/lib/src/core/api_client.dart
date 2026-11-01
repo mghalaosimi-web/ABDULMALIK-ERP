@@ -80,12 +80,17 @@ class ApiClient {
     return data;
   }
 
+  /// WebSocket authentication is sent in the HTTP Authorization header,
+  /// never in the URL where it could be retained by logs or diagnostics.
+  Map<String, String> webSocketHeaders() => token == null ? const {} : {'authorization': 'Bearer $token'};
+
   Uri webSocketUri() {
     final base = Uri.parse(baseUrl);
     return base.replace(
       scheme: base.scheme == 'https' ? 'wss' : 'ws',
       path: '/api/ws',
-      queryParameters: {'token': ?token},
+      queryParameters: null,
+      fragment: null,
     );
   }
 

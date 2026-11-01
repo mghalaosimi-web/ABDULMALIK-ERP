@@ -66,7 +66,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const FixTrackLogo(size: 64),
+            const AbdulmalikErpLogo(size: 64),
             const SizedBox(height: 20),
             if (info?.shopName != null) ...[
               Text(info!.shopName!, textAlign: TextAlign.center, style: text.titleLarge?.bold),

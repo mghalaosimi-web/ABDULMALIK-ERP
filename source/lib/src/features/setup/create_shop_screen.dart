@@ -76,7 +76,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const FixTrackLogo(size: 56),
+            const AbdulmalikErpLogo(size: 56),
             const SizedBox(height: 24),
             Text(ar ? 'الخادم لم يجهز بعد' : 'The server is not ready yet', style: text.titleLarge?.bold, textAlign: TextAlign.center),
             const SizedBox(height: 8),
@@ -100,7 +100,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const FixTrackLogo(size: 56),
+            const AbdulmalikErpLogo(size: 56),
             const SizedBox(height: 24),
             Text(ar ? 'أهلاً بك! لنُسجّل بيانات المحل' : 'Welcome! Set up your shop', style: text.titleLarge?.bold),
             const SizedBox(height: 4),

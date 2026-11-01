@@ -81,7 +81,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const FixTrackLogo(size: 56),
+          const AbdulmalikErpLogo(size: 56),
           const SizedBox(height: 24),
           Text(ar ? 'الاتصال بخادم المحل' : 'Connect to shop server', style: text.titleLarge?.bold),
           const SizedBox(height: 4),

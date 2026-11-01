@@ -126,7 +126,7 @@ class SessionController extends AsyncNotifier<Session> {
     await retry();
   }
 
-  /// بيتأكد إن العنوان ده سيرفر FixTrack قبل ما يحفظه.
+  /// بيتأكد إن العنوان ده سيرفر ABDULMALIK ERP قبل ما يحفظه.
   Future<ServerInfo> probeServer(String url) async {
     final api = ApiClient(url);
     try {

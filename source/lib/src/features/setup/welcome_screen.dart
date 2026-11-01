@@ -23,7 +23,7 @@ class WelcomeScreen extends ConsumerWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const FixTrackLogo(size: 72),
+          const AbdulmalikErpLogo(size: 72),
           const SizedBox(height: 8),
           Text(ar ? 'نظام إدارة محل صيانة وبيع الهواتف' : 'Phone repair and retail shop management',
               textAlign: TextAlign.center, style: text.bodyLarge),

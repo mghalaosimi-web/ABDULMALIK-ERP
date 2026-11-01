@@ -3,9 +3,9 @@ import 'package:flutter/material.dart';
 import '../core/api_client.dart';
 import '../core/theme.dart';
 
-/// اللوجو المؤقت لحد ما نعمل اللوجو النهائي: مفتاح صيانة جوه مربع بزوايا مدورة.
-class FixTrackLogo extends StatelessWidget {
-  const FixTrackLogo({super.key, this.size = 56, this.showName = true});
+/// علامة ABDULMALIK ERP النصية المؤقتة؛ تُستبدل بملف الشعار الرسمي بعد استلامه.
+class AbdulmalikErpLogo extends StatelessWidget {
+  const AbdulmalikErpLogo({super.key, this.size = 56, this.showName = true});
 
   final double size;
   final bool showName;

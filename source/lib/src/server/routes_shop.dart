@@ -157,7 +157,7 @@ extension _ShopRoutes on FixTrackServer {
 
   // ---------------------------------------------------------------- messages
 
-  /// لينك صفحة التتبع: الافتراضي موقع FixTrack، والمحل يقدر يغيّره (أو يقفله بقيمة فاضية).
+  /// رابط التتبع اختياري؛ لا يُفعّل ما لم يضبطه المسؤول صراحةً.
   String? get _trackingBase {
     final custom = db.setting('tracking_base_url');
     if (custom == null) return trackingSiteUrl.isEmpty ? null : trackingSiteUrl;

@@ -16,7 +16,7 @@ class SplashScreen extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            FixTrackLogo(size: 72),
+            AbdulmalikErpLogo(size: 72),
             SizedBox(height: 24),
             SizedBox(width: 28, height: 28, child: CircularProgressIndicator(strokeWidth: 3)),
           ],
