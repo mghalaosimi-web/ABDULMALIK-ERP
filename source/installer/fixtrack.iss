@@ -65,7 +65,7 @@ Filename: "{app}\vc_redist.x64.exe"; Parameters: "/install /quiet /norestart"; S
 ; الـ Firewall: بنسمح للبرنامج بس (مش بورتات مفتوحة لأي حاجة) عشان الموبايلات تتصل بالسيرفر.
 ; profile=any لأن شبكة الواي فاي في محلات كتير Windows بيعتبرها "عامة".
 Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""ABDULMALIK ERP"""; Flags: runhidden waituntilterminated
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""ABDULMALIK ERP"" dir=in action=allow program=""{app}\abdulmalik_erp.exe"" enable=yes profile=any"; Flags: runhidden waituntilterminated
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""ABDULMALIK ERP"" dir=in action=allow program=""{app}\abdulmalik_erp.exe"" enable=yes profile=any remoteip=localsubnet"; Flags: runhidden waituntilterminated
 Filename: "{app}\abdulmalik_erp.exe"; Description: "{cm:LaunchApp}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
