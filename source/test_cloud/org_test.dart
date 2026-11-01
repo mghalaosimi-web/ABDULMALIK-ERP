@@ -2,8 +2,8 @@
 // التشغيل: flutter test test_cloud/org_test.dart
 import 'dart:io';
 
-import 'package:fixtrack/src/core/api_client.dart';
-import 'package:fixtrack/src/server/api_server.dart';
+import 'package:abdulmalik_erp/src/core/api_client.dart';
+import 'package:abdulmalik_erp/src/server/api_server.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 Future<(FixTrackServer, ApiClient, Directory)> _branch(String branchName) async {
