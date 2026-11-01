@@ -1,4 +1,4 @@
-﻿# بيبني نسخة FixTrack كاملة للتوزيع:
+# بيبني نسخة ABDULMALIK ERP كاملة للتوزيع:
 #   - ملف تثبيت Windows (Setup.exe)
 #   - ملفات APK للأندرويد (الكل + موبايلات حديثة + موبايلات قديمة)
 # وبيحطهم في فولدر builds.
@@ -12,7 +12,7 @@ $builds = Join-Path (Split-Path -Parent $root) 'builds'
 $env:Path = "C:\src\flutter\bin;$env:Path"
 if (-not $env:JAVA_HOME) { $env:JAVA_HOME = (Get-ChildItem 'C:\Program Files\Microsoft' -Directory -Filter 'jdk-17*' | Select-Object -First 1).FullName }
 
-Write-Host "== FixTrack $version =="
+Write-Host "== ABDULMALIK ERP $version =="
 flutter build windows --release
 if ($LASTEXITCODE -ne 0) { throw 'Windows build failed' }
 
@@ -32,11 +32,11 @@ if ($LASTEXITCODE -ne 0) { throw 'APK build failed' }
 flutter build apk --release --split-per-abi
 if ($LASTEXITCODE -ne 0) { throw 'APK split build failed' }
 
-$apkDir = Join-Path $builds "FixTrack-$version-android"
+$apkDir = Join-Path $builds "ABDULMALIK-ERP-$version-android"
 New-Item -ItemType Directory -Force $apkDir | Out-Null
 $out = Join-Path $root 'build\app\outputs\flutter-apk'
-Copy-Item (Join-Path $out 'app-release.apk') (Join-Path $apkDir "FixTrack-$version-الكل.apk") -Force
-Copy-Item (Join-Path $out 'app-arm64-v8a-release.apk') (Join-Path $apkDir "FixTrack-$version-موبايلات-حديثة.apk") -Force
-Copy-Item (Join-Path $out 'app-armeabi-v7a-release.apk') (Join-Path $apkDir "FixTrack-$version-موبايلات-قديمة.apk") -Force
+Copy-Item (Join-Path $out 'app-release.apk') (Join-Path $apkDir "ABDULMALIK-ERP-$version-الكل.apk") -Force
+Copy-Item (Join-Path $out 'app-arm64-v8a-release.apk') (Join-Path $apkDir "ABDULMALIK-ERP-$version-موبايلات-حديثة.apk") -Force
+Copy-Item (Join-Path $out 'app-armeabi-v7a-release.apk') (Join-Path $apkDir "ABDULMALIK-ERP-$version-موبايلات-قديمة.apk") -Force
 
 Write-Host "== تم: $builds =="
