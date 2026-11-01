@@ -18,6 +18,14 @@ void main() {
           .where((pixel) => pixel.r < 235 || pixel.g < 235 || pixel.b < 235)
           .length;
       expect(nonWhite, greaterThan(512 * 512 * 0.05));
+      if (path.endsWith('app_icon_foreground.png')) {
+        expect(
+          decoded.getPixel(0, 0).a,
+          0,
+          reason: 'Adaptive icon foreground must preserve transparency.',
+        );
+        expect(decoded.getPixel(256, 120).a, greaterThan(0));
+      }
     });
   }
 }

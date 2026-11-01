@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../core/api_client.dart';
 import '../core/theme.dart';
 
-/// علامة ABDULMALIK ERP النصية المؤقتة؛ تُستبدل بملف الشعار الرسمي بعد استلامه.
+/// الشعار الرسمي لعبدالملك للاتصالات المستخدم داخل واجهات النظام.
 class AbdulmalikErpLogo extends StatelessWidget {
   const AbdulmalikErpLogo({super.key, this.size = 56, this.showName = true});
 
