@@ -1,9 +1,9 @@
 // بيطلع ملفات PDF للوصل والستيكر ببيانات تجريبية للمراجعة (test_visual/shots/*.pdf).
 import 'dart:io';
 
-import 'package:fixtrack/src/core/shop.dart';
-import 'package:fixtrack/src/core/ticket_models.dart';
-import 'package:fixtrack/src/features/receipts/receipt_pdf.dart';
+import 'package:abdulmalik_erp/src/core/shop.dart';
+import 'package:abdulmalik_erp/src/core/ticket_models.dart';
+import 'package:abdulmalik_erp/src/features/receipts/receipt_pdf.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:intl/date_symbol_data_local.dart';
 
