@@ -21,7 +21,7 @@ try {
     if ($LASTEXITCODE -ne 0) { throw 'flutter pub get failed.' }
 
     if (-not $SkipTests) {
-        flutter analyze --no-fatal-infos --no-fatal-warnings
+        flutter analyze
         if ($LASTEXITCODE -ne 0) { throw 'flutter analyze failed. Resolve analyzer errors before packaging.' }
         flutter test --reporter expanded
         if ($LASTEXITCODE -ne 0) { throw 'Flutter tests failed. Installer was not created.' }
