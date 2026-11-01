@@ -39,7 +39,7 @@ class DashboardScreen extends ConsumerWidget {
     final greeting = ar ? (DateTime.now().hour < 12 ? 'صباح الخير' : 'مساء الخير') : (DateTime.now().hour < 12 ? 'Good morning' : 'Good evening');
 
     return Scaffold(
-      appBar: AppBar(title: Text('$greeting، ${user.name.split(' ').first} 👋')),
+      appBar: AppBar(title: Text(ar ? '$greeting، ${user.name.split(' ').first} 👋' : '$greeting, ${user.name.split(' ').first} 👋')),
       floatingActionButton: canIntake
           ? FloatingActionButton.extended(
               onPressed: () => openIntake(context),
@@ -116,7 +116,7 @@ class DashboardScreen extends ConsumerWidget {
                 child: ListTile(
                   leading: const Icon(Icons.point_of_sale_rounded, color: brandBlue),
                   title: Text(ar ? 'مبيعات النهارده' : 'Sales today'),
-                  subtitle: Text('${s!.salesTodayCount ?? 0} فاتورة'
+                  subtitle: Text(ar ? '${s!.salesTodayCount ?? 0} فاتورة' : '${s!.salesTodayCount ?? 0} invoices'
                       '${s.lowStockCount > 0 ? ' • ${s.lowStockCount} ${ar ? 'صنف قرّب يخلص' : 'items low in stock'}' : ''}'),
                   trailing: Text(money(s.salesTodayCents!), style: text.titleLarge?.bold),
                 ),
@@ -161,7 +161,7 @@ class _TicketPreview extends ConsumerWidget {
         const SizedBox(height: 12),
         Row(children: [
           Expanded(child: SectionTitle('$title (${list.length})')),
-          if (list.length > 4) TextButton(onPressed: onMore, child: const Text('عرض الكل')),
+          if (list.length > 4) TextButton(onPressed: onMore, child: Text(ref.watch(localeProvider).languageCode == 'ar' ? 'عرض الكل' : 'View all')),
         ]),
         for (final t in list.take(4))
           Padding(
@@ -188,7 +188,7 @@ class _ConnectionChip extends StatelessWidget {
         children: [
           const Icon(Icons.circle, size: 10, color: green),
           const SizedBox(width: 6),
-          Text(isServer ? 'السيرفر شغال' : 'متصل بالسيرفر', style: const TextStyle(color: green).semiBold),
+          Text(isServer ? (Intl.defaultLocale == 'en' ? 'Server running' : 'السيرفر شغال') : (Intl.defaultLocale == 'en' ? 'Connected to server' : 'متصل بالسيرفر'), style: const TextStyle(color: green).semiBold),
         ],
       ),
     );
