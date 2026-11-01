@@ -1,0 +1,38 @@
+name: Windows build and installer
+on:
+  push:
+    branches: [main, abdulmalik/development]
+    paths:
+      - 'source/**'
+      - '.github/workflows/windows-release.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    runs-on: windows-2022
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+      - name: Install Inno Setup
+        shell: pwsh
+        run: choco install innosetup --yes --no-progress
+      - name: Build, analyze, test and package Windows
+        shell: pwsh
+        working-directory: source
+        run: ./tool/build_release.ps1
+      - name: Upload Windows installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: ABDULMALIK-ERP-Windows-Setup
+          path: builds/ABDULMALIK-ERP-Setup-*.exe
+          if-no-files-found: error
+          retention-days: 30
