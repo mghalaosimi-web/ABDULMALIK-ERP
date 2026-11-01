@@ -275,7 +275,7 @@ class FixTrackServer {
     final shop = db.selectOne('SELECT name FROM shop LIMIT 1');
     final branch = db.selectOne('SELECT name FROM branches WHERE is_local = 1 LIMIT 1');
     return {
-      'app': 'fixtrack',
+      'app': 'abdulmalik_erp',
       'api': apiVersion,
       'version': appVersion,
       'serverId': db.setting('server_id'),
