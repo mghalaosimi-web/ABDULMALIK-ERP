@@ -66,13 +66,13 @@ The application contains only the **public Ed25519 key**. The private key is own
 4. In PowerShell, from `source`, issue a lifetime license:
 
 ```powershell
-dart run tool/issue_license.dart ABCDE-FGHIJ "Shop name" lifetime
+dart run tool/issue_license.dart ABCDE-FGHJK "Shop name" lifetime
 ```
 
 For a dated license:
 
 ```powershell
-dart run tool/issue_license.dart ABCDE-FGHIJ "Shop name" yearly 2027-12-31 3 1
+dart run tool/issue_license.dart ABCDE-FGHJK "Shop name" yearly 2027-12-31 3 1
 ```
 
 Arguments are device code, shop name, plan, optional expiry date, maximum devices (default 3), and maximum branches (default 1). Valid plans: `monthly`, `yearly`, `lifetime`, `custom`. The expiry date is inclusive through 23:59:59 UTC.
