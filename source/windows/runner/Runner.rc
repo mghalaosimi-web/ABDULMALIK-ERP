@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "FixTrack" "\0"
-            VALUE "FileDescription", "FixTrack" "\0"
+            VALUE "CompanyName", "ABDULMALIK ERP" "\0"
+            VALUE "FileDescription", "ABDULMALIK ERP" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "fixtrack" "\0"
+            VALUE "InternalName", "abdulmalik-erp" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 FixTrack. All rights reserved." "\0"
             VALUE "OriginalFilename", "fixtrack.exe" "\0"
-            VALUE "ProductName", "FixTrack" "\0"
+            VALUE "ProductName", "ABDULMALIK ERP" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
