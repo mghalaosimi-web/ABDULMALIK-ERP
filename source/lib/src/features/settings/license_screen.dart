@@ -57,7 +57,7 @@ class LicenseBanner extends ConsumerWidget {
               Icon(state == 'trial' ? Icons.hourglass_bottom_rounded : Icons.workspace_premium_rounded, color: color),
               const SizedBox(width: 10),
               Expanded(child: Text(text, style: TextStyle(color: color).semiBold)),
-              if (isOwner) Text('التفعيل', style: TextStyle(color: color).bold),
+              if (isOwner) Text(ar ? 'التفعيل' : 'Activate', style: TextStyle(color: color).bold),
             ]),
           ),
         ),
@@ -93,7 +93,7 @@ class _LicenseScreenState extends ConsumerState<LicenseScreen> {
       await ref.read(sessionProvider).value!.api!.post('/api/license', {'code': _code.text.trim()});
       ref.invalidate(licenseProvider);
       _code.clear();
-      if (mounted) showMessage(context, 'اتفعّل البرنامج ✅ شكراً!');
+      if (mounted) showMessage(context, ref.read(localeProvider).languageCode == 'ar' ? 'اتفعّل البرنامج ✅ شكراً!' : 'License activated successfully!');
     } catch (e) {
       if (mounted) setState(() => _error = errorText(e));
     } finally {
@@ -134,8 +134,8 @@ class _LicenseScreenState extends ConsumerState<LicenseScreen> {
                         Text(label, style: text.headlineSmall?.bold.copyWith(color: color)),
                         const SizedBox(height: 6),
                         Text(ar ? 'النوع: ${planLabels[s['plan']] ?? s['plan']}' : 'Plan: ${planLabels[s['plan']] ?? s['plan']}'),
-                        Text(exp == null ? 'مدى الحياة' : '${state == 'expired' ? 'خلص' : 'لحد'} ${formatDate(exp)}'
-                            '${s['daysLeft'] != null && state != 'expired' ? ' (فاضل ${s['daysLeft']} يوم)' : ''}'),
+                        Text(exp == null ? (ar ? 'مدى الحياة' : 'Lifetime') : '${state == 'expired' ? (ar ? 'خلص' : 'Expired') : (ar ? 'لحد' : 'Until')} ${formatDate(exp)}'
+                            '${s['daysLeft'] != null && state != 'expired' ? (ar ? ' (فاضل ${s['daysLeft']} يوم)' : ' (${s['daysLeft']} days left)') : ''}'),
                         Text(ar ? 'عدد الأجهزة المسموح: ${s['devices']}' : 'Allowed devices: ${s['devices']}'),
                       ]),
                     ),
@@ -149,11 +149,11 @@ class _LicenseScreenState extends ConsumerState<LicenseScreen> {
                         child: SelectableText(device, textDirection: TextDirection.ltr, style: text.headlineSmall?.bold.copyWith(letterSpacing: 3)),
                       ),
                       IconButton(
-                        tooltip: 'نسخ',
+                        tooltip: ar ? 'نسخ' : 'Copy',
                         icon: const Icon(Icons.copy_rounded),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: device));
-                          showMessage(context, 'اتنسخ كود الجهاز');
+                          showMessage(context, ar ? 'اتنسخ كود الجهاز' : 'Device code copied');
                         },
                       ),
                     ]),
