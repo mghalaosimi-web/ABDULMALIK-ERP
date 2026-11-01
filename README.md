@@ -60,10 +60,11 @@ A GitHub Actions workflow runs the same Windows build on pushes to `main` and `a
 
 The application contains only the **public Ed25519 key**. The private key is owner-only and must never be committed to GitHub, sent with the installer, or stored on the shop PC.
 
-1. Extract the supplied `ABDULMALIK-ERP-Signing-Keys.zip` in a secure offline location.
-2. Keep `license-private.key` in at least two encrypted/offline backups.
-3. For issuing codes, place a copy at repository-root `signing/license-private.key` on the owner's trusted workstation. The root `.gitignore` excludes the entire `signing/` folder.
-4. In PowerShell, from `source`, issue a lifetime license:
+1. On the owner's trusted workstation, run `dart run tool/generate_license_keys.dart` from `source` exactly once. The script creates `../signing/license-private.key` and prints the Base64 public key.
+2. Replace `licensePublicKey` in `lib/src/core/license.dart` with that printed public key, then commit only the public key change.
+3. Keep `signing/license-private.key` in at least two encrypted/offline backups. The root `.gitignore` excludes the entire `signing/` folder; verify with `git status` that it is not staged.
+4. Never regenerate the key after issuing real licenses. Losing the private key means no new activation codes can be issued for this public key.
+5. In PowerShell, from `source`, issue a lifetime license:
 
 ```powershell
 dart run tool/issue_license.dart ABCDE-FGHJK "Shop name" lifetime
@@ -77,7 +78,7 @@ dart run tool/issue_license.dart ABCDE-FGHJK "Shop name" yearly 2027-12-31 3 1
 
 Arguments are device code, shop name, plan, optional expiry date, maximum devices (default 3), and maximum branches (default 1). Valid plans: `monthly`, `yearly`, `lifetime`, `custom`. The expiry date is inclusive through 23:59:59 UTC.
 
-The license is signed offline and bound to the shop server's device code. The private key never needs to be on the target shop PC. Losing the private key means no new activation codes can be issued for this public key. Rotating it invalidates existing licenses unless a migration strategy is implemented.
+The license is signed offline and bound to the shop server's device code. The private key never needs to be on the target shop PC. Rotating it invalidates existing licenses unless a migration strategy is implemented.
 
 ## Repository layout
 
@@ -132,8 +133,9 @@ powershell -ExecutionPolicy Bypass -File .\tool\build_release.ps1
 
 ### مفاتيح التفعيل
 
-- التطبيق يحتوي المفتاح العام فقط للتحقق من صحة التوقيع.
-- المفتاح الخاص موجود في ملف مستقل يجب حفظه في مكانين آمنين وغير متصلين بالإنترنت.
+- أنشئ زوج المفاتيح مرة واحدة من مجلد `source` بالأمر `dart run tool/generate_license_keys.dart` على جهازك الموثوق.
+- انسخ المفتاح العام الذي تطبعه الأداة إلى ثابت `licensePublicKey` في `lib/src/core/license.dart` ثم ارفع المفتاح العام فقط.
+- احفظ `signing/license-private.key` في مكانين مشفرين وغير متصلين بالإنترنت؛ لا ترفعه إلى GitHub.
 - لا ترفع المفتاح الخاص إلى GitHub ولا تضعه داخل ملف EXE.
 - أداة `issue_license.dart` تنشئ أكواد التفعيل محلياً دون خادم أو اشتراك مدفوع.
 - كود التفعيل مرتبط ببصمة جهاز خادم المحل.
