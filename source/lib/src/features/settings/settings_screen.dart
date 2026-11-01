@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 import '../../core/app_config.dart';
+import '../../core/locale.dart';
 import '../../core/app_info.dart';
 import '../../core/firebase_config.dart';
 import '../../core/format.dart';
@@ -34,6 +35,7 @@ class SettingsScreen extends ConsumerWidget {
     final config = ref.read(appConfigProvider);
     final isServer = config.mode == AppMode.server;
     final themeMode = ref.watch(themeModeProvider);
+    final locale = ref.watch(localeProvider);
 
     return Scaffold(
       appBar: AppBar(title: const Text('الإعدادات')),
@@ -91,6 +93,21 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ]),
           ),
+          const SectionTitle('اللغة / Language'),
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: SegmentedButton<String>(
+                segments: const [
+                  ButtonSegment(value: 'ar', label: Text('العربية')),
+                  ButtonSegment(value: 'en', label: Text('English')),
+                ],
+                selected: {locale.languageCode},
+                onSelectionChanged: (selection) =>
+                    ref.read(localeProvider.notifier).setLanguage(selection.first),
+              ),
+            ),
+          ),
           const SectionTitle('الشكل'),
           Card(
             child: Padding(
@@ -126,7 +143,7 @@ class SettingsScreen extends ConsumerWidget {
                   onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const LicenseScreen())),
                 ),
                 const Divider(height: 1),
-                const _CloudStatusTile(),
+                if (firebaseApiKey.isNotEmpty) const _CloudStatusTile(),
                 const Divider(height: 1),
                 ListTile(
                   leading: const Icon(Icons.backup_rounded),
@@ -170,16 +187,18 @@ class SettingsScreen extends ConsumerWidget {
               onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const LogsScreen())),
             ),
           ),
-          const SectionTitle('المساعدة'),
-          Card(
-            child: ListTile(
-              leading: const Icon(Icons.menu_book_rounded),
-              title: const Text('دليل الاستخدام'),
-              subtitle: const Text('شرح كل حاجة في البرنامج خطوة بخطوة'),
-              trailing: const Icon(Icons.open_in_new_rounded),
-              onTap: () => launchUrl(Uri.parse('$trackingSiteUrl/guide'), mode: LaunchMode.externalApplication),
+          if (trackingSiteUrl.isNotEmpty) ...[
+            const SectionTitle('المساعدة'),
+            Card(
+              child: ListTile(
+                leading: const Icon(Icons.menu_book_rounded),
+                title: const Text('دليل الاستخدام'),
+                subtitle: const Text('شرح كل حاجة في البرنامج خطوة بخطوة'),
+                trailing: const Icon(Icons.open_in_new_rounded),
+                onTap: () => launchUrl(Uri.parse('$trackingSiteUrl/guide'), mode: LaunchMode.externalApplication),
+              ),
             ),
-          ),
+          ],
           const SizedBox(height: 24),
           Center(
             child: Text('$appName $appVersion',
