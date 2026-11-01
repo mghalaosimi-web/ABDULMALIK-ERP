@@ -1,42 +1,63 @@
-# بيبني نسخة ABDULMALIK ERP كاملة للتوزيع:
-#   - ملف تثبيت Windows (Setup.exe)
-#   - ملفات APK للأندرويد (الكل + موبايلات حديثة + موبايلات قديمة)
-# وبيحطهم في فولدر builds.
-# التشغيل من فولدر source:  powershell -ExecutionPolicy Bypass -File tool\build_release.ps1
+# Windows-only release pipeline. Android packaging is intentionally deferred.
+[CmdletBinding()]
+param([switch]$SkipTests)
+
 $ErrorActionPreference = 'Stop'
-$root = Split-Path -Parent $PSScriptRoot
-Set-Location $root
+$sourceRoot = Split-Path -Parent $PSScriptRoot
+$repoRoot = Split-Path -Parent $sourceRoot
+Push-Location $sourceRoot
+try {
+    $flutter = Get-Command flutter -ErrorAction SilentlyContinue
+    if (-not $flutter) { throw 'Flutter is not on PATH. Install the Flutter stable SDK and Windows desktop toolchain first.' }
 
-$version = (Select-String -Path pubspec.yaml -Pattern '^version:\s*([0-9.]+)').Matches[0].Groups[1].Value
-$builds = Join-Path (Split-Path -Parent $root) 'builds'
-$env:Path = "C:\src\flutter\bin;$env:Path"
-if (-not $env:JAVA_HOME) { $env:JAVA_HOME = (Get-ChildItem 'C:\Program Files\Microsoft' -Directory -Filter 'jdk-17*' | Select-Object -First 1).FullName }
+    $versionLine = Select-String -Path 'pubspec.yaml' -Pattern '^version:\s*([0-9]+\.[0-9]+\.[0-9]+)'
+    if (-not $versionLine) { throw 'Could not read app version from pubspec.yaml.' }
+    $version = $versionLine.Matches[0].Groups[1].Value
+    $builds = Join-Path $repoRoot 'builds'
+    New-Item -ItemType Directory -Force -Path $builds | Out-Null
 
-Write-Host "== ABDULMALIK ERP $version =="
-flutter build windows --release
-if ($LASTEXITCODE -ne 0) { throw 'Windows build failed' }
+    Write-Host "== ABDULMALIK ERP $version / Windows x64 =="
+    flutter pub get
+    if ($LASTEXITCODE -ne 0) { throw 'flutter pub get failed.' }
 
-# ملفات Visual C++ اللي بعض الأجهزة مش عليها: بنحطها جنب البرنامج
-$release = Join-Path $root 'build\windows\x64\runner\Release'
-foreach ($dll in 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll') {
-  Copy-Item (Join-Path $env:WINDIR "System32\$dll") $release -Force
+    if (-not $SkipTests) {
+        flutter analyze
+        if ($LASTEXITCODE -ne 0) { throw 'flutter analyze failed. Fix all analyzer errors before packaging.' }
+        flutter test --reporter expanded
+        if ($LASTEXITCODE -ne 0) { throw 'Flutter tests failed. Installer was not created.' }
+    }
+
+    flutter build windows --release
+    if ($LASTEXITCODE -ne 0) { throw 'Windows Release build failed.' }
+
+    $release = Join-Path $sourceRoot 'build\windows\x64\runner\Release'
+    $exe = Join-Path $release 'abdulmalik_erp.exe'
+    if (-not (Test-Path $exe)) { throw "Windows executable not found: $exe" }
+
+    # Include the official Microsoft x64 VC++ runtime installer so first-time
+    # installs can complete without a separate manual prerequisite download.
+    $vcRuntime = Join-Path $release 'vc_redist.x64.exe'
+    if (-not (Test-Path $vcRuntime)) {
+        Invoke-WebRequest -Uri 'https://aka.ms/vs/17/release/vc_redist.x64.exe' -OutFile $vcRuntime
+    }
+    if ((Get-Item $vcRuntime).Length -lt 1MB) { throw 'Downloaded Visual C++ Redistributable looks incomplete.' }
+
+    $isccCandidates = @(
+        (Join-Path ([Environment]::GetFolderPath('ProgramFilesX86')) 'Inno Setup 6\ISCC.exe'),
+        (Join-Path $env:LOCALAPPDATA 'Programs\Inno Setup 6\ISCC.exe')
+    )
+    $iscc = $isccCandidates | Where-Object { Test-Path $_ } | Select-Object -First 1
+    if (-not $iscc) { throw 'Inno Setup 6 ISCC.exe was not found.' }
+
+    & $iscc "/DAppVersion=$version" "/DOutputDir=$builds" (Join-Path $sourceRoot 'installer\fixtrack.iss')
+    if ($LASTEXITCODE -ne 0) { throw 'Inno Setup compilation failed.' }
+
+    $installer = Join-Path $builds "ABDULMALIK-ERP-Setup-$version.exe"
+    if (-not (Test-Path $installer)) { throw 'Installer output is missing.' }
+    $hash = (Get-FileHash $installer -Algorithm SHA256).Hash
+    Write-Host "SUCCESS: $installer"
+    Write-Host "SHA256: $hash"
 }
-
-$iscc = @("$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe", "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
-if (-not $iscc) { throw 'Inno Setup مش متسطب' }
-& $iscc "/DAppVersion=$version" "/DOutputDir=$builds" (Join-Path $root 'installer\fixtrack.iss')
-if ($LASTEXITCODE -ne 0) { throw 'Installer build failed' }
-
-flutter build apk --release
-if ($LASTEXITCODE -ne 0) { throw 'APK build failed' }
-flutter build apk --release --split-per-abi
-if ($LASTEXITCODE -ne 0) { throw 'APK split build failed' }
-
-$apkDir = Join-Path $builds "ABDULMALIK-ERP-$version-android"
-New-Item -ItemType Directory -Force $apkDir | Out-Null
-$out = Join-Path $root 'build\app\outputs\flutter-apk'
-Copy-Item (Join-Path $out 'app-release.apk') (Join-Path $apkDir "ABDULMALIK-ERP-$version-الكل.apk") -Force
-Copy-Item (Join-Path $out 'app-arm64-v8a-release.apk') (Join-Path $apkDir "ABDULMALIK-ERP-$version-موبايلات-حديثة.apk") -Force
-Copy-Item (Join-Path $out 'app-armeabi-v7a-release.apk') (Join-Path $apkDir "ABDULMALIK-ERP-$version-موبايلات-قديمة.apk") -Force
-
-Write-Host "== تم: $builds =="
+finally {
+    Pop-Location
+}
