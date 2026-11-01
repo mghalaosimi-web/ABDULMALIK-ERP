@@ -195,7 +195,7 @@ String activationMessage(Map<String, dynamic> s) {
   }
 
   return [
-    'طلب تفعيل FixTrack',
+    'طلب تفعيل ABDULMALIK ERP',
     if (v('shopName') != null) 'المحل: ${v('shopName')}',
     if (v('branchName') != null && v('branchName') != 'الفرع الرئيسي') 'الفرع: ${v('branchName')}',
     if (v('ownerName') != null) 'صاحب المحل: ${v('ownerName')}',
