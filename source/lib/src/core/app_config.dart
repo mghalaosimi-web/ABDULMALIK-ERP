@@ -24,6 +24,7 @@ class AppConfig {
   static const _kToken = 'token';
   static const _kDeviceId = 'device_id';
   static const _kThemeMode = 'theme_mode';
+  static const _kLanguage = 'language';
   static const _kPrinterUrl = 'receipt_printer_url';
   static const _kPrinterName = 'receipt_printer_name';
   static const _kSmsGateway = 'sms_gateway';
@@ -51,6 +52,10 @@ class AppConfig {
     final os = Platform.isWindows ? 'Windows' : Platform.isAndroid ? 'Android' : Platform.operatingSystem;
     return '$os - ${Platform.localHostname}';
   }
+
+  /// Application language: 'ar' or 'en'. Defaults to Arabic.
+  String get language => _prefs.getString(_kLanguage) ?? 'ar';
+  Future<void> setLanguage(String value) => _prefs.setString(_kLanguage, value);
 
   /// 'system' أو 'light' أو 'dark'
   String get themeMode => _prefs.getString(_kThemeMode) ?? 'system';
