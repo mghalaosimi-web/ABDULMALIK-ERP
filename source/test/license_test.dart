@@ -31,6 +31,15 @@ void main() {
       expect(lic.expires!.year, 2030);
     });
 
+    test('production ABDULMALIK ERP public key verifies an owner-issued code', () async {
+      const productionCode = 'AERP1.eyJ2IjoxLCJpZCI6IlRFU1QtT1dORVItS0VZLVBBSVIiLCJzaG9wIjoiQUJEVUxNQUxJSyBFUlAgVGVzdCIsImRldiI6IkFCQ0RFLUZHSEpLIiwicGxhbiI6ImxpZmV0aW1lIiwiZXhwIjpudWxsLCJkZXZzIjozLCJiciI6MSwiaWF0IjoiMjAyNi0xMS0wMVQwMDowMDowMC4wMDBaIn0.MTyXO4Dw3ANm9KLqkxILP4rzOnmzyet--c1dZaSgsXm6S78v27r7x-OfjO09eQRmx35kZpKuuMefHhsCQG-fCw';
+      final license = await verifyLicense(productionCode, deviceCode: 'ABCDE-FGHJK');
+      expect(license.id, 'TEST-OWNER-KEY-PAIR');
+      expect(license.shop, 'ABDULMALIK ERP Test');
+      expect(license.lifetime, isTrue);
+      expect(license.devices, 3);
+    });
+
     test('code for another device is rejected', () async {
       final code = await signLicense(data(), seed);
       expect(() => verifyLicense(code, deviceCode: 'ZZZZZ-ZZZZZ', publicKey: pub), throwsA(isA<LicenseException>()));
