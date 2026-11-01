@@ -61,7 +61,7 @@ Future<void> exportReportExcel(BuildContext context, Map<String, dynamic> r, Str
         ['العميل', 'التليفون', 'عليه'],
         for (final c in ((r['receivables'] as Map)['customers'] as List).cast<Map<String, dynamic>>()) [c['name'], c['phone'], _p(c['balanceCents'])],
       ]);
-    final path = await saveOrShareFile(w.build(), 'تقرير FixTrack - ${latinDigits(label).replaceAll(RegExp(r'[\\/:*?"<>|]'), '-')}.xlsx',
+    final path = await saveOrShareFile(w.build(), 'تقرير ABDULMALIK ERP - ${latinDigits(label).replaceAll(RegExp(r'[\\/:*?"<>|]'), '-')}.xlsx',
         'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     if (path != null && context.mounted) showMessage(context, 'اتحفظ: $path');
   } catch (e) {
@@ -107,7 +107,7 @@ Future<void> exportReportPdf(BuildContext context, WidgetRef ref, Map<String, dy
         pw.Text(shop.name, style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
         pw.Text('تقرير: $label', style: const pw.TextStyle(fontSize: 11)),
       ]),
-      footer: (c) => pw.Center(child: pw.Text('FixTrack • ${formatDateTime(DateTime.now())} • صفحة ${c.pageNumber}', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600))),
+      footer: (c) => pw.Center(child: pw.Text('ABDULMALIK ERP • ${formatDateTime(DateTime.now())} • صفحة ${c.pageNumber}', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600))),
       build: (_) => [
         pw.SizedBox(height: 8),
         pw.Container(
