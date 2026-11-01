@@ -1,5 +1,5 @@
 ; ملف تثبيت ABDULMALIK ERP لـ Windows (Inno Setup 6).
-; البناء: tool\build_installer.ps1 (بيبني البرنامج وبيجهز ملفات Windows الناقصة وبيعمل الـ Setup).
+; البناء: tool\build_release.ps1 (بيبني البرنامج وبيجهز ملفات Windows الناقصة وبيعمل الـ Setup).
 #define AppName "ABDULMALIK ERP"
 #ifndef AppVersion
   #define AppVersion "0.0.0"
