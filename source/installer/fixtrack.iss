@@ -1,6 +1,6 @@
-; ملف تثبيت FixTrack لـ Windows (Inno Setup 6).
+; ملف تثبيت ABDULMALIK ERP لـ Windows (Inno Setup 6).
 ; البناء: tool\build_installer.ps1 (بيبني البرنامج وبيجهز ملفات Windows الناقصة وبيعمل الـ Setup).
-#define AppName "FixTrack"
+#define AppName "ABDULMALIK ERP"
 #ifndef AppVersion
   #define AppVersion "0.0.0"
 #endif
@@ -13,20 +13,20 @@
 
 [Setup]
 ; المعرّف ده لازم يفضل ثابت عشان التحديثات تتسطب فوق النسخة القديمة
-AppId={{6F1B5C2E-8B7A-4E19-9D3C-FA7E1D2B4C11}
+AppId={{C9D1E4B7-5A23-4C9F-9D11-2F6B8A4E7130}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
-AppPublisher=FixTrack
-DefaultDirName={autopf}\FixTrack
-DefaultGroupName=FixTrack
+AppPublisher=ABDULMALIK
+DefaultDirName={autopf}\ABDULMALIK ERP
+DefaultGroupName=ABDULMALIK ERP
 DisableProgramGroupPage=yes
 PrivilegesRequired=admin
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
 MinVersion=10.0
 OutputDir={#OutputDir}
-OutputBaseFilename=FixTrack-Setup-{#AppVersion}
+OutputBaseFilename=ABDULMALIK-ERP-Setup-{#AppVersion}
 SetupIconFile=..\windows\runner\resources\app_icon.ico
 UninstallDisplayIcon={app}\fixtrack.exe
 Compression=lzma2/max
@@ -41,11 +41,11 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [CustomMessages]
 arabic.DesktopIcon=أيقونة على سطح المكتب
-arabic.AutoStart=شغّل FixTrack لوحده مع تشغيل الكمبيوتر (مهم لو الجهاز ده هو سيرفر المحل)
-arabic.LaunchApp=افتح FixTrack دلوقتي
+arabic.AutoStart=شغّل ABDULMALIK ERP لوحده مع تشغيل الكمبيوتر (مهم لو الجهاز ده هو سيرفر المحل)
+arabic.LaunchApp=افتح ABDULMALIK ERP دلوقتي
 english.DesktopIcon=Create a desktop shortcut
-english.AutoStart=Start FixTrack automatically with Windows (recommended for the shop server)
-english.LaunchApp=Launch FixTrack now
+english.AutoStart=Start ABDULMALIK ERP automatically with Windows (recommended for the shop server)
+english.LaunchApp=Launch ABDULMALIK ERP now
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:DesktopIcon}"
@@ -55,18 +55,18 @@ Name: "autostart"; Description: "{cm:AutoStart}"
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: ignoreversion recursesubdirs createallsubdirs
 
 [Icons]
-Name: "{group}\FixTrack"; Filename: "{app}\fixtrack.exe"
-Name: "{autodesktop}\FixTrack"; Filename: "{app}\fixtrack.exe"; Tasks: desktopicon
-Name: "{commonstartup}\FixTrack"; Filename: "{app}\fixtrack.exe"; Tasks: autostart
+Name: "{group}\ABDULMALIK ERP"; Filename: "{app}\fixtrack.exe"
+Name: "{autodesktop}\ABDULMALIK ERP"; Filename: "{app}\fixtrack.exe"; Tasks: desktopicon
+Name: "{commonstartup}\ABDULMALIK ERP"; Filename: "{app}\fixtrack.exe"; Tasks: autostart
 
 [Run]
 ; الـ Firewall: بنسمح للبرنامج بس (مش بورتات مفتوحة لأي حاجة) عشان الموبايلات تتصل بالسيرفر.
 ; profile=any لأن شبكة الواي فاي في محلات كتير Windows بيعتبرها "عامة".
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""FixTrack"""; Flags: runhidden waituntilterminated
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""FixTrack"" dir=in action=allow program=""{app}\fixtrack.exe"" enable=yes profile=any"; Flags: runhidden waituntilterminated
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""ABDULMALIK ERP"""; Flags: runhidden waituntilterminated
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall add rule name=""ABDULMALIK ERP"" dir=in action=allow program=""{app}\fixtrack.exe"" enable=yes profile=any"; Flags: runhidden waituntilterminated
 Filename: "{app}\fixtrack.exe"; Description: "{cm:LaunchApp}"; Flags: nowait postinstall skipifsilent
 
 [UninstallRun]
-Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""FixTrack"""; Flags: runhidden waituntilterminated; RunOnceId: "RemoveFirewallRule"
+Filename: "{sys}\netsh.exe"; Parameters: "advfirewall firewall delete rule name=""ABDULMALIK ERP"""; Flags: runhidden waituntilterminated; RunOnceId: "RemoveFirewallRule"
 
 ; بيانات المحل (في AppData) مش بتتمسح مع إلغاء التثبيت، عشان مايضيعش حاجة بالغلط.
