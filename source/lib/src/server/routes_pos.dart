@@ -68,6 +68,7 @@ extension _PosRoutes on FixTrackServer {
         'warrantyMonths': p['warranty_months'] ?? 0,
         'active': p['active'] == 1,
         'notes': p['notes'],
+        'imageFileId': p['image_file_id'],
         'updatedAt': p['updated_at'],
       };
 
@@ -168,8 +169,8 @@ extension _PosRoutes on FixTrackServer {
     final qty = serialized ? 0 : (body['qty'] is int ? body['qty'] as int : 0);
     db.transaction(() {
       db.execute(
-        'INSERT INTO products(id, name, barcode, category, cost_cents, price_cents, qty, low_stock, track_stock, serialized, warranty_months, notes, created_at, updated_at) '
-        'VALUES(?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)',
+        'INSERT INTO products(id, name, barcode, category, cost_cents, price_cents, qty, low_stock, track_stock, serialized, warranty_months, notes, image_file_id, created_at, updated_at) '
+        'VALUES(?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?, ?)',
         [
           id, _requiredText(body, 'name', 'اسم الصنف'), _validBarcode(body['barcode']), _optionalText(body, 'category'),
           body['costCents'] == null ? 0 : _cents(body['costCents'], 'سعر الشراء'),
@@ -178,7 +179,7 @@ extension _PosRoutes on FixTrackServer {
           serialized || body['trackStock'] != false ? 1 : 0,
           serialized ? 1 : 0,
           body['warrantyMonths'] is int ? (body['warrantyMonths'] as int).clamp(0, 120) : 0,
-          _optionalText(body, 'notes'), now, now,
+          _optionalText(body, 'notes'), _optionalText(body, 'imageFileId'), now, now,
         ],
       );
       if (qty != 0) _moveStock(id, qty, 'initial', userId: u.id, note: 'رصيد أول المدة');
@@ -210,6 +211,7 @@ extension _PosRoutes on FixTrackServer {
       sets['track_stock'] = 1;
     }
     if (body.containsKey('notes')) sets['notes'] = _optionalText(body, 'notes');
+    if (body.containsKey('imageFileId')) sets['image_file_id'] = _optionalText(body, 'imageFileId');
     if (body.containsKey('active')) sets['active'] = body['active'] == false ? 0 : 1;
     if (sets.isNotEmpty) {
       db.execute('UPDATE products SET ${sets.keys.map((k) => '$k = ?').join(', ')}, updated_at = ? WHERE id = ?', [...sets.values, nowIso(), id]);
