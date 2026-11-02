@@ -18,6 +18,7 @@
 
 The active delivery target is **Windows x64 only**. Android/mobile packaging and mobile-specific work are intentionally deferred until the Windows application, installer, and shop workflows are verified.
 
+- Dedicated accessories inventory with categories, barcode support, stock tracking, and separation from general inventory.
 - Local SQLite database on the shop PC.
 - Local HTTP service for LAN connectivity, ready for a later mobile client.
 - Repair intake and workflow, customers, products, barcode sales, phones/IMEI, purchases, cash drawer, wallets/services, reports, users/roles, audit history and backup/restore.
@@ -93,6 +94,8 @@ This repository preserves the upstream Git history and original copyright notice
 ### نطاق الإصدار الحالي
 
 الإصدار الجاري تجهيزه هو **Windows x64 فقط**. تم تأجيل تطبيق الهاتف حتى اكتمال برنامج ويندوز واختبار قاعدة البيانات والمثبت.
+
+يتضمن المخزون قسماً مستقلاً للأكسسوارات بتصنيفات مثل الجرابات والسماعات والشواحن والكابلات وحماية الشاشة، مع بقائها قابلة للبيع من الكاشير.
 
 البرنامج يعتمد على قاعدة SQLite محلية، ويشغّل خدمة محلية على كمبيوتر المحل. يمكن للأجهزة المتصلة بالشبكة المحلية الاستفادة منها مستقبلاً، لكن إصدار الهاتف مؤجل.
 
