@@ -129,7 +129,7 @@ class DuePicker extends StatelessWidget {
               ),
             ActionChip(
               avatar: const Icon(Icons.event_rounded, size: 18),
-              label: const Text('اختار يوم وساعة'),
+              label: const Text('اختر اليوم والوقت'),
               onPressed: () => _pickCustom(context),
             ),
           ],
