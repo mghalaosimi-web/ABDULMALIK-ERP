@@ -172,11 +172,6 @@ class AboutScreen extends StatelessWidget {
                   style: theme.textTheme.bodyMedium),
             )),
             const SizedBox(height: 16),
-            Text(ar
-                ? 'تنويه مهني: تُعرض المسميات والمؤهلات والمهام وفق المعلومات المقدمة من فريق المشروع، ويُنصح بمراجعة واعتماد السير الذاتية والمسميات الأكاديمية والشهادات من أصحابها قبل النشر الرسمي.'
-                : 'Professional note: Titles, qualifications, and responsibilities are presented as supplied by the project team. Biographies, academic titles, and credentials should be verified and approved by their holders before official publication.',
-                textAlign: TextAlign.center,
-                style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.onSurfaceVariant)),
             const SizedBox(height: 24),
           ],
         ),
