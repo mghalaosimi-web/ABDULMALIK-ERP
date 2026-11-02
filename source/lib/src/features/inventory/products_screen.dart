@@ -297,6 +297,152 @@ class _ProductRow extends StatelessWidget {
   }
 }
 
+
+typedef _PhoneTemplate = ({String brand, String series, String name});
+const _phoneTemplates = <_PhoneTemplate>[
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S26 Ultra'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S26+'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S26'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S25 Ultra'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S25+'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S25'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S25 FE'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S24 Ultra'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S24+'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S24'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S24 FE'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S23 Ultra'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S23+'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S23'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung S23 FE'),
+  (brand: 'Samsung', series: 'Galaxy Note', name: 'Samsung Note20 Ultra'),
+  (brand: 'Samsung', series: 'Galaxy Note', name: 'Samsung Note20'),
+  (brand: 'Samsung', series: 'Galaxy Note', name: 'Samsung Note10+'),
+  (brand: 'Samsung', series: 'Galaxy Note', name: 'Samsung Note10'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A57'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A56 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A55 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A54 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A53 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A37'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A36 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A35 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A34 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A26 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A25 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A17 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A17 4G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A16 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A16 4G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A15 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A15 4G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A07'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung A06'),
+  (brand: 'Samsung', series: 'Galaxy Z', name: 'Samsung Z Fold7'),
+  (brand: 'Samsung', series: 'Galaxy Z', name: 'Samsung Z Flip7'),
+  (brand: 'Samsung', series: 'Galaxy Z', name: 'Samsung Z Fold6'),
+  (brand: 'Samsung', series: 'Galaxy Z', name: 'Samsung Z Flip6'),
+  (brand: 'Samsung', series: 'Galaxy Z', name: 'Samsung Z Fold5'),
+  (brand: 'Samsung', series: 'Galaxy Z', name: 'Samsung Z Flip5'),
+  (brand: 'Samsung', series: 'Galaxy M', name: 'Samsung M56 5G'),
+  (brand: 'Samsung', series: 'Galaxy M', name: 'Samsung M55 5G'),
+  (brand: 'Samsung', series: 'Galaxy M', name: 'Samsung M35 5G'),
+  (brand: 'Samsung', series: 'Galaxy M', name: 'Samsung M15 5G'),
+  (brand: 'Apple', series: 'iPhone 17', name: 'Apple 17 Pro Max'),
+  (brand: 'Apple', series: 'iPhone 17', name: 'Apple 17 Pro'),
+  (brand: 'Apple', series: 'iPhone 17', name: 'Apple 17 Plus'),
+  (brand: 'Apple', series: 'iPhone 17', name: 'Apple 17'),
+  (brand: 'Apple', series: 'iPhone 17', name: 'Apple 17 Air'),
+  (brand: 'Apple', series: 'iPhone 16', name: 'Apple 16 Pro Max'),
+  (brand: 'Apple', series: 'iPhone 16', name: 'Apple 16 Pro'),
+  (brand: 'Apple', series: 'iPhone 16', name: 'Apple 16 Plus'),
+  (brand: 'Apple', series: 'iPhone 16', name: 'Apple 16'),
+  (brand: 'Apple', series: 'iPhone 16', name: 'Apple 16e'),
+  (brand: 'Apple', series: 'iPhone 15', name: 'Apple 15 Pro Max'),
+  (brand: 'Apple', series: 'iPhone 15', name: 'Apple 15 Pro'),
+  (brand: 'Apple', series: 'iPhone 15', name: 'Apple 15 Plus'),
+  (brand: 'Apple', series: 'iPhone 15', name: 'Apple 15'),
+  (brand: 'Apple', series: 'iPhone 14', name: 'Apple 14 Pro Max'),
+  (brand: 'Apple', series: 'iPhone 14', name: 'Apple 14 Pro'),
+  (brand: 'Apple', series: 'iPhone 14', name: 'Apple 14 Plus'),
+  (brand: 'Apple', series: 'iPhone 14', name: 'Apple 14'),
+  (brand: 'Apple', series: 'iPhone 13', name: 'Apple 13 Pro Max'),
+  (brand: 'Apple', series: 'iPhone 13', name: 'Apple 13 Pro'),
+  (brand: 'Apple', series: 'iPhone 13', name: 'Apple 13'),
+  (brand: 'Apple', series: 'iPhone 13', name: 'Apple 13 mini'),
+  (brand: 'Apple', series: 'iPhone 12', name: 'Apple 12 Pro Max'),
+  (brand: 'Apple', series: 'iPhone 12', name: 'Apple 12 Pro'),
+  (brand: 'Apple', series: 'iPhone 12', name: 'Apple 12'),
+  (brand: 'Apple', series: 'iPhone 12', name: 'Apple 12 mini'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic8 Pro'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic8'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic7 Pro'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic7'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic6 Pro'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic V3'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic V2'),
+  (brand: 'Honor', series: 'Number', name: 'HONOR 400 Pro'),
+  (brand: 'Honor', series: 'Number', name: 'HONOR 400'),
+  (brand: 'Honor', series: 'Number', name: 'HONOR 200 Pro'),
+  (brand: 'Honor', series: 'Number', name: 'HONOR 200'),
+  (brand: 'Honor', series: 'Number', name: 'HONOR 90'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X9d'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X9c'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X9b'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X8c'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X8b'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X7c'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X7b'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X6b'),
+  (brand: 'Honor', series: 'Play', name: 'HONOR Play9T'),
+  (brand: 'Honor', series: 'Play', name: 'HONOR Play8T'),
+];
+
+Future<_PhoneTemplate?> _showPhoneTemplatePicker(BuildContext context) =>
+    showDialog<_PhoneTemplate>(context: context, builder: (_) => const _PhoneTemplatePicker());
+
+class _PhoneTemplatePicker extends StatefulWidget {
+  const _PhoneTemplatePicker();
+  @override
+  State<_PhoneTemplatePicker> createState() => _PhoneTemplatePickerState();
+}
+class _PhoneTemplatePickerState extends State<_PhoneTemplatePicker> {
+  final _search = TextEditingController();
+  String _brand = 'Samsung';
+  String? _series;
+  @override
+  void dispose() { _search.dispose(); super.dispose(); }
+  @override
+  Widget build(BuildContext context) {
+    final brands = _phoneTemplates.map((e) => e.brand).toSet().toList();
+    final series = _phoneTemplates.where((e) => e.brand == _brand).map((e) => e.series).toSet().toList();
+    final q = _search.text.trim().toLowerCase();
+    final items = _phoneTemplates.where((e) => e.brand == _brand &&
+      (_series == null || e.series == _series) && (q.isEmpty || e.name.toLowerCase().contains(q))).toList();
+    return AlertDialog(
+      title: const Text('اختيار طراز الهاتف'),
+      content: SizedBox(width: 520, height: 520, child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Wrap(spacing: 8, children: [for (final b in brands) ChoiceChip(label: Text(b), selected: _brand == b, onSelected: (_) => setState(() { _brand=b; _series=null; }))]),
+        const SizedBox(height: 10),
+        TextField(controller: _search, decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'ابحث عن اسم الطراز أو رقمه'), onChanged: (_) => setState(() {})),
+        const SizedBox(height: 10),
+        SizedBox(height: 42, child: ListView(scrollDirection: Axis.horizontal, children: [
+          Padding(padding: const EdgeInsetsDirectional.only(end: 6), child: ChoiceChip(label: const Text('كل الفئات'), selected: _series == null, onSelected: (_) => setState(() => _series=null))),
+          for (final s in series) Padding(padding: const EdgeInsetsDirectional.only(end: 6), child: ChoiceChip(label: Text(s), selected: _series == s, onSelected: (_) => setState(() => _series=s))),
+        ])),
+        const SizedBox(height: 8),
+        Expanded(child: items.isEmpty ? const Center(child: Text('لا توجد نتائج مطابقة')) : ListView.separated(
+          itemCount: items.length, separatorBuilder: (_, _) => const Divider(height: 1),
+          itemBuilder: (_, i) => ListTile(dense: true, leading: const Icon(Icons.phone_android_rounded),
+            title: Text(items[i].name), subtitle: Text(items[i].series), onTap: () => Navigator.pop(context, items[i])),
+        )),
+        Text('${items.length} طرازاً في القائمة', textAlign: TextAlign.end, style: Theme.of(context).textTheme.bodySmall),
+      ])),
+      actions: [TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء'))],
+    );
+  }
+}
+
 /// إضافة صنف أو تعديله، ومنه الجرد وحركة المخزون.
 class ProductDialog extends ConsumerStatefulWidget {
   const ProductDialog({super.key, this.product, this.initialBarcode, this.accessories = false});
@@ -408,35 +554,43 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                 if (_isNew)
                   Align(
                     alignment: AlignmentDirectional.centerStart,
-                    child: PopupMenuButton<int>(
-                      tooltip: 'اختيار قالب جاهز',
-                      onSelected: (index) {
-                        final t = _productTemplates[index];
-                        setState(() {
-                          _name.text = t.label;
-                          _category.text = t.category;
-                          _cost.text = (t.cost / 100).toStringAsFixed(2);
-                          _price.text = (t.price / 100).toStringAsFixed(2);
-                          _serialized = t.serialized;
-                          _track = true;
-                          _warranty.text = '${t.warranty}';
-                          if (t.serialized) _qty.text = '0';
-                        });
-                      },
-                      itemBuilder: (_) => [
-                        for (var i = 0; i < _productTemplates.length; i++)
-                          PopupMenuItem(value: i, child: Text(_productTemplates[i].label)),
-                      ],
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 8),
-                        child: Row(mainAxisSize: MainAxisSize.min, children: [
-                          Icon(Icons.dashboard_customize_outlined, size: 18),
-                          SizedBox(width: 8),
-                          Text('اختيار قالب جاهز'),
-                          Icon(Icons.arrow_drop_down),
-                        ]),
+                    child: Wrap(spacing: 8, runSpacing: 4, children: [
+                      TextButton.icon(
+                        onPressed: () async {
+                          final selected = await _showPhoneTemplatePicker(context);
+                          if (selected == null || !mounted) return;
+                          setState(() {
+                            _name.text = selected.name;
+                            _category.text = 'أجهزة محمولة';
+                            _serialized = true;
+                            _track = true;
+                            _warranty.text = '12';
+                            _qty.text = '0';
+                          });
+                        },
+                        icon: const Icon(Icons.phone_android_rounded, size: 18),
+                        label: const Text('قوالب الهواتف حسب الشركة'),
                       ),
-                    ),
+                      PopupMenuButton<int>(
+                        tooltip: 'قوالب المنتجات العامة',
+                        onSelected: (index) {
+                          final t = _productTemplates[index];
+                          setState(() {
+                            _name.text = t.label; _category.text = t.category;
+                            _cost.text = (t.cost / 100).toStringAsFixed(2);
+                            _price.text = (t.price / 100).toStringAsFixed(2);
+                            _serialized = t.serialized; _track = true;
+                            _warranty.text = '${t.warranty}';
+                            if (t.serialized) _qty.text = '0';
+                          });
+                        },
+                        itemBuilder: (_) => [for (var i=0; i<_productTemplates.length; i++) PopupMenuItem(value:i, child:Text(_productTemplates[i].label))],
+                        child: const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.dashboard_customize_outlined, size: 18), SizedBox(width: 6),
+                          Text('قوالب المنتجات الأخرى'), Icon(Icons.arrow_drop_down),
+                        ])),
+                      ),
+                    ]),
                   ),
                 TextFormField(
                   controller: _name,
