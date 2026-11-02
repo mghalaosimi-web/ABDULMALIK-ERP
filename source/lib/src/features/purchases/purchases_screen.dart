@@ -48,7 +48,7 @@ class _PurchasesList extends ConsumerWidget {
       loading: () => const Center(child: CircularProgressIndicator()),
       error: (e, _) => Center(child: ErrorBanner(errorText(e))),
       data: (list) => list.isEmpty
-          ? const EmptyState(icon: Icons.local_shipping_outlined, message: 'لسه مفيش فواتير شرا.\nلما البضاعة توصل من المورد سجّلها هنا، والكميات هتزيد في المخزون لوحدها.')
+          ? const EmptyState(icon: Icons.local_shipping_outlined, message: 'لا توجد فواتير شراء حتى الآن.\nعند استلام البضاعة من المورد، سجّلها هنا لتُضاف الكميات تلقائياً إلى المخزون.')
           : ListView.separated(
               padding: const EdgeInsets.fromLTRB(20, 12, 20, 96),
               itemCount: list.length,
@@ -97,7 +97,7 @@ class _SuppliersList extends ConsumerWidget {
               title: Text(s.name),
               subtitle: s.phone != null ? Text(s.phone!) : null,
               trailing: s.balanceCents > 0
-                  ? Text('ليه ${money(s.balanceCents)}', style: const TextStyle(color: brandOrange).bold)
+                  ? Text('المستحق: ${money(s.balanceCents)}', style: const TextStyle(color: brandOrange).bold)
                   : const Text('خالص'),
               onTap: () => showDialog<void>(context: context, builder: (_) => _SupplierPayDialog(supplier: s)),
             ),
@@ -145,7 +145,7 @@ class _SupplierDialogState extends ConsumerState<SupplierDialog> {
         child: Column(mainAxisSize: MainAxisSize.min, children: [
           TextField(controller: _name, autofocus: true, decoration: const InputDecoration(labelText: 'اسم المورد')),
           const SizedBox(height: 12),
-          TextField(controller: _phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'التليفون')),
+          TextField(controller: _phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'رقم الهاتف')),
           if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],
         ]),
       ),
@@ -204,7 +204,7 @@ class _SupplierPayDialogState extends ConsumerState<_SupplierPayDialog> {
       content: SizedBox(
         width: 400,
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text(s.balanceCents > 0 ? 'ليه عندك: ${money(s.balanceCents)}' : 'الحساب خالص'),
+          Text(s.balanceCents > 0 ? 'المبلغ المستحق عليك: ${money(s.balanceCents)}' : 'الحساب مسدد بالكامل'),
           const SizedBox(height: 12),
           MoneyField(controller: _amount, label: 'دفعة للمورد', autofocus: true),
           const SizedBox(height: 12),
@@ -233,7 +233,7 @@ class _PurchaseLine {
   int get count => product.serialized ? imeis.length : qty;
 }
 
-/// فاتورة شرا جديدة: المورد، والأصناف بالكمية وسعر الشرا، والموبايلات بالـ IMEI.
+/// فاتورة شراء جديدة: المورد، والأصناف مع الكميات وأسعار الشراء، والأجهزة مع أرقام IMEI.
 class NewPurchaseScreen extends ConsumerStatefulWidget {
   const NewPurchaseScreen({super.key});
 
@@ -324,7 +324,7 @@ class _NewPurchaseScreenState extends ConsumerState<NewPurchaseScreen> {
             Expanded(
               child: DropdownButtonFormField<String?>(
                 initialValue: _supplier?.id,
-                decoration: const InputDecoration(labelText: 'اختار المورد'),
+                decoration: const InputDecoration(labelText: 'اختر المورد'),
                 items: [
                   const DropdownMenuItem(value: null, child: Text('من غير مورد (شرا كاش)')),
                   for (final s in suppliers) DropdownMenuItem(value: s.id, child: Text(s.name)),
@@ -376,7 +376,7 @@ class _NewPurchaseScreenState extends ConsumerState<NewPurchaseScreen> {
           for (final p in _results)
             ListTile(dense: true, title: Text(p.name), subtitle: Text(p.barcode ?? ''), trailing: const Icon(Icons.add_rounded), onTap: () => _add(p)),
           if (_results.isEmpty && _search.text.trim().isNotEmpty)
-            const Padding(padding: EdgeInsets.all(8), child: Text('الصنف مش موجود؟ ضيفه الأول من شاشة المخزون.')),
+            const Padding(padding: EdgeInsets.all(8), child: Text('هل الصنف غير موجود؟ أضفه أولاً من شاشة المخزون.')),
           const SizedBox(height: 8),
           for (final l in _lines) _LineEditor(line: l, onChanged: () => setState(() {
             if (!_paidEdited) _paid.text = moneyInput(_total);
@@ -386,11 +386,11 @@ class _NewPurchaseScreenState extends ConsumerState<NewPurchaseScreen> {
         SectionCard(title: 'الحساب', icon: Icons.payments_rounded, children: [
           Row(children: [Expanded(child: Text('الإجمالي', style: text.titleMedium)), Text(money(_total), style: text.titleLarge?.bold)]),
           const SizedBox(height: 12),
-          MoneyField(controller: _paid, label: 'المدفوع للمورد دلوقتي', onChanged: (_) => setState(() => _paidEdited = true)),
+          MoneyField(controller: _paid, label: 'المبلغ المدفوع للمورد الآن', onChanged: (_) => setState(() => _paidEdited = true)),
           if (_paidEdited && (parseMoney(_paid.text) ?? 0) < _total)
             Padding(
               padding: const EdgeInsets.only(top: 6),
-              child: Text('هيفضل للمورد: ${money(_total - (parseMoney(_paid.text) ?? 0))}', style: const TextStyle(color: brandOrange).semiBold),
+              child: Text('المبلغ المتبقي للمورد: ${money(_total - (parseMoney(_paid.text) ?? 0))}', style: const TextStyle(color: brandOrange).semiBold),
             ),
           const SizedBox(height: 12),
           Wrap(spacing: 8, children: [
