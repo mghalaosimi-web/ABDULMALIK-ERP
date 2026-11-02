@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../core/format.dart';
 import '../../core/pos_models.dart';
+import '../../core/product_sections.dart';
 import '../../core/session.dart';
 import '../../core/theme.dart';
 import '../../widgets/barcode_scan.dart';
@@ -18,7 +19,9 @@ import '../phones/phones_screen.dart';
 import 'import_screen.dart';
 
 class ProductsScreen extends ConsumerStatefulWidget {
-  const ProductsScreen({super.key});
+  const ProductsScreen({super.key, this.accessories = false});
+
+  final bool accessories;
 
   @override
   ConsumerState<ProductsScreen> createState() => _ProductsScreenState();
@@ -41,14 +44,18 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(sessionProvider).value!.user!;
-    final data = ref.watch(productsProvider((q: _query, category: _category, low: _lowOnly)));
-    final categories = ref.watch(categoriesProvider).value ?? const <String>[];
+    final data = ref.watch(productsProvider((q: _query, category: _category, low: _lowOnly, section: widget.accessories ? 'accessories' : 'general')));
+    final allCategories = ref.watch(categoriesProvider).value ?? const <String>[];
+    final categories = allCategories
+        .where((c) => widget.accessories ? isAccessoriesCategory(c) : !isAccessoriesCategory(c))
+        .map((c) => widget.accessories ? visibleProductCategory(c) : c)
+        .toList();
     final scheme = Theme.of(context).colorScheme;
     final r = data.value;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('المخزون'),
+        title: Text(widget.accessories ? 'الأكسسوارات' : 'المخزون'),
         actions: [
           if (user.isOwner)
             TextButton.icon(
@@ -70,9 +77,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showDialog<void>(context: context, builder: (_) => const ProductDialog()),
+        onPressed: () => showDialog<void>(context: context, builder: (_) => ProductDialog(accessories: widget.accessories)),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('صنف جديد'),
+        label: Text(widget.accessories ? 'إضافة أكسسوار' : 'صنف جديد'),
       ),
       body: Column(
         children: [
@@ -188,7 +195,7 @@ class _ProductRow extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         title: Text(p.name, style: const TextStyle().semiBold),
-        subtitle: Text([?p.category, if (p.barcode != null) p.barcode!, if (showCost) 'شرا ${money(p.costCents)}'].join(' • ')),
+        subtitle: Text([if ((p.category ?? '').isNotEmpty) visibleProductCategory(p.category), if (p.barcode != null) p.barcode!, if (showCost) 'شرا ${money(p.costCents)}'].join(' • ')),
         leading: p.trackStock && !p.serialized
             ? IconButton.filledTonal(
                 tooltip: 'إضافة كمية وصلت',
@@ -219,9 +226,10 @@ class _ProductRow extends StatelessWidget {
 
 /// إضافة صنف أو تعديله، ومنه الجرد وحركة المخزون.
 class ProductDialog extends ConsumerStatefulWidget {
-  const ProductDialog({super.key, this.product, this.initialBarcode});
+  const ProductDialog({super.key, this.product, this.initialBarcode, this.accessories = false});
   final Product? product;
   final String? initialBarcode;
+  final bool accessories;
 
   @override
   ConsumerState<ProductDialog> createState() => _ProductDialogState();
@@ -232,7 +240,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
   late final p = widget.product;
   late final _name = TextEditingController(text: p?.name);
   late final _barcode = TextEditingController(text: p?.barcode ?? widget.initialBarcode);
-  late final _category = TextEditingController(text: p?.category);
+  late final _category = TextEditingController(text: widget.accessories ? visibleProductCategory(p?.category) : p?.category);
   late final _cost = TextEditingController(text: p == null ? '' : moneyInput(p!.costCents));
   late final _price = TextEditingController(text: p == null ? '' : moneyInput(p!.priceCents));
   late final _qty = TextEditingController(text: p == null ? '' : '${p!.qty}');
@@ -270,7 +278,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
       final body = {
         'name': _name.text,
         'barcode': _barcode.text,
-        'category': _category.text,
+        'category': widget.accessories ? storedAccessoriesCategory(_category.text) : _category.text,
         if (isOwner || _isNew) 'costCents': parseMoney(_cost.text) ?? 0,
         'priceCents': parseMoney(_price.text) ?? 0,
         'lowStock': int.tryParse(latinDigits(_low.text)) ?? 0,
@@ -349,7 +357,13 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                   ),
                 ),
                 const SizedBox(height: 12),
-                SuggestField(controller: _category, label: 'القسم (مثلاً: جرابات، شواحن)', options: () => categories),
+                SuggestField(
+                  controller: _category,
+                  label: widget.accessories ? 'تصنيف الأكسسوار' : 'القسم (مثلاً: أجهزة، قطع غيار)',
+                  options: () => widget.accessories
+                      ? accessoriesCategories
+                      : categories.where((c) => !isAccessoriesCategory(c)).toList(),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
