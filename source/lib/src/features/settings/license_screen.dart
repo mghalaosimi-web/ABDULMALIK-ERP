@@ -30,10 +30,10 @@ class LicenseBanner extends ConsumerWidget {
     String? text;
     var color = brandOrange;
     if (state == 'expired') {
-      text = s['plan'] == 'trial' ? (ar ? 'التجربة المجانية خلصت. فعّل البرنامج عشان تكمّل تسجيل شغل جديد.' : 'The free trial has ended. Activate the app to continue creating new records.') : (ar ? 'الاشتراك خلص. جدّده عشان تكمّل تسجيل شغل جديد.' : 'The license has expired. Renew it to continue creating new records.');
+      text = s['plan'] == 'trial' ? (ar ? 'انتهت الفترة التجريبية المجانية. فعّل البرنامج لمتابعة تسجيل عمليات جديدة.' : 'The free trial has ended. Activate the app to continue creating new records.') : (ar ? 'انتهت صلاحية الاشتراك. جدّده لمتابعة تسجيل عمليات جديدة.' : 'The license has expired. Renew it to continue creating new records.');
       color = scheme.error;
     } else if (state == 'tampered') {
-      text = ar ? 'تاريخ الكمبيوتر مش مظبوط، ظبطه عشان البرنامج يشتغل.' : 'The computer clock appears incorrect. Correct the date and time.';
+      text = ar ? 'تاريخ الكمبيوتر غير صحيح. يرجى ضبط التاريخ والوقت حتى يعمل البرنامج.' : 'The computer clock appears incorrect. Correct the date and time.';
       color = scheme.error;
     } else if (state == 'trial') {
       text = ar ? 'تجربة مجانية: فاضل ${days ?? 0} يوم' : 'Free trial: ${days ?? 0} days remaining';
@@ -118,7 +118,7 @@ class _LicenseScreenState extends ConsumerState<LicenseScreen> {
           final (label, color) = switch (state) {
             'active' => (ar ? 'مفعّل ✅' : 'Active ✅', const Color(0xFF16A34A)),
             'trial' => (ar ? 'تجربة مجانية' : 'Free trial', brandBlue),
-            'tampered' => (ar ? 'تاريخ الجهاز مش مظبوط' : 'System clock error', Theme.of(context).colorScheme.error),
+            'tampered' => (ar ? 'تاريخ الجهاز غير صحيح' : 'System clock error', Theme.of(context).colorScheme.error),
             _ => (ar ? 'منتهي' : 'Expired', Theme.of(context).colorScheme.error),
           };
           final planLabels = ar ? _planLabelsAr : _planLabelsEn;
@@ -142,7 +142,7 @@ class _LicenseScreenState extends ConsumerState<LicenseScreen> {
                   ),
                   const SizedBox(height: 12),
                   SectionCard(title: ar ? 'كود الجهاز' : 'Device code', icon: Icons.fingerprint_rounded, children: [
-                    Text(ar ? 'ابعت الكود ده لصاحب البرنامج عشان يعملك كود التفعيل:' : 'Send this code to the software owner to issue your activation key:'),
+                    Text(ar ? 'أرسل هذا الرمز إلى مطوّر البرنامج للحصول على رمز التفعيل:' : 'Send this code to the software owner to issue your activation key:'),
                     const SizedBox(height: 8),
                     Row(children: [
                       Expanded(
@@ -180,7 +180,7 @@ class _LicenseScreenState extends ConsumerState<LicenseScreen> {
                     BusyButton(label: ar ? 'تفعيل' : 'Activate', icon: Icons.verified_rounded, busy: _busy, onPressed: _activate),
                   ]),
                   const SizedBox(height: 12),
-                  Text(ar ? 'لو الاشتراك خلص، كل بياناتك بتفضل موجودة، وتقدر تسلّم الأجهزة اللي عندك وتشوف التقارير. اللي بيقف بس تسجيل شغل جديد.' : 'If the license expires, your existing data remains available. You can finish current work and view reports, but cannot create new records.',
+                  Text(ar ? 'عند انتهاء الاشتراك، تظل بياناتك محفوظة، ويمكنك تسليم الأجهزة الحالية والاطلاع على التقارير. يتوقف فقط تسجيل العمليات الجديدة.' : 'If the license expires, your existing data remains available. You can finish current work and view reports, but cannot create new records.',
                       style: text.bodySmall),
                 ]),
               ),
@@ -204,7 +204,7 @@ String activationMessage(Map<String, dynamic> s) {
     if (v('shopName') != null) 'المحل: ${v('shopName')}',
     if (v('branchName') != null && v('branchName') != 'الفرع الرئيسي') 'الفرع: ${v('branchName')}',
     if (v('ownerName') != null) 'صاحب المحل: ${v('ownerName')}',
-    if (v('shopPhone') != null) 'التليفون: ${v('shopPhone')}',
+    if (v('shopPhone') != null) 'رقم الهاتف: ${v('shopPhone')}',
     'كود الجهاز: ${s['deviceCode']}',
   ].join('\n');
 }
