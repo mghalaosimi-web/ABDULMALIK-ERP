@@ -96,7 +96,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       onTap: () => setState(() => _lowOnly = !_lowOnly),
                       child: Text('${r.lowCount} أوشك على النفاد', style: TextStyle(color: scheme.error).semiBold),
                     ),
-                  if (r.stockValueCents != null) Text('قيمة البضاعة (بسعر الشرا): ${money(r.stockValueCents!)}'),
+                  if (r.stockValueCents != null) Text('قيمة البضاعة (بسعر الشراء): ${money(r.stockValueCents!)}'),
                 ],
               ),
             ),
@@ -196,7 +196,7 @@ class _ProductRow extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         title: Text(p.name, style: const TextStyle().semiBold),
-        subtitle: Text([if ((p.category ?? '').isNotEmpty) visibleProductCategory(p.category), if (p.barcode != null) p.barcode!, if (showCost) 'شرا ${money(p.costCents)}'].join(' • ')),
+        subtitle: Text([if ((p.category ?? '').isNotEmpty) visibleProductCategory(p.category), if (p.barcode != null) p.barcode!, if (showCost) 'شراء ${money(p.costCents)}'].join(' • ')),
         leading: p.trackStock && !p.serialized
             ? IconButton.filledTonal(
                 tooltip: 'إضافة كمية واردة',
@@ -344,7 +344,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                   controller: _barcode,
                   textDirection: TextDirection.ltr,
                   decoration: InputDecoration(
-                    labelText: 'الباركود (امسحه بالسكانر أو سيبه فاضي)',
+                    labelText: 'الرمز الشريطي (امسحه بالقارئ أو اتركه فارغاً)',
                     suffixIcon: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -375,7 +375,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                   children: [
                     if (user.isOwner || _isNew) ...[
                       Expanded(
-                        child: MoneyField(controller: _cost, label: 'سعر الشرا'),
+                        child: MoneyField(controller: _cost, label: 'سعر الشراء'),
                       ),
                       const SizedBox(width: 12),
                     ],
@@ -387,7 +387,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                 const SizedBox(height: 12),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('موبايل / جهاز له IMEI'),
+                  title: const Text('هاتف أو جهاز برقم IMEI'),
                   subtitle: const Text('يُسجّل كل جهاز ويُباع باستخدام رقم IMEI الخاص به'),
                   value: _serialized,
                   onChanged: p?.serialized == true ? null : (v) => setState(() => _serialized = v),
@@ -598,7 +598,7 @@ const _moveReasons = {
   'initial': 'رصيد أول المدة',
   'sale': 'بيع',
   'return': 'مرتجع من عميل',
-  'purchase': 'شرا / وارد',
+  'purchase': 'شراء / وارد',
   'count': 'جرد',
   'damaged': 'تالف',
   'lost': 'فاقد',
@@ -735,7 +735,7 @@ class _LabelsDialogState extends ConsumerState<_LabelsDialog> {
   }
 }
 
-/// بيستخدم في الكاشير لما باركود مش متسجل: يفتح شاشة صنف جديد بالباركود ده.
+/// يُستخدم في شاشة نقطة البيع عند مسح رمز شريطي غير مسجل؛ لفتح شاشة إضافة صنف جديد بهذا الرمز.
 Future<void> addProductWithBarcode(BuildContext context, String barcode) => showDialog<void>(
   context: context,
   builder: (_) => ProductDialog(initialBarcode: barcode),
