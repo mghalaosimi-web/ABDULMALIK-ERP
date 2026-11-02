@@ -1,5 +1,5 @@
-/// الماركات والموديلات الشائعة في مصر، عشان الاستلام يبقى أسرع.
-/// المستخدم يقدر يكتب أي ماركة أو موديل مش موجود في القائمة.
+/// العلامات التجارية والطرازات الشائعة لتسهيل تسجيل الأجهزة.
+/// يمكن للمستخدم إدخال أي علامة تجارية أو طراز غير مدرج في القائمة.
 const deviceCatalog = <String, List<String>>{
   'Samsung': [
     'Galaxy A05', 'Galaxy A05s', 'Galaxy A06', 'Galaxy A15', 'Galaxy A16', 'Galaxy A25', 'Galaxy A26',
@@ -33,8 +33,8 @@ const deviceCatalog = <String, List<String>>{
 };
 
 const deviceTypes = {
-  'phone': 'موبايل',
-  'tablet': 'تابلت',
+  'phone': 'هاتف محمول',
+  'tablet': 'جهاز لوحي',
   'watch': 'ساعة',
   'laptop': 'لابتوب',
   'other': 'أخرى',

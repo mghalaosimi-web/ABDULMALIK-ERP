@@ -24,7 +24,7 @@ class CartState {
       );
 }
 
-/// السلة بتفضل موجودة لو الكاشير راح شاشة تانية ورجع.
+/// تظل سلة المبيعات محفوظة عند انتقال أمين الصندوق إلى شاشة أخرى ثم العودة.
 final cartProvider = NotifierProvider<CartController, CartState>(CartController.new);
 
 class CartController extends Notifier<CartState> {

@@ -25,7 +25,7 @@ class PurchasesScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('المشتريات'),
-          bottom: const TabBar(tabs: [Tab(text: 'فواتير الشراء'), Tab(text: 'الموردين')]),
+          bottom: const TabBar(tabs: [Tab(text: 'فواتير الشراء'), Tab(text: 'الموردون')]),
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const NewPurchaseScreen())),
@@ -57,7 +57,7 @@ class _PurchasesList extends ConsumerWidget {
                 final p = list[i];
                 return Card(
                   child: ListTile(
-                    title: Text('#${p.number} • ${p.supplierName ?? 'من غير مورد'}'),
+                    title: Text('#${p.number} • ${p.supplierName ?? 'دون مورد'}'),
                     subtitle: Text('${formatDateTime(p.createdAt)} • ${p.itemsCount} قطعة${p.userName != null ? ' • ${p.userName}' : ''}'),
                     trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
                       Text(money(p.totalCents), style: const TextStyle().bold),
@@ -98,7 +98,7 @@ class _SuppliersList extends ConsumerWidget {
               subtitle: s.phone != null ? Text(s.phone!) : null,
               trailing: s.balanceCents > 0
                   ? Text('المستحق: ${money(s.balanceCents)}', style: const TextStyle(color: brandOrange).bold)
-                  : const Text('خالص'),
+                  : const Text('مسدد بالكامل'),
               onTap: () => showDialog<void>(context: context, builder: (_) => _SupplierPayDialog(supplier: s)),
             ),
           ),
@@ -326,7 +326,7 @@ class _NewPurchaseScreenState extends ConsumerState<NewPurchaseScreen> {
                 initialValue: _supplier?.id,
                 decoration: const InputDecoration(labelText: 'اختر المورد'),
                 items: [
-                  const DropdownMenuItem(value: null, child: Text('بدون مورد (شراء نقدي)')),
+                  const DropdownMenuItem(value: null, child: Text('دون مورد (شراء نقدي)')),
                   for (final s in suppliers) DropdownMenuItem(value: s.id, child: Text(s.name)),
                 ],
                 onChanged: (v) => setState(() => _supplier = suppliers.where((s) => s.id == v).firstOrNull),
@@ -348,7 +348,7 @@ class _NewPurchaseScreenState extends ConsumerState<NewPurchaseScreen> {
           TextField(
             controller: _search,
             decoration: InputDecoration(
-              hintText: 'امسح الباركود أو اكتب اسم الصنف',
+              hintText: 'امسح الرمز الشريطي أو أدخل اسم الصنف',
               prefixIcon: const Icon(Icons.search_rounded),
               suffixIcon: cameraScanSupported
                   ? IconButton(

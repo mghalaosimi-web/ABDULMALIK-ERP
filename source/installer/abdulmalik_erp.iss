@@ -41,8 +41,8 @@ Name: "english"; MessagesFile: "compiler:Default.isl"
 
 [CustomMessages]
 arabic.DesktopIcon=أيقونة على سطح المكتب
-arabic.AutoStart=شغّل ABDULMALIK ERP لوحده مع تشغيل الكمبيوتر (مهم لو الجهاز ده هو سيرفر المحل)
-arabic.LaunchApp=افتح ABDULMALIK ERP دلوقتي
+arabic.AutoStart=تشغيل ABDULMALIK ERP تلقائياً عند بدء تشغيل Windows (موصى به إذا كان هذا الجهاز خادم المحل)
+arabic.LaunchApp=تشغيل ABDULMALIK ERP الآن
 english.DesktopIcon=Create a desktop shortcut
 english.AutoStart=Start ABDULMALIK ERP automatically with Windows (recommended for the shop server)
 english.LaunchApp=Launch ABDULMALIK ERP now

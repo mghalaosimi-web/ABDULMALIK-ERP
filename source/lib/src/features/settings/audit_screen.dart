@@ -17,14 +17,14 @@ const _actionLabels = {
   'auth.login': 'تسجيل دخول',
   'user.create': 'إضافة موظف',
   'user.update': 'تعديل موظف',
-  'user.password': 'تغيير كلمة السر',
+  'user.password': 'تغيير كلمة المرور',
   'customer.update': 'تعديل عميل',
   'ticket.create': 'استلام جهاز',
   'ticket.update': 'تعديل جهاز',
   'ticket.status': 'تغيير مرحلة',
   'ticket.lock_view': 'عرض رمز قفل الشاشة',
   'ticket.deliver': 'تسليم جهاز',
-  'payment.create': 'تسجيل فلوس',
+  'payment.create': 'تسجيل دفعة',
 };
 
 const _actionIcons = {

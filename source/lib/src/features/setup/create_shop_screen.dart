@@ -80,7 +80,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
             const SizedBox(height: 24),
             Text(ar ? 'الخادم لم يجهز بعد' : 'The server is not ready yet', style: text.titleLarge?.bold, textAlign: TextAlign.center),
             const SizedBox(height: 8),
-            Text(ar ? 'سجّل بيانات المحل أولاً من برنامج الكمبيوتر الذي يعمل كخادم، ثم ارجع إلى هنا.' : 'Register the shop first from the computer running as the server, then return here.',
+            Text(ar ? 'سجّل بيانات المحل أولاً من برنامج الحاسوب الذي يعمل كخادم، ثم ارجع إلى هنا.' : 'Register the shop first from the computer running as the server, then return here.',
                 textAlign: TextAlign.center),
             const SizedBox(height: 20),
             FilledButton(onPressed: () => ref.read(sessionProvider.notifier).retry(), child: Text(ar ? 'حاول مرة أخرى' : 'Try again')),
@@ -154,7 +154,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
               controller: _password,
               obscureText: !_showPassword,
               decoration: InputDecoration(
-                labelText: ar ? 'كلمة السر *' : 'Password *',
+                labelText: ar ? 'كلمة المرور *' : 'Password *',
                 prefixIcon: const Icon(Icons.lock_rounded),
                 suffixIcon: IconButton(
                   icon: Icon(_showPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded),
@@ -167,7 +167,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
             TextFormField(
               controller: _confirm,
               obscureText: !_showPassword,
-              decoration: InputDecoration(labelText: ar ? 'تأكيد كلمة السر *' : 'Confirm password *', prefixIcon: Icon(Icons.lock_outline_rounded)),
+              decoration: InputDecoration(labelText: ar ? 'تأكيد كلمة المرور *' : 'Confirm password *', prefixIcon: Icon(Icons.lock_outline_rounded)),
               validator: (v) => v != _password.text ? (ar ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match') : null,
               onFieldSubmitted: (_) => _submit(),
             ),

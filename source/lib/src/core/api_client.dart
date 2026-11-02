@@ -17,7 +17,7 @@ class ApiException implements Exception {
 }
 
 const networkErrorMessage =
-    'مش قادر أوصل لسيرفر المحل. اتأكد إن كمبيوتر المحل شغال والبرنامج مفتوح عليه، وإنك على نفس شبكة الواي فاي.';
+    'تعذّر الاتصال بخادم المحل. يُرجى التأكد من تشغيل حاسوب المحل والبرنامج عليه، ومن اتصال الجهازين بالشبكة المحلية نفسها.';
 
 /// بيكلم سيرفر المحل. كل الردود JSON، ورسايل الخطأ جاية من السيرفر بالعربي.
 class ApiClient {
@@ -54,7 +54,7 @@ class ApiClient {
     try {
       res = await http.Response.fromStream(await _http.send(req).timeout(timeout));
     } on SocketException catch (e) {
-      DiagLog.app?.write('NET', '$method $path: مش قادر يوصل للسيرفر ($e)');
+      DiagLog.app?.write('NET', '$method $path: تعذّر الاتصال بالخادم ($e)');
       throw ApiException(networkErrorMessage);
     } on TimeoutException {
       DiagLog.app?.write('NET', '$method $path: السيرفر ما ردّش في ${timeout.inSeconds} ثانية');

@@ -21,7 +21,7 @@ Future<void> main() async {
   Intl.defaultLocale = config.language;
   await _startDiagnostics();
   runApp(ProviderScope(
-    // الأخطاء بنعرضها للمستخدم بنفسنا، فمش عايزين Riverpod يعيد المحاولة لوحده
+    // الأخطاء بنعرضها للمستخدم بنفسنا، فلا نريد من Riverpod إعادة المحاولة تلقائياً
     retry: (_, _) => null,
     overrides: [appConfigProvider.overrideWithValue(config)],
     child: const FixTrackApp(),
@@ -44,7 +44,7 @@ Future<void> _startDiagnostics() async {
       return true;
     };
     WidgetsBinding.instance.addObserver(_Lifecycle());
-    // الصور اللي في الذاكرة ما تعدّيش 64 ميجا مهما البرنامج فضل مفتوح
+    // لا يتجاوز حجم الصور المخزنة في الذاكرة 64 ميغابايت مهما طالت مدة تشغيل البرنامج
     PaintingBinding.instance.imageCache
       ..maximumSizeBytes = 64 << 20
       ..maximumSize = 300;
@@ -52,7 +52,7 @@ Future<void> _startDiagnostics() async {
   } catch (_) {}
 }
 
-/// البرنامج متصغّر أو الموبايل قافل الشاشة: ده مش تعليق.
+/// البرنامج متصغّر أو الهاتف قافل الشاشة: لا يُعد ذلك تجمّداً للتطبيق.
 class _Lifecycle with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) =>

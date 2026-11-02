@@ -368,7 +368,7 @@ extension _TicketRoutes on FixTrackServer {
   Object? _revealLock(Request req, AuthUser u) {
     final r = _loadTicket(req.params['id']!, u);
     if (!(u.isOwner || r['technician_id'] == u.id)) {
-      throw ApiError(403, 'رمز فتح الشاشة بيظهر للفني المسؤول وصاحب المحل بس');
+      throw ApiError(403, 'يظهر رمز فتح الشاشة للفني المسؤول وصاحب المحل فقط');
     }
     final sealed = r['lock_secret'] as String?;
     if (sealed == null) throw ApiError(404, 'لا يوجد رمز مسجل لهذا الجهاز');
@@ -390,7 +390,7 @@ extension _TicketRoutes on FixTrackServer {
     final model = _requiredText(body, 'model', 'موديل الجهاز');
     final problems = _stringList(body['problems']);
     final problemDesc = _optionalText(body, 'problemDesc');
-    if (problems.isEmpty && problemDesc == null) throw ApiError(400, 'لازم تحدد المشكلة');
+    if (problems.isEmpty && problemDesc == null) throw ApiError(400, 'يجب تحديد المشكلة.');
     final lockType = LockType.parse(body['lockType'] as String?);
     final lockSecret = _optionalText(body, 'lockSecret');
     final estimated = body['estimatedCents'] == null ? 0 : _cents(body['estimatedCents'], 'التكلفة');
@@ -484,7 +484,7 @@ extension _TicketRoutes on FixTrackServer {
     final isTech = u.role == 'technician';
     const techAllowed = {'dueAt'};
     if (isTech && body.keys.any((k) => !techAllowed.contains(k))) {
-      throw ApiError(403, 'الفني يقدر يعدل الموعد المتوقع بس. أي تعديل تاني من الاستقبال');
+      throw ApiError(403, 'يقتصر دور الفني على تعديل الموعد المتوقع، وتتولى إدارة الاستقبال إجراء التعديلات الأخرى');
     }
 
     final sets = <String, Object?>{};
@@ -565,7 +565,7 @@ extension _TicketRoutes on FixTrackServer {
     final body = await _body(req);
     final to = TicketStatus.tryParse(body['status'] as String?);
     if (to == null) throw ApiError(400, 'المرحلة غير صحيحة');
-    if (to == TicketStatus.delivered) throw ApiError(400, 'التسليم بيتم من زرار "تسليم للعميل"');
+    if (to == TicketStatus.delivered) throw ApiError(400, 'يتم التسليم من خلال زر "تسليم للعميل"');
     final from = TicketStatus.parse(r['status'] as String?);
     if (from == TicketStatus.delivered) throw ApiError(400, 'الجهاز اتسلم خلاص');
     if (from == to) return _ticketDetail(r, u);
@@ -597,10 +597,10 @@ extension _TicketRoutes on FixTrackServer {
     final body = await _body(req);
     final kind = PaymentKind.parse(body['kind'] as String?);
     final amount = _cents(body['amountCents'], 'المبلغ');
-    if (amount == 0) throw ApiError(400, 'اكتب المبلغ');
+    if (amount == 0) throw ApiError(400, 'يُرجى إدخال المبلغ');
     final method = PaymentMethod.parse(body['method'] as String?);
     if (kind == PaymentKind.refund && amount > (r['paid_cents'] as int)) {
-      throw ApiError(400, 'المرتجع أكبر من اللي العميل دفعه');
+      throw ApiError(400, 'قيمة المرتجع تتجاوز المبلغ الذي سدده العميل');
     }
     db.transaction(() {
       _insertPayment(r['id'] as String, amount, method, kind, _optionalText(body, 'note'), u.id);
@@ -619,9 +619,9 @@ extension _TicketRoutes on FixTrackServer {
 
     final override = body['override'] == true;
     if (override) {
-      if (!u.isOwner) throw ApiError(403, 'التسليم من غير كود الاستلام لصاحب المحل بس');
+      if (!u.isOwner) throw ApiError(403, 'يقتصر التسليم دون رمز الاستلام على مالك المحل.');
     } else if ((body['pin'] as String? ?? '').trim() != r['pickup_pin']) {
-      throw ApiError(400, 'كود الاستلام غلط. الكود مكتوب في وصل العميل');
+      throw ApiError(400, 'رمز الاستلام غير صحيح. يمكنك العثور عليه في إيصال العميل.');
     }
 
     final finalCents = body.containsKey('finalCents') && body['finalCents'] != null
@@ -651,12 +651,12 @@ extension _TicketRoutes on FixTrackServer {
       );
       _event(id, 'status', from: r['status'] as String, to: 'delivered', userId: u.id, internal: false,
           note: [
-            if (override) 'تسليم بدون كود الاستلام',
+            if (override) 'تسليم دون رمز الاستلام',
             if (remaining > 0) 'باقي على العميل ${_money(remaining)}',
           ].join(' • ').emptyToNull);
     });
     _autoMessage(id, MessageEvent.delivered);
-    _audit(u.id, 'ticket.deliver', 'ticket', id, '#${r['number']}${override ? ' (بدون كود)' : ''}');
+    _audit(u.id, 'ticket.deliver', 'ticket', id, '#${r['number']}${override ? ' (دون رمز)' : ''}');
     _broadcast('tickets');
     return _ticketDetail(_loadTicket(id, u), u);
   }

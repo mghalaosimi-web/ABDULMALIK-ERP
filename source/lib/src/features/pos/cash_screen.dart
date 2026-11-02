@@ -10,7 +10,7 @@ import '../../widgets/common.dart';
 import '../../widgets/form_fields.dart';
 import 'providers.dart';
 
-/// الخزنة: كل الفلوس اللي دخلت وخرجت في الوردية، والمصروفات، وتقفيل اليوم.
+/// الخزنة: جميع المقبوضات والمدفوعات خلال الوردية، والمصروفات، وإقفال اليوم.
 class CashScreen extends ConsumerWidget {
   const CashScreen({super.key});
 
@@ -26,7 +26,7 @@ class CashScreen extends ConsumerWidget {
             TextButton.icon(
               onPressed: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const _SessionsScreen())),
               icon: const Icon(Icons.history_rounded),
-              label: const Text('الأيام اللي فاتت'),
+              label: const Text('الأيام السابقة'),
             ),
           const SizedBox(width: 8),
         ],
@@ -79,9 +79,9 @@ class _CurrentSession extends StatelessWidget {
               const SizedBox(width: 14),
               Expanded(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  Text('المفروض يكون في الدرج (كاش)', style: TextStyle(color: scheme.onPrimaryContainer)),
+                  Text('الرصيد النقدي المتوقع في الصندوق', style: TextStyle(color: scheme.onPrimaryContainer)),
                   Text(money(s.expectedCashCents), style: text.headlineMedium?.bold.copyWith(color: scheme.onPrimaryContainer)),
-                  Text('منهم ${money(s.openingCashCents)} كانوا في الدرج أول الوردية', style: TextStyle(fontSize: 12, color: scheme.onPrimaryContainer)),
+                  Text('يتضمن ذلك رصيد الصندوق عند بدء الوردية: ${money(s.openingCashCents)}', style: TextStyle(fontSize: 12, color: scheme.onPrimaryContainer)),
                 ]),
               ),
             ]),
@@ -116,18 +116,18 @@ class _CurrentSession extends StatelessWidget {
           FilledButton.tonalIcon(
             onPressed: () => showDialog<void>(context: context, builder: (_) => const _MoveDialog(type: 'deposit', categories: [])),
             icon: const Icon(Icons.add_circle_outline_rounded),
-            label: const Text('إيداع في الدرج'),
+            label: const Text('إيداع في الصندوق'),
           ),
           if (isOwner)
             FilledButton.tonalIcon(
               onPressed: () => showDialog<void>(context: context, builder: (_) => const _MoveDialog(type: 'withdraw', categories: [])),
               icon: const Icon(Icons.outbox_rounded),
-              label: const Text('سحب من الدرج'),
+              label: const Text('سحب من الصندوق'),
             ),
           FilledButton.icon(
             onPressed: () => showDialog<void>(context: context, builder: (_) => _CloseDialog(session: s)),
             icon: const Icon(Icons.lock_clock_rounded),
-            label: const Text('تقفيل اليوم'),
+            label: const Text('إقفال اليوم'),
           ),
         ]),
         const SectionTitle('الحركة'),
@@ -199,7 +199,7 @@ class _MoveDialogState extends ConsumerState<_MoveDialog> {
 
   @override
   Widget build(BuildContext context) {
-    final title = {'expense': 'مصروف', 'deposit': 'إيداع في الدرج', 'withdraw': 'سحب من الدرج'}[widget.type]!;
+    final title = {'expense': 'مصروف', 'deposit': 'إيداع في الصندوق', 'withdraw': 'سحب من الصندوق'}[widget.type]!;
     return AlertDialog(
       title: Text(title),
       content: SizedBox(
@@ -207,7 +207,7 @@ class _MoveDialogState extends ConsumerState<_MoveDialog> {
         child: Form(
           key: _form,
           child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            MoneyField(controller: _amount, label: 'المبلغ', autofocus: true, validator: (c) => (c ?? 0) <= 0 ? 'اكتب المبلغ' : null),
+            MoneyField(controller: _amount, label: 'المبلغ', autofocus: true, validator: (c) => (c ?? 0) <= 0 ? 'يُرجى إدخال المبلغ' : null),
             if (widget.categories.isNotEmpty) ...[
               const SizedBox(height: 12),
               Wrap(spacing: 6, runSpacing: 6, children: [
@@ -261,7 +261,7 @@ class _CloseDialogState extends ConsumerState<_CloseDialog> {
   Future<void> _save() async {
     final counted = parseMoney(_counted.text);
     if (counted == null || _counted.text.trim().isEmpty) {
-      setState(() => _error = 'اعدّ الفلوس اللي في الدرج واكتبها');
+      setState(() => _error = 'أحصِ النقدية الموجودة في الصندوق ثم أدخل المبلغ');
       return;
     }
     setState(() {
@@ -297,25 +297,25 @@ class _CloseDialogState extends ConsumerState<_CloseDialog> {
           Text('اتعد: ${money(_closed!.countedCashCents ?? 0)}'),
           const SizedBox(height: 8),
           Text(
-            diff == 0 ? 'الدرج مظبوط ✅' : diff > 0 ? 'زيادة ${money(diff)}' : 'عجز ${money(-diff)}',
+            diff == 0 ? 'الرصيد النقدي مطابق' : diff > 0 ? 'زيادة ${money(diff)}' : 'عجز ${money(-diff)}',
             style: text.titleLarge?.bold.copyWith(color: diff == 0 ? const Color(0xFF16A34A) : diff > 0 ? brandOrange : scheme.error),
           ),
         ]),
-        actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('تمام'))],
+        actions: [FilledButton(onPressed: () => Navigator.pop(context), child: const Text('حسناً'))],
       );
     }
     return AlertDialog(
-      title: const Text('تقفيل اليوم'),
+      title: const Text('إقفال اليوم'),
       content: SizedBox(
         width: 420,
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          Text('المفروض يكون في الدرج: ${money(widget.session.expectedCashCents)}', style: text.titleMedium?.bold),
+          Text('الرصيد النقدي المتوقع في الصندوق: ${money(widget.session.expectedCashCents)}', style: text.titleMedium?.bold),
           const SizedBox(height: 4),
-          const Text('اعد الكاش اللي في الدرج فعلاً واكتبه (من غير المحافظ والفيزا).'),
+          const Text('أحصِ النقدية الموجودة فعلياً في الصندوق وأدخل المبلغ (دون احتساب أرصدة المحافظ والبطاقات).'),
           const SizedBox(height: 12),
-          MoneyField(controller: _counted, label: 'الكاش اللي في الدرج', autofocus: true),
+          MoneyField(controller: _counted, label: 'النقدية الموجودة في الصندوق', autofocus: true),
           const SizedBox(height: 12),
-          MoneyField(controller: _kept, label: 'كم سيبقى في الصندوق للغد (مبلغ الفكة)؟'),
+          MoneyField(controller: _kept, label: 'النقدية المتبقية في الصندوق لليوم التالي'),
           const SizedBox(height: 12),
           TextField(controller: _note, decoration: const InputDecoration(labelText: 'ملاحظة')),
           if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],
@@ -337,7 +337,7 @@ class _SessionsScreen extends ConsumerWidget {
     final data = ref.watch(cashSessionsProvider);
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('الأيام اللي فاتت')),
+      appBar: AppBar(title: const Text('الأيام السابقة')),
       body: data.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: ErrorBanner(errorText(e))),
@@ -356,7 +356,7 @@ class _SessionsScreen extends ConsumerWidget {
                 isThreeLine: s.closedBy != null,
                 trailing: diff == null
                     ? null
-                    : Text(diff == 0 ? 'مظبوط' : diff > 0 ? '+${money(diff)}' : money(diff),
+                    : Text(diff == 0 ? 'مطابق' : diff > 0 ? '+${money(diff)}' : money(diff),
                         style: TextStyle(color: diff == 0 ? const Color(0xFF16A34A) : diff > 0 ? brandOrange : scheme.error).bold),
               ),
             );

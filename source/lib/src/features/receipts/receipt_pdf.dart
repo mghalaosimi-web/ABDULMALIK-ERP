@@ -79,7 +79,7 @@ Future<Uint8List> buildReceiptPdf(
           .asUint8List();
   final doc = pw.Document(
     theme: theme,
-    title: 'وصل ${t.number}',
+    title: 'إيصال ${t.number}',
     author: shop.name,
   );
 
@@ -151,7 +151,7 @@ Future<Uint8List> buildReceiptPdf(
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
           pw.Text(
-            delivered ? 'فاتورة صيانة' : 'وصل استلام جهاز',
+            delivered ? 'فاتورة صيانة' : 'إيصال استلام جهاز',
             style: st(11, bold: true),
           ),
           pw.Text(
@@ -196,7 +196,7 @@ Future<Uint8List> buildReceiptPdf(
         if (t.warrantyUntil != null)
           row(
             'الضمان',
-            '${t.warrantyDays ?? ''} يوم لحد ${formatDate(t.warrantyUntil!)}',
+            '${t.warrantyDays ?? ''} يوم حتى ${formatDate(t.warrantyUntil!)}',
             bold: true,
           ),
       ],
@@ -210,7 +210,7 @@ Future<Uint8List> buildReceiptPdf(
           ),
           child: pw.Column(
             children: [
-              pw.Text('كود الاستلام', style: st(8)),
+              pw.Text('رمز الاستلام', style: st(8)),
               pw.Text(
                 t.pickupPin!,
                 style: st(20, bold: true).copyWith(letterSpacing: 4),
@@ -360,7 +360,7 @@ Future<Uint8List> buildStickerPdf(
   return doc.save();
 }
 
-/// فاتورة بيع (كاشير).
+/// فاتورة بيع (أمين الصندوق).
 Future<Uint8List> buildSalePdf(
   SaleDetail detail,
   ShopProfile shop, {
@@ -454,7 +454,7 @@ Future<Uint8List> buildSalePdf(
       pw.Text(formatDateTime(s.createdAt), style: st(8)),
       if (s.customerName != null)
         pw.Text('العميل: ${s.customerName}', style: st(9)),
-      if (s.userName != null) pw.Text('الكاشير: ${s.userName}', style: st(8)),
+      if (s.userName != null) pw.Text('أمين الصندوق: ${s.userName}', style: st(8)),
       divider(),
       for (final i in detail.items) ...[
         pw.Text(i.name, style: st(9, bold: true)),
@@ -472,7 +472,7 @@ Future<Uint8List> buildSalePdf(
           ),
         if (i.warrantyMonths > 0)
           pw.Text(
-            'ضمان ${i.warrantyMonths} شهر لحد ${formatDate(DateTime(s.createdAt.year, s.createdAt.month + i.warrantyMonths, s.createdAt.day))}',
+            'ضمان ${i.warrantyMonths} شهر حتى ${formatDate(DateTime(s.createdAt.year, s.createdAt.month + i.warrantyMonths, s.createdAt.day))}',
             style: st(8, bold: true),
           ),
         if (i.returnedQty > 0) pw.Text('مرتجع: ${i.returnedQty}', style: st(7)),
@@ -522,7 +522,7 @@ Future<Uint8List> buildBarcodeLabelsPdf(
   bool a4 = false,
 }) async {
   final theme = await _loadTheme();
-  final doc = pw.Document(theme: theme, title: 'باركود');
+  final doc = pw.Document(theme: theme, title: 'الرمز الشريطي');
   pw.Widget label(Product p) {
     final code = p.barcode!;
     final ean = code.length == 13 && RegExp(r'^\d+$').hasMatch(code);
@@ -651,7 +651,7 @@ Future<Uint8List> buildUsedPurchasePdf(PhoneUnit u, ShopProfile shop) async {
       if (u.notes != null) row('الحالة', u.notes!),
       divider(),
       row('البائع', u.sellerName ?? ''),
-      row('الرقم القومي', u.sellerNationalId ?? ''),
+      row('رقم الهوية', u.sellerNationalId ?? ''),
       row('رقم الهاتف', u.sellerPhone ?? ''),
       row('المبلغ', money(u.costCents ?? 0)),
       divider(),

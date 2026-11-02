@@ -14,12 +14,12 @@ import 'providers.dart';
 import 'ticket_detail_screen.dart';
 
 const ticketScopes = <String, String>{
-  'active': 'كل اللي في المحل',
-  'open': 'تحت الشغل',
+  'active': 'جميع الأجهزة في المحل',
+  'open': 'قيد المعالجة',
   'overdue': 'متأخر',
-  'pickup': 'مستني الاستلام',
-  'pickupToday': 'استلامات النهارده',
-  'waitingParts': 'مستني قطع غيار',
+  'pickup': 'بانتظار الاستلام',
+  'pickupToday': 'عمليات الاستلام اليوم',
+  'waitingParts': 'بانتظار قطع الغيار',
   'delivered': 'اتسلم',
   'all': 'الكل',
 };
@@ -73,7 +73,7 @@ class _TicketsScreenState extends ConsumerState<TicketsScreen> {
     return Scaffold(
       appBar: AppBar(
         automaticallyImplyLeading: widget.standalone,
-        title: Text(user.role == Role.technician ? 'الأجهزة اللي عليا' : 'الأجهزة'),
+        title: Text(user.role == Role.technician ? 'الأجهزة المسندة إليّ' : 'الأجهزة'),
       ),
       floatingActionButton: canIntake
           ? FloatingActionButton.extended(
@@ -137,7 +137,7 @@ class _TicketsScreenState extends ConsumerState<TicketsScreen> {
                       message: _query.isNotEmpty
                           ? 'لا توجد نتائج لـ "$_query"'
                           : _scope == 'active' && canIntake
-                              ? 'لا توجد أجهزة مسجلة في المحل حالياً.\nاضغط على "استلام جهاز" لتسجيل الجهاز الأول.'
+                              ? 'لا توجد أجهزة مسجلة في المحل حالياً.\nاختر «استلام جهاز» لتسجيل الجهاز الأول.'
                               : 'لا توجد أجهزة هنا',
                     )
                   : RefreshIndicator(

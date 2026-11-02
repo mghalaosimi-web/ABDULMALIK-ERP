@@ -86,7 +86,7 @@ class Ticket {
   int get totalCents => finalCents ?? estimatedCents;
   int get remainingCents => totalCents - paidCents;
 
-  // الحقول دي موجودة بس في تفاصيل الجهاز (مش في القوائم)
+  // هذه الحقول مخصصة لتفاصيل الجهاز ولا تظهر في القوائم
   String? get imei => json['imei'] as String?;
   String? get problemDesc => json['problemDesc'] as String?;
   bool? get powersOn => json['powersOn'] as bool?;

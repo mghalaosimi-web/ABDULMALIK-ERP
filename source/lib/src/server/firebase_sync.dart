@@ -3,8 +3,8 @@ part of 'api_server.dart';
 /// بيبعت حالة الأجهزة لصفحة التتبع على Firebase، وبيجيب ردود العملاء (حجز معاد، موافقة/رفض).
 ///
 /// كل محل ليه حساب Firebase خاص بيه بيتعمل أوتوماتيك أول مرة (إيميل داخلي وكلمة سر عشوائية
-/// متخزنين في إعدادات السيرفر)، وقواعد Firestore بتمنع أي محل يعدّل بيانات محل تاني.
-/// لو مفيش نت، الشغل بيكمل عادي والمزامنة بتحصل أول ما النت يرجع.
+/// متخزنين في إعدادات السيرفر)، وقواعد Firestore بتمنع أي محل يعدّل بيانات محل مرة أخرى.
+/// لو لا يوجد نت، الشغل بيكمل عادي والمزامنة بتحصل أول ما النت يرجع.
 class FirebaseSync {
   FirebaseSync(this.server);
 
@@ -77,7 +77,7 @@ class FirebaseSync {
       db.setSetting('cloud_last_error', '');
     } catch (e) {
       db.setSetting('cloud_last_error', e is SocketException || e is TimeoutException || e is http.ClientException
-          ? 'مفيش نت'
+          ? 'لا يوجد نت'
           : '$e');
     } finally {
       _busy = false;
@@ -160,7 +160,7 @@ class FirebaseSync {
           .patch(Uri.parse('$_docsBase/tracking/$token'), headers: headers, body: jsonEncode({'fields': _encodeMap(_trackingDoc(t))}))
           .timeout(const Duration(seconds: 20));
       if (res.statusCode != 200) throw Exception('Firestore ${res.statusCode}: ${res.body}');
-      // لو الجهاز اتعدل تاني وإحنا بنبعت، هيفضل dirty ويتبعت الدورة الجاية
+      // لو الجهاز اتعدل مرة أخرى وإحنا بنبعت، هيفضل dirty ويتبعت الدورة الجاية
       db.execute('UPDATE tickets SET sync_dirty = 0 WHERE id = ? AND updated_at = ?', [t['id'], t['updated_at']]);
     }
   }
@@ -226,7 +226,7 @@ class FirebaseSync {
   // ---------------------------------------------------------------- pull
 
   Future<void> _pullActions() async {
-    if (db.setting('cloud_uid') == null) return; // لسه مبعتناش حاجة، يبقى مفيش ردود
+    if (db.setting('cloud_uid') == null) return; // لسه مبعتناش حاجة، يبقى لا يوجد ردود
     final headers = await _headers();
     final res = await _http
         .post(
@@ -321,8 +321,8 @@ class FirebaseSync {
   }
 
   String _cloudError(http.Response res) {
-    if (res.statusCode == 403) return 'مش مسموح (اتأكد إن الفرع لسه في المجموعة)';
-    return 'مشكلة في الاتصال بالنت (${res.statusCode})';
+    if (res.statusCode == 403) return 'غير مسموح؛ يُرجى التحقق من أن الفرع لا يزال ضمن المجموعة.';
+    return 'تعذّر الاتصال بالإنترنت (${res.statusCode})';
   }
 
   // ---------------------------------------------------------------- Firestore value encoding

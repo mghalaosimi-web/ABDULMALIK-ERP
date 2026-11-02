@@ -36,7 +36,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submit() async {
     if (_username.text.trim().isEmpty || _password.text.isEmpty) {
-      setState(() => _error = ref.read(localeProvider).languageCode == 'ar' ? 'اكتب اسم المستخدم وكلمة السر' : 'Enter your username and password');
+      setState(() => _error = ref.read(localeProvider).languageCode == 'ar' ? 'يُرجى إدخال اسم المستخدم وكلمة المرور' : 'Enter your username and password');
       return;
     }
     setState(() {

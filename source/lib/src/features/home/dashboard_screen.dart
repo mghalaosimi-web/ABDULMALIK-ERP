@@ -81,9 +81,9 @@ class DashboardScreen extends ConsumerWidget {
             LayoutBuilder(builder: (context, c) {
               final columns = c.maxWidth >= 900 ? 4 : 2;
               final cards = [
-                _StatCard(icon: Icons.move_to_inbox_rounded, label: ar ? 'اتسلم النهارده' : 'Received today', value: s?.receivedToday, color: brandBlue, onTap: () => _openList(context, 'active')),
-                _StatCard(icon: Icons.build_circle_rounded, label: ar ? 'تحت الشغل' : 'In progress', value: s?.inProgress, color: const Color(0xFF7C3AED), onTap: () => _openList(context, 'open')),
-                _StatCard(icon: Icons.check_circle_rounded, label: ar ? 'مستني الاستلام' : 'Ready for pickup', value: s?.awaitingPickup, color: const Color(0xFF16A34A), onTap: () => _openList(context, 'pickup')),
+                _StatCard(icon: Icons.move_to_inbox_rounded, label: ar ? 'أجهزة استُلمت اليوم' : 'Received today', value: s?.receivedToday, color: brandBlue, onTap: () => _openList(context, 'active')),
+                _StatCard(icon: Icons.build_circle_rounded, label: ar ? 'قيد الإصلاح' : 'In progress', value: s?.inProgress, color: const Color(0xFF7C3AED), onTap: () => _openList(context, 'open')),
+                _StatCard(icon: Icons.check_circle_rounded, label: ar ? 'بانتظار الاستلام' : 'Ready for pickup', value: s?.awaitingPickup, color: const Color(0xFF16A34A), onTap: () => _openList(context, 'pickup')),
                 _StatCard(icon: Icons.warning_amber_rounded, label: ar ? 'متأخر' : 'Overdue', value: s?.overdue, color: brandOrange, onTap: () => _openList(context, 'overdue')),
               ];
               return GridView.count(
@@ -102,7 +102,7 @@ class DashboardScreen extends ConsumerWidget {
                 clipBehavior: Clip.antiAlias,
                 child: ListTile(
                   leading: const Icon(Icons.event_available_rounded, color: Color(0xFF16A34A)),
-                  title: Text(ar ? '${s!.pickupsToday} عميل حاجز ييجي يستلم النهارده' : '${s!.pickupsToday} customers scheduled to pick up today'),
+                  title: Text(ar ? '${s!.pickupsToday} عميل حجز موعداً للاستلام اليوم' : '${s!.pickupsToday} customers scheduled to pick up today'),
                   trailing: const Icon(Icons.chevron_left_rounded),
                   onTap: () => _openList(context, 'pickupToday'),
                 ),
@@ -113,9 +113,9 @@ class DashboardScreen extends ConsumerWidget {
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.point_of_sale_rounded, color: brandBlue),
-                  title: Text(ar ? 'مبيعات النهارده' : 'Sales today'),
+                  title: Text(ar ? 'مبيعات اليوم' : 'Sales today'),
                   subtitle: Text(ar ? '${s!.salesTodayCount ?? 0} فاتورة' : '${s!.salesTodayCount ?? 0} invoices'
-                      '${s.lowStockCount > 0 ? ' • ${s.lowStockCount} ${ar ? 'صنف قرّب يخلص' : 'items low in stock'}' : ''}'),
+                      '${s.lowStockCount > 0 ? ' • ${s.lowStockCount} ${ar ? 'صنف أوشك على النفاد' : 'items low in stock'}' : ''}'),
                   trailing: Text(money(s.salesTodayCents!), style: text.titleLarge?.bold),
                 ),
               ),
@@ -125,17 +125,17 @@ class DashboardScreen extends ConsumerWidget {
               Card(
                 child: ListTile(
                   leading: const Icon(Icons.account_balance_wallet_rounded, color: Color(0xFF16A34A)),
-                  title: Text(ar ? 'اتحصّل النهارده' : 'Collected today'),
-                  subtitle: Text('اتسلم للعملاء ${s!.deliveredToday} ${s.deliveredToday == 1 ? (ar ? 'جهاز' : 'device') : (ar ? 'أجهزة' : 'devices')}'),
+                  title: Text(ar ? 'المبالغ المحصّلة اليوم' : 'Collected today'),
+                  subtitle: Text('سُلّمت للعملاء ${s!.deliveredToday} ${s.deliveredToday == 1 ? (ar ? 'جهاز' : 'device') : (ar ? 'أجهزة' : 'devices')}'),
                   trailing: Text(money(s.collectedTodayCents!), style: text.titleLarge?.bold),
                 ),
               ),
             ],
             if (canIntake) const _RemindersSection(),
-            _TicketPreview(title: ar ? 'استلامات النهارده' : 'Today’s pickups', scope: 'pickupToday', onMore: () => _openList(context, 'pickupToday')),
+            _TicketPreview(title: ar ? 'عمليات الاستلام اليوم' : 'Today’s pickups', scope: 'pickupToday', onMore: () => _openList(context, 'pickupToday')),
             _TicketPreview(title: ar ? 'متأخر' : 'Overdue', scope: 'overdue', onMore: () => _openList(context, 'overdue')),
-            _TicketPreview(title: ar ? 'مستني الاستلام' : 'Ready for pickup', scope: 'pickup', onMore: () => _openList(context, 'pickup')),
-            _TicketPreview(title: user.role == Role.technician ? (ar ? 'الأجهزة اللي عليا' : 'My assigned repairs') : (ar ? 'آخر الأجهزة' : 'Recent repairs'), scope: 'open', onMore: () => _openList(context, 'open')),
+            _TicketPreview(title: ar ? 'بانتظار الاستلام' : 'Ready for pickup', scope: 'pickup', onMore: () => _openList(context, 'pickup')),
+            _TicketPreview(title: user.role == Role.technician ? (ar ? 'الأجهزة المسندة إليّ' : 'My assigned repairs') : (ar ? 'آخر الأجهزة' : 'Recent repairs'), scope: 'open', onMore: () => _openList(context, 'open')),
           ],
         ),
       ),
@@ -187,7 +187,7 @@ class _ConnectionChip extends ConsumerWidget {
         children: [
           const Icon(Icons.circle, size: 10, color: green),
           const SizedBox(width: 6),
-          Text(isServer ? (ar ? 'السيرفر شغال' : 'Server running') : (ar ? 'متصل بالسيرفر' : 'Connected to server'), style: const TextStyle(color: green).semiBold),
+          Text(isServer ? (ar ? 'الخادم يعمل' : 'Server running') : (ar ? 'متصل بالسيرفر' : 'Connected to server'), style: const TextStyle(color: green).semiBold),
         ],
       ),
     );
@@ -248,7 +248,7 @@ class _RemindersSection extends ConsumerWidget {
     if (list.isEmpty) return const SizedBox.shrink();
     return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
       const SizedBox(height: 12),
-      SectionTitle('محتاجين تذكير بالاستلام (${list.length})'),
+      SectionTitle('عملاء يلزم تذكيرهم بالاستلام (${list.length})'),
       for (final t in list.take(6))
         Card(
           margin: const EdgeInsets.only(bottom: 8),

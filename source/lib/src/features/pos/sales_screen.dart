@@ -195,7 +195,7 @@ class _ReturnDialogState extends ConsumerState<_ReturnDialog> {
       if (!mounted) return;
       Navigator.pop(context);
       final refund = res['refundCents'] as int;
-      showMessage(context, refund > 0 ? 'اتعمل المرتجع. رجّع للعميل ${money(refund)}' : 'اتعمل المرتجع واتخصم من الآجل');
+      showMessage(context, refund > 0 ? 'تم تسجيل المرتجع. يُرجى رد مبلغ ${money(refund)}' : 'تم تسجيل المرتجع وخصمه من المبلغ الآجل');
     } catch (e) {
       if (mounted) setState(() => _error = errorText(e));
     } finally {

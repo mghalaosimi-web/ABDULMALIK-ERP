@@ -5,7 +5,7 @@ import 'package:uuid/uuid.dart';
 
 enum AppMode { server, client }
 
-/// إعدادات الجهاز نفسه (مش إعدادات المحل): الجهاز ده سيرفر ولا متصل بسيرفر، وعنوان السيرفر، والتوكن.
+/// إعدادات الجهاز، وتشمل تحديد ما إذا كان خادماً أو متصلاً بخادم، وعنوان الخادم ورمز الوصول.
 class AppConfig {
   AppConfig._(this._prefs);
 
@@ -65,7 +65,7 @@ class AppConfig {
 }
 
 extension DeviceSettings on AppConfig {
-  /// الطابعة اللي الوصولات بتتطبع عليها على طول من الجهاز ده (من غير ما يسأل كل مرة).
+  /// الطابعة الافتراضية لطباعة الإيصالات من هذا الجهاز دون طلب التأكيد في كل مرة.
   String? get receiptPrinterUrl => _prefs.getString(AppConfig._kPrinterUrl);
   String? get receiptPrinterName => _prefs.getString(AppConfig._kPrinterName);
   Future<void> setReceiptPrinter(String? url, String? name) async {
@@ -78,7 +78,7 @@ extension DeviceSettings on AppConfig {
     }
   }
 
-  /// الموبايل ده بيبعت رسائل الـ SMS الأوتوماتيك من شريحته.
+  /// هذا الهاتف بيبعت رسائل الـ SMS الأوتوماتيك من شريحته.
   bool get smsGateway => _prefs.getBool(AppConfig._kSmsGateway) ?? false;
   Future<void> setSmsGateway(bool v) => _prefs.setBool(AppConfig._kSmsGateway, v);
 }

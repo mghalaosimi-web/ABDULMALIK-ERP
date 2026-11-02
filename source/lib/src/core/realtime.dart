@@ -6,9 +6,9 @@ import 'package:web_socket_channel/io.dart';
 
 import 'session.dart';
 
-/// اتصال لحظي بالسيرفر: أول ما أي جهاز يغيّر حاجة، كل الأجهزة التانية بتعرف وتحدّث الشاشة.
+/// اتصال فوري بالخادم؛ عند تعديل أي جهاز لبيانات، تتلقى بقية الأجهزة إشعاراً لتحديث الشاشة.
 ///
-/// بيطلع اسم الحاجة اللي اتغيرت (مثلاً 'users')، والشاشات بتسمع على اللي يهمها.
+/// يعيد اسم العنصر الذي طرأ عليه التغيير (مثل 'users')، وتستمع الشاشات إلى الأحداث ذات الصلة بها.
 final realtimeProvider = StreamProvider<RealtimeEvent>((ref) {
   final session = ref.watch(sessionProvider).value;
   final api = session?.api;
@@ -67,7 +67,7 @@ void refreshOnTopics(Ref ref, Set<String> topics) {
   });
 }
 
-/// كل حدث object جديد (من غير ==) عشان Riverpod ما يتجاهلش حدثين ورا بعض لنفس الموضوع.
+/// كل حدث object جديد (من غير ==) لمنع Riverpod من تجاهل حدثين متتاليين للموضوع نفسه.
 class RealtimeEvent {
   RealtimeEvent(this.topic);
   final String topic;

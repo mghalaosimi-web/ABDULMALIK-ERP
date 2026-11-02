@@ -14,7 +14,7 @@ extension _RepairExtraRoutes on FixTrackServer {
 
   int get _defaultWarrantyDays => int.tryParse(db.setting('repair_warranty_days') ?? '') ?? 30;
 
-  /// أجهزة اتسلمت للعميل ولسه في الضمان (بالتليفون أو الـ IMEI).
+  /// أجهزة اتسلمت للعميل ولسه في الضمان (بالهاتف أو الـ IMEI).
   Object? _warrantyCheck(Request req, AuthUser u) {
     final phone = normalizePhone(req.url.queryParameters['phone'] ?? '');
     final imei = latinDigits((req.url.queryParameters['imei'] ?? '').trim());
@@ -30,10 +30,10 @@ extension _RepairExtraRoutes on FixTrackServer {
   /// بتتنادى من استلام جهاز جديد لو اتعلّم كمرتجع ضمان.
   Map<String, Object?> _validWarrantyOrigin(String originId, String customerId, String? imei) {
     final o = db.selectOne('SELECT * FROM tickets WHERE id = ?', [originId]);
-    if (o == null) throw ApiError(400, 'الجهاز الأصلي مش موجود');
+    if (o == null) throw ApiError(400, 'الجهاز الأصلي غير موجود');
     if (o['status'] != 'delivered' || o['warranty_until'] == null) throw ApiError(400, 'الجهاز الأصلي مالوش ضمان');
-    if ((o['warranty_until'] as String).compareTo(nowIso()) < 0) throw ApiError(400, 'الضمان خلص يوم ${formatDate(DateTime.parse(o['warranty_until'] as String).toLocal())}');
-    if (o['customer_id'] != customerId && (imei == null || imei != o['imei'])) throw ApiError(400, 'الجهاز ده مش بتاع نفس العميل');
+    if ((o['warranty_until'] as String).compareTo(nowIso()) < 0) throw ApiError(400, 'انتهت صلاحية الضمان بتاريخ ${formatDate(DateTime.parse(o['warranty_until'] as String).toLocal())}');
+    if (o['customer_id'] != customerId && (imei == null || imei != o['imei'])) throw ApiError(400, 'هذا الجهاز لا يخص العميل نفسه.');
     return o;
   }
 
@@ -45,10 +45,10 @@ extension _RepairExtraRoutes on FixTrackServer {
     if (t['status'] == 'delivered') throw ApiError(400, 'الجهاز اتسلم خلاص');
     final body = await _body(req);
     final p = db.selectOne('SELECT * FROM products WHERE id = ? AND active = 1', [body['productId']]);
-    if (p == null) throw ApiError(400, 'القطعة دي مش موجودة في المخزون');
+    if (p == null) throw ApiError(400, 'قطعة الغيار غير موجودة في المخزون.');
     if (p['serialized'] == 1) throw ApiError(400, 'الأجهزة بالـ IMEI مابتتركبش كقطع غيار');
     final qty = body['qty'] is int ? body['qty'] as int : 1;
-    if (qty <= 0 || qty > 100) throw ApiError(400, 'الكمية مش صحيحة');
+    if (qty <= 0 || qty > 100) throw ApiError(400, 'الكمية غير صحيحة');
     final price = body['priceCents'] == null ? p['price_cents'] as int : _cents(body['priceCents'], 'السعر');
     final addToBill = body['addToBill'] == true && u.role != 'technician';
 
@@ -76,7 +76,7 @@ extension _RepairExtraRoutes on FixTrackServer {
     final id = t['id'] as String;
     if (t['status'] == 'delivered') throw ApiError(400, 'الجهاز اتسلم خلاص');
     final part = db.selectOne('SELECT * FROM ticket_parts WHERE id = ? AND ticket_id = ?', [req.params['partId'], id]);
-    if (part == null) throw ApiError(404, 'القطعة دي مش على الجهاز');
+    if (part == null) throw ApiError(404, 'قطعة الغيار غير مسجلة على هذا الجهاز.');
     db.transaction(() {
       db.execute('DELETE FROM ticket_parts WHERE id = ?', [part['id']]);
       if (part['product_id'] != null) {
@@ -148,7 +148,7 @@ extension _RepairExtraRoutes on FixTrackServer {
     db.execute('UPDATE tickets SET reminders_sent = ?, last_reminder_at = ? WHERE id = ?', [step + 1, nowIso(), ticketId]);
   }
 
-  /// لما الجهاز يبقى جاهز (أو مرفوض) بنسجل الوقت عشان عداد التذكير.
+  /// لما الجهاز يبقى جاهز (أو مرفوض) بنسجل الوقت لبدء احتساب مدة التذكير.
   void _onStatusChanged(String ticketId, TicketStatus from, TicketStatus to) {
     if (to.awaitingPickup && !from.awaitingPickup) {
       db.execute('UPDATE tickets SET ready_at = ?, reminders_sent = 0 WHERE id = ?', [nowIso(), ticketId]);

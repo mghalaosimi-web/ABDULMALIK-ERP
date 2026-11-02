@@ -1,14 +1,14 @@
-/// مراحل الصيانة. الملف ده من غير Flutter عشان السيرفر والبرنامج الاتنين يستخدموه.
+/// مراحل الصيانة. هذا الملف مستقل عن Flutter ليستخدمه كل من الخادم والتطبيق.
 enum TicketStatus {
   received('تم الاستلام'),
-  diagnosing('جاري الفحص'),
+  diagnosing('قيد الفحص'),
   waitingApproval('في انتظار موافقة العميل'),
   waitingParts('في انتظار قطع الغيار'),
-  repairing('جاري الإصلاح'),
+  repairing('قيد الإصلاح'),
   testing('اختبار'),
   ready('جاهز للاستلام'),
   delivered('تم التسليم'),
-  cancelled('مرفوض / ملغي'),
+  cancelled('مرفوض / ملغى'),
   unrepairable('غير قابل للإصلاح');
 
   const TicketStatus(this.label);
@@ -23,16 +23,16 @@ enum TicketStatus {
 
   static TicketStatus parse(String? v) => tryParse(v) ?? received;
 
-  /// المراحل الأساسية بالترتيب (اللي بتظهر في الخط الزمني).
+  /// المراحل الأساسية بالترتيب (التي تظهر في المخطط الزمني).
   static const flow = [received, diagnosing, repairing, testing, ready, delivered];
 
-  /// الجهاز لسه في المحل ومحتاج شغل.
+  /// الجهاز ما زال في المحل ويتطلب إجراءً.
   bool get isOpen => !{ready, delivered, cancelled, unrepairable}.contains(this);
 
   /// الجهاز مستني العميل ييجي يستلمه.
   bool get awaitingPickup => {ready, cancelled, unrepairable}.contains(this);
 
-  /// المرحلة المنطقية اللي بعدها (لزرار "المرحلة التالية").
+  /// المرحلة التالية منطقياً (للزر "المرحلة التالية").
   TicketStatus? get next => switch (this) {
         received => diagnosing,
         diagnosing => repairing,
@@ -56,7 +56,7 @@ const problemOptions = [
   'البصمة / الفيس',
   'الشبكة / الواي فاي',
   'الزراير',
-  'الضهر / الجسم',
+  'الغطاء الخلفي / الهيكل',
   'لا يعمل نهائياً',
 ];
 
@@ -66,7 +66,7 @@ const conditionOptions = [
   'ضهر مكسور',
   'آثار مياه',
   'جسم معووج',
-  'اتفتح قبل كده',
+  'سبق فتحه',
 ];
 
 const accessoryOptions = [
@@ -80,10 +80,10 @@ const accessoryOptions = [
 ];
 
 enum LockType {
-  none('مفيش'),
+  none('لا يوجد'),
   pin('رقم سري'),
-  pattern('باترن'),
-  password('باسورد');
+  pattern('نمط'),
+  password('كلمة مرور');
 
   const LockType(this.label);
   final String label;
@@ -92,7 +92,7 @@ enum LockType {
 }
 
 enum PaymentMethod {
-  cash('كاش'),
+  cash('نقداً'),
   vodafoneCash('فودافون كاش'),
   instapay('إنستاباي'),
   card('فيزا'),
@@ -115,7 +115,7 @@ enum PaymentKind {
   static PaymentKind parse(String? v) => values.firstWhere((k) => k.name == v, orElse: () => payment);
 }
 
-/// بيوحّد شكل رقم التليفون عشان البحث: أرقام إنجليزي بس، ومن غير كود مصر.
+/// يوحّد تنسيق رقم الهاتف لتسهيل البحث، مع تحويل الأرقام إلى الصيغة اللاتينية وإزالة رمز الدولة.
 String normalizePhone(String input) {
   const arabic = '٠١٢٣٤٥٦٧٨٩';
   const persian = '۰۱۲۳۴۵۶۷۸۹';
@@ -132,7 +132,15 @@ String normalizePhone(String input) {
     }
   }
   var digits = b.toString();
-  if (digits.startsWith('0020')) digits = '0${digits.substring(4)}';
-  if (digits.startsWith('20') && digits.length == 12) digits = '0${digits.substring(2)}';
+  if (digits.startsWith('00')) digits = digits.substring(2);
+
+  // توحيد أرقام السعودية إلى الصيغة المحلية، مع الإبقاء على دعم الأرقام المصرية القديمة.
+  if (digits.startsWith('966') && digits.length == 12) {
+    digits = '0${digits.substring(3)}';
+  } else if (digits.startsWith('20') && digits.length == 12) {
+    digits = '0${digits.substring(2)}';
+  } else if (digits.length == 9 && digits.startsWith('5')) {
+    digits = '0$digits';
+  }
   return digits;
 }

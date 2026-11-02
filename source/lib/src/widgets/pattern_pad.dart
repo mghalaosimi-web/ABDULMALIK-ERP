@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// لوحة 3×3 لتسجيل باترن فتح الشاشة زي ما العميل بيرسمه.
+/// لوحة 3×3 لتسجيل نمط فتح الشاشة زي ما العميل بيرسمه.
 /// النقط مترقمة من 1 لـ 9 (من فوق شمال لتحت يمين)، والنتيجة زي "1-5-9-6".
 class PatternPad extends StatefulWidget {
   const PatternPad({super.key, required this.onChanged, this.initial = const [], this.size = 220, this.readOnly = false});
@@ -38,7 +38,7 @@ class _PatternPadState extends State<PatternPad> {
   void _add(Offset p) {
     final d = _hit(p);
     if (d == null || _dots.contains(d)) return;
-    // لو العميل عدّى على نقطة في النص بين نقطتين، بتتحسب زي ما الموبايل بيعمل
+    // لو العميل عدّى على نقطة في النص بين نقطتين، بتتحسب زي ما الهاتف بيعمل
     if (_dots.isNotEmpty) {
       final last = _dots.last;
       final mid = (last + d) ~/ 2;
@@ -54,7 +54,7 @@ class _PatternPadState extends State<PatternPad> {
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final pad = Directionality(
-      // الباترن دايماً من الشمال لليمين زي شاشة الموبايل، حتى لو البرنامج عربي
+      // النمط دايماً من الشمال لليمين زي شاشة الهاتف، حتى لو البرنامج عربي
       textDirection: TextDirection.ltr,
       child: GestureDetector(
         onPanStart: widget.readOnly
@@ -106,7 +106,7 @@ class _PatternPadState extends State<PatternPad> {
           Row(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Text(_dots.isEmpty ? 'ارسم الباترن بالماوس أو بصباعك' : 'الباترن: ${PatternPad.encode(_dots)}',
+              Text(_dots.isEmpty ? 'ارسم النمط بالماوس أو بصباعك' : 'النمط: ${PatternPad.encode(_dots)}',
                   textDirection: TextDirection.rtl),
               if (_dots.isNotEmpty)
                 TextButton(
@@ -161,7 +161,7 @@ class _PatternPainter extends CustomPainter {
       canvas.drawCircle(center(d), size / 22, Paint()..color = active ? activeColor : dotColor);
       if (active) {
         canvas.drawCircle(center(d), size / 12, Paint()..color = activeColor.withValues(alpha: 0.15));
-        // رقم ترتيب النقطة عشان الفني يعرف البداية
+        // رقم ترتيب النقطة لمساعدة الفني على تحديد نقطة البداية
         if (d == dots.first) {
           canvas.drawCircle(
             center(d),

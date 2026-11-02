@@ -12,13 +12,13 @@ import '../../widgets/common.dart';
 import '../../widgets/form_fields.dart';
 import '../pos/providers.dart';
 
-/// الحقول اللي ممكن تتقرأ من ملف البرنامج القديم.
+/// الحقول التي يمكن قراءتها من ملف البرنامج السابق.
 const _fields = {
   'name': 'اسم الصنف *',
-  'barcode': 'الباركود',
+  'barcode': 'الرمز الشريطي',
   'category': 'القسم',
   'price': 'سعر البيع',
-  'cost': 'سعر الشرا',
+  'cost': 'سعر الشراء',
   'qty': 'الكمية',
   'lowStock': 'حد التنبيه',
 };
@@ -68,7 +68,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
       final fileName = file.name;
       // قد يستغرق ملف Excel كبير وقتاً أطول للقراءة؛ لذلك تتم معالجته في Isolate منفصل حتى تظل الشاشة مستجيبة.
       final rows = await Isolate.run(() => SpreadsheetReader.read(raw, fileName));
-      if (rows.isEmpty) throw const FormatException('الملف فاضي');
+      if (rows.isEmpty) throw const FormatException('الملف فارغ');
       setState(() {
         _fileName = file.name;
         _rows = rows;
@@ -113,7 +113,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
 
   Future<void> _import() async {
     if (_map['name'] == null) {
-      setState(() => _error = 'لازم تحدد عمود اسم الصنف');
+      setState(() => _error = 'يجب تحديد العمود الذي يحتوي اسم الصنف.');
       return;
     }
     int? cents(String v) => v.isEmpty ? null : parseMoney(v);
@@ -170,8 +170,8 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
             title: '1. اختر الملف',
             icon: Icons.upload_file_rounded,
             children: [
-              const Text('من برنامجك القديم، طلّع الأصناف في ملف Excel (xlsx) أو CSV، وبعدين اختاره هنا.\n'
-                  'لو الأصناف موجودة قبل كده (نفس الباركود) هتتحدث، والجديدة هتتضاف.'),
+              const Text('من برنامجك القديم، صدّر الأصناف إلى ملف Excel (xlsx) أو CSV، ثم اختر الملف هنا.\n'
+                  'إذا كان الصنف موجوداً مسبقاً (بالرمز الشريطي نفسه) فسيُحدّث، أما الأصناف الجديدة فستُضاف.'),
               const SizedBox(height: 12),
               Row(children: [
                 FilledButton.icon(onPressed: _busy ? null : _pick, icon: const Icon(Icons.folder_open_rounded), label: const Text('اختيار ملف')),
@@ -183,7 +183,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
           if (_rows.isNotEmpty) ...[
             const SizedBox(height: 12),
             SectionCard(
-              title: '2. حدد كل عمود فيه إيه',
+              title: '2. حدّد محتوى كل عمود',
               icon: Icons.view_column_rounded,
               children: [
                 CheckboxListTile(
@@ -225,7 +225,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                     controlAffinity: ListTileControlAffinity.leading,
                     value: _updateQty,
                     onChanged: (v) => setState(() => _updateQty = v ?? true),
-                    title: const Text('خلّي الكميات زي اللي في الملف (للأصناف الموجودة كمان)'),
+                    title: const Text('استبدال كميات الأصناف الموجودة بالكميات الواردة في الملف'),
                   ),
               ],
             ),
@@ -274,7 +274,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text('تم الاستيراد ✅', style: Theme.of(context).textTheme.titleMedium?.bold),
                   const SizedBox(height: 6),
-                  Text('أصناف جديدة: ${_result!['created']} • اتحدّث: ${_result!['updated']}'),
+                  Text('أصناف جديدة: ${_result!['created']} • تم تحديثها: ${_result!['updated']}'),
                   if ((_result!['errors'] as List).isNotEmpty) ...[
                     const SizedBox(height: 8),
                     Text('صفوف اتجاهلت (${(_result!['errors'] as List).length}):', style: TextStyle(color: scheme.error)),

@@ -67,7 +67,7 @@ class _PhonesScreenState extends ConsumerState<PhonesScreen> {
         Padding(
           padding: const EdgeInsets.fromLTRB(20, 0, 20, 8),
           child: TextField(
-            decoration: const InputDecoration(hintText: 'دوّر بالـ IMEI أو الموديل', prefixIcon: Icon(Icons.search_rounded)),
+            decoration: const InputDecoration(hintText: 'ابحث باستخدام رقم IMEI أو الطراز', prefixIcon: Icon(Icons.search_rounded)),
             onChanged: (v) {
               _debounce?.cancel();
               _debounce = Timer(const Duration(milliseconds: 300), () => setState(() => _query = v.trim()));
@@ -77,7 +77,7 @@ class _PhonesScreenState extends ConsumerState<PhonesScreen> {
         SizedBox(
           height: 42,
           child: ListView(scrollDirection: Axis.horizontal, padding: const EdgeInsets.symmetric(horizontal: 20), children: [
-            for (final s in const {'in_stock': 'في المحل', 'sold': 'اتباع', 'all': 'الكل'}.entries)
+            for (final s in const {'in_stock': 'في المحل', 'sold': 'مباع', 'all': 'الكل'}.entries)
               Padding(
                 padding: const EdgeInsetsDirectional.only(end: 6),
                 child: ChoiceChip(label: Text(s.value), selected: _status == s.key, onSelected: (_) => setState(() => _status = s.key)),
@@ -131,10 +131,10 @@ class _UnitTile extends StatelessWidget {
           child: Icon(Icons.phone_iphone_rounded, color: u.isUsed ? brandOrange : scheme.primary),
         ),
         title: Text(u.productName, style: const TextStyle().semiBold),
-        subtitle: Text(['IMEI ${u.imei}', if (u.details.isNotEmpty) u.details, if (showCost && u.costCents != null) 'شراء ${money(u.costCents!)}'].join(' • ')),
+        subtitle: Text(['IMEI ${u.imei}', if (u.details.isNotEmpty) u.details, if (showCost && u.costCents != null) 'تكلفة الشراء ${money(u.costCents!)}'].join(' • ')),
         trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
           Text(money(u.priceCents), style: TextStyle(color: scheme.primary).bold),
-          if (u.status == 'sold') Text('اتباع ${u.soldAt != null ? formatDay(u.soldAt!) : ''}', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
+          if (u.status == 'sold') Text('مباع ${u.soldAt != null ? formatDay(u.soldAt!) : ''}', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
         ]),
         onTap: () => showDialog<void>(context: context, builder: (_) => ImeiCheckDialog(initialImei: u.imei)),
       ),
@@ -142,7 +142,7 @@ class _UnitTile extends StatelessWidget {
   }
 }
 
-/// في الكاشير: اختيار الجهاز اللي هيتباع من موديل معين (بالمسح أو من القايمة).
+/// في شاشة نقطة البيع: اختيار الجهاز المراد بيعه من طراز معين، بالمسح أو من القائمة.
 class UnitPickerDialog extends ConsumerStatefulWidget {
   const UnitPickerDialog({super.key, required this.product});
   final Product product;
@@ -166,7 +166,7 @@ class _UnitPickerDialogState extends ConsumerState<UnitPickerDialog> {
           TextField(
             autofocus: true,
             decoration: InputDecoration(
-              hintText: 'امسح أو اكتب الـ IMEI',
+              hintText: 'امسح رقم IMEI أو أدخله',
               prefixIcon: const Icon(Icons.qr_code_scanner_rounded),
               suffixIcon: cameraScanSupported
                   ? IconButton(
@@ -308,21 +308,21 @@ class _ImeiCheckDialogState extends ConsumerState<ImeiCheckDialog> {
                   child: Padding(
                     padding: const EdgeInsets.all(12),
                     child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                      Text('${u.productName} • ${u.status == 'sold' ? 'اتباع' : 'في المحل'}', style: const TextStyle().bold),
+                      Text('${u.productName} • ${u.status == 'sold' ? 'مباع' : 'في المحل'}', style: const TextStyle().bold),
                       if (u.details.isNotEmpty) Text(u.details),
                       Text(u.source == 'customer'
                           ? 'تم الشراء من: ${u.sellerName ?? ''} • ${u.sellerPhone ?? ''}'
                           : u.supplierName != null
                               ? 'تم الشراء من المورد: ${u.supplierName}'
-                              : 'اتضاف للمخزون'),
-                      if (u.sellerNationalId != null) Text('الرقم القومي: ${u.sellerNationalId}', textDirection: TextDirection.rtl),
-                      if (u.createdAt != null) Text('دخل المحل: ${formatDateTime(u.createdAt!)}'),
-                      if (u.soldAt != null) Text('اتباع: ${formatDateTime(u.soldAt!)}${u.soldToName != null ? ' لـ ${u.soldToName}' : ''}'),
+                              : 'أُضيف إلى المخزون'),
+                      if (u.sellerNationalId != null) Text('رقم الهوية: ${u.sellerNationalId}', textDirection: TextDirection.rtl),
+                      if (u.createdAt != null) Text('تاريخ الإضافة إلى المخزون: ${formatDateTime(u.createdAt!)}'),
+                      if (u.soldAt != null) Text('مباع: ${formatDateTime(u.soldAt!)}${u.soldToName != null ? ' لـ ${u.soldToName}' : ''}'),
                       if (u.sellerIdPhoto != null)
                         TextButton.icon(
                           onPressed: () => showDialog<void>(context: context, builder: (_) => _PhotoDialog(fileId: u.sellerIdPhoto!)),
                           icon: const Icon(Icons.badge_rounded),
-                          label: const Text('صورة البطاقة'),
+                          label: const Text('صورة الهوية'),
                         ),
                       if (u.source == 'customer')
                         TextButton.icon(
@@ -373,7 +373,7 @@ class _PhotoDialog extends ConsumerWidget {
   }
 }
 
-/// تصوير صورة (كاميرا على الموبايل، أو اختيار ملف على الكمبيوتر) وتصغيرها ورفعها للسيرفر.
+/// تصوير صورة (كاميرا على الهاتف، أو اختيار ملف على الحاسوب) وتصغيرها ورفعها للسيرفر.
 Future<String?> captureAndUploadPhoto(BuildContext context, WidgetRef ref, String kind) async {
   final XFile? file;
   if (Platform.isAndroid || Platform.isIOS) {
@@ -389,7 +389,7 @@ Future<String?> captureAndUploadPhoto(BuildContext context, WidgetRef ref, Strin
         const XTypeGroup(label: 'صور', extensions: ['jpg', 'jpeg', 'png', 'webp']),
       ],
     );
-    DiagLog.app?.write('INFO', file == null ? 'نافذة اختيار الصورة اتقفلت من غير اختيار' : 'اتختارت صورة ${await file.length() ~/ 1024} KB');
+    DiagLog.app?.write('INFO', file == null ? 'أُغلقت نافذة اختيار الصورة دون تحديد ملف' : 'تم اختيار صورة ${await file.length() ~/ 1024} KB');
   }
   if (file == null) return null;
   final raw = await file.readAsBytes();
@@ -464,7 +464,7 @@ class _BuyUsedScreenState extends ConsumerState<BuyUsedScreen> {
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
     if (_photoId == null) {
-      setState(() => _error = 'صوّر بطاقة البائع الأول (للحماية من الأجهزة المسروقة)');
+      setState(() => _error = 'يجب إرفاق صورة هوية البائع أولاً؛ وذلك للتحقق من مصدر الجهاز.');
       return;
     }
     setState(() {
@@ -496,7 +496,7 @@ class _BuyUsedScreenState extends ConsumerState<BuyUsedScreen> {
           content: Text('${unit.productName}\nIMEI ${unit.imei}\nادفع للبائع مبلغ ${money(unit.costCents ?? 0)} من الصندوق.\nاطبع الإيصال واطلب من البائع التوقيع عليه.'),
           actions: [
             OutlinedButton.icon(onPressed: () => printUsedPurchase(context, ref, unit), icon: const Icon(Icons.print_rounded), label: const Text('طباعة الإيصال')),
-            FilledButton(onPressed: () => Navigator.pop(context), child: const Text('تمام')),
+            FilledButton(onPressed: () => Navigator.pop(context), child: const Text('حسناً')),
           ],
         ),
       );
@@ -516,8 +516,8 @@ class _BuyUsedScreenState extends ConsumerState<BuyUsedScreen> {
     final device = SectionCard(title: 'الجهاز', icon: Icons.phone_iphone_rounded, children: [
       TextFormField(
         controller: _model,
-        decoration: const InputDecoration(labelText: 'الموديل * (مثلاً iPhone 12 128GB)'),
-        validator: (v) => (v ?? '').trim().isEmpty ? 'اكتب الموديل' : null,
+        decoration: const InputDecoration(labelText: 'الطراز * (مثلاً iPhone 12 128GB)'),
+        validator: (v) => (v ?? '').trim().isEmpty ? 'يُرجى إدخال الطراز' : null,
       ),
       const SizedBox(height: 12),
       TextFormField(
@@ -543,7 +543,7 @@ class _BuyUsedScreenState extends ConsumerState<BuyUsedScreen> {
           if (latinDigits(v.trim()).length == 15) _checkImei();
         },
         onFieldSubmitted: (_) => _checkImei(),
-        validator: (v) => latinDigits(v ?? '').trim().length < 8 ? 'اكتب الـ IMEI' : null,
+        validator: (v) => latinDigits(v ?? '').trim().length < 8 ? 'يُرجى إدخال رقم IMEI' : null,
       ),
       if (info != null) ...[
         const SizedBox(height: 8),
@@ -579,17 +579,21 @@ class _BuyUsedScreenState extends ConsumerState<BuyUsedScreen> {
       TextFormField(controller: _notes, maxLines: 2, decoration: const InputDecoration(labelText: 'حالة الجهاز (البطارية، الخدوش، وهل سبق فتحه...)')),
     ]);
     final seller = SectionCard(title: 'البائع', icon: Icons.badge_rounded, children: [
-      TextFormField(controller: _sellerName, decoration: const InputDecoration(labelText: 'الاسم (زي البطاقة) *'), validator: (v) => (v ?? '').trim().isEmpty ? 'اكتب الاسم' : null),
+      TextFormField(controller: _sellerName, decoration: const InputDecoration(labelText: 'الاسم (كما هو مدوّن في الهوية) *'), validator: (v) => (v ?? '').trim().isEmpty ? 'يُرجى إدخال الاسم' : null),
       const SizedBox(height: 12),
-      TextFormField(controller: _sellerPhone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'رقم الهاتف *'), validator: (v) => normalizePhone(v ?? '').length < 10 ? 'اكتب رقم صحيح' : null),
+      TextFormField(controller: _sellerPhone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'رقم الهاتف *'), validator: (v) => normalizePhone(v ?? '').length < 10 ? 'يُرجى إدخال رقم صحيح' : null),
       const SizedBox(height: 12),
       TextFormField(
         controller: _nationalId,
         keyboardType: TextInputType.number,
         textDirection: TextDirection.ltr,
         maxLength: 14,
-        decoration: const InputDecoration(labelText: 'الرقم القومي (14 رقم) *', counterText: ''),
-        validator: (v) => RegExp(r'^[23]\d{13}$').hasMatch(latinDigits(v ?? '').trim()) ? null : 'الرقم القومي 14 رقم',
+        decoration: const InputDecoration(
+          labelText: 'رقم الهوية الوطنية أو الإقامة *',
+          helperText: 'يتكون الرقم السعودي من 10 أرقام.',
+          counterText: '',
+        ),
+        validator: (v) => isValidNationalId(v ?? '') ? null : 'رقم الهوية غير صحيح.',
       ),
       const SizedBox(height: 12),
       OutlinedButton.icon(
@@ -597,12 +601,12 @@ class _BuyUsedScreenState extends ConsumerState<BuyUsedScreen> {
         icon: _photoBusy
             ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2))
             : Icon(_photoId == null ? Icons.photo_camera_rounded : Icons.check_circle_rounded, color: _photoId == null ? null : const Color(0xFF16A34A)),
-        label: Text(_photoId == null ? 'صوّر البطاقة *' : 'اتصورت البطاقة ✓ (صورة تانية؟)'),
+        label: Text(_photoId == null ? 'التقط صورة الهوية *' : 'تم التقاط صورة الهوية ✓ (التقاط صورة أخرى؟)'),
       ),
     ]);
     final price = SectionCard(title: 'السعر', icon: Icons.payments_rounded, children: [
       Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Expanded(child: MoneyField(controller: _cost, label: 'المبلغ المستحق للبائع *', validator: (c) => (c ?? 0) <= 0 ? 'اكتب المبلغ' : null)),
+        Expanded(child: MoneyField(controller: _cost, label: 'المبلغ المستحق للبائع *', validator: (c) => (c ?? 0) <= 0 ? 'يُرجى إدخال المبلغ' : null)),
         const SizedBox(width: 12),
         Expanded(child: MoneyField(controller: _price, label: 'سعر البيع')),
       ]),
@@ -679,7 +683,7 @@ class _AddUnitsDialogState extends ConsumerState<AddUnitsDialog> {
       });
       if (!mounted) return;
       Navigator.pop(context);
-      showMessage(context, 'اتضاف ${_imeis.length} جهاز');
+      showMessage(context, 'تمت إضافة ${_imeis.length} جهاز إلى المخزون');
     } catch (e) {
       if (mounted) setState(() => _error = errorText(e));
     } finally {

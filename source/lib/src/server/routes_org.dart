@@ -1,6 +1,6 @@
 part of 'api_server.dart';
 
-/// ربط فروع المحل الواحد عن طريق Firebase: ملخص كل فرع، والمخزون في الفروع التانية، والتحويلات بينها.
+/// ربط فروع المحل الواحد عن طريق Firebase: ملخص كل فرع، والمخزون في الفروع الأخرى، والتحويلات بينها.
 extension _OrgRoutes on FixTrackServer {
   void _registerOrgRoutes(Router r) {
     r.get('/api/org', _authed(_orgInfo, only: {'owner'}));
@@ -17,13 +17,13 @@ extension _OrgRoutes on FixTrackServer {
 
   FirebaseSync get _fb {
     final c = _cloud;
-    if (c == null) throw ApiError(400, 'ربط الفروع محتاج المزامنة مع النت تكون شغالة');
+    if (c == null) throw ApiError(400, 'يتطلب ربط الفروع تفعيل المزامنة عبر الإنترنت.');
     return c;
   }
 
   String get _orgId {
     final id = db.setting('org_id');
-    if (id == null || id.isEmpty) throw ApiError(400, 'الفرع ده مش مربوط بفروع تانية');
+    if (id == null || id.isEmpty) throw ApiError(400, 'هذا الفرع غير مرتبط بفروع أخرى.');
     return id;
   }
 
@@ -50,7 +50,7 @@ extension _OrgRoutes on FixTrackServer {
   }
 
   Future<Object?> _orgCreate(Request req, AuthUser u) async {
-    if ((db.setting('org_id') ?? '').isNotEmpty) throw ApiError(400, 'الفرع ده مربوط بالفعل');
+    if ((db.setting('org_id') ?? '').isNotEmpty) throw ApiError(400, 'هذا الفرع مرتبط بالفعل');
     final body = await _body(req);
     final fb = _fb;
     final uid = await fb.uid();
@@ -74,14 +74,14 @@ extension _OrgRoutes on FixTrackServer {
   }
 
   Future<Object?> _orgJoin(Request req, AuthUser u) async {
-    if ((db.setting('org_id') ?? '').isNotEmpty) throw ApiError(400, 'الفرع ده مربوط بالفعل. افصله الأول');
+    if ((db.setting('org_id') ?? '').isNotEmpty) throw ApiError(400, 'هذا الفرع مرتبط بالفعل. افصله الأول');
     final body = await _body(req);
     final code = (body['code'] as String? ?? '').trim().toUpperCase().replaceAll(RegExp(r'[\s-]'), '');
-    if (code.length != 8) throw ApiError(400, 'الكود 8 حروف وأرقام');
+    if (code.length != 8) throw ApiError(400, 'يجب أن يتكون الرمز من 8 أحرف أو أرقام.');
     final fb = _fb;
     final invite = await fb.getDoc('orgInvites/$code');
-    if (invite == null) throw ApiError(404, 'الكود ده مش صحيح');
-    if ((invite['expiresAt'] as DateTime).isBefore(DateTime.now())) throw ApiError(400, 'الكود ده خلص، اطلب كود جديد');
+    if (invite == null) throw ApiError(404, 'الرمز غير صحيح');
+    if ((invite['expiresAt'] as DateTime).isBefore(DateTime.now())) throw ApiError(400, 'انتهت صلاحية الرمز؛ يُرجى طلب رمز جديد.');
     final orgId = invite['orgId'] as String;
     final uid = await fb.uid();
     await fb.setDoc('orgs/$orgId/members/$uid', {
@@ -222,25 +222,25 @@ extension _OrgRoutes on FixTrackServer {
     };
   }
 
-  /// تحويل بضاعة لفرع تاني: بتتخصم من هنا وتستنى الفرع التاني يأكد الاستلام.
+  /// تحويل بضاعة لفرع آخر: بتتخصم من هنا وتستنى الفرع الآخر يأكد الاستلام.
   Future<Object?> _orgSendTransfer(Request req, AuthUser u) async {
     final orgId = _orgId;
     final fb = _fb;
     final body = await _body(req);
     final toUid = body['toUid'] as String?;
     final uid = await fb.uid();
-    if (toUid == null || toUid == uid) throw ApiError(400, 'اختار الفرع اللي هتحوّل له');
+    if (toUid == null || toUid == uid) throw ApiError(400, 'يُرجى تحديد الفرع المراد التحويل إليه');
     final members = await fb.listDocs('orgs/$orgId/members');
     final to = members.where((m) => m.id == toUid).firstOrNull;
-    if (to == null) throw ApiError(400, 'الفرع ده مش في المجموعة');
+    if (to == null) throw ApiError(400, 'هذا الفرع غير مدرج في المجموعة.');
     final wanted = (body['items'] as List? ?? const []).whereType<Map>().toList();
     if (wanted.isEmpty) throw ApiError(400, 'اختار الأصناف');
     final items = <Map<String, Object?>>[];
     for (final w in wanted) {
       final p = db.selectOne('SELECT * FROM products WHERE id = ?', [w['productId']]);
       final qty = w['qty'] is int ? w['qty'] as int : 0;
-      if (p == null || qty <= 0) throw ApiError(400, 'صنف أو كمية مش صحيحة');
-      if (p['serialized'] == 1) throw ApiError(400, 'تحويل الموبايلات بالـ IMEI لسه مش متاح');
+      if (p == null || qty <= 0) throw ApiError(400, 'الصنف أو الكمية غير صحيحين');
+      if (p['serialized'] == 1) throw ApiError(400, 'لا يتوفر حالياً تحويل الهواتف المسجلة بأرقام IMEI.');
       if ((p['qty'] as int) < qty) throw ApiError(400, 'المتاح من "${p['name']}" ${p['qty']} بس');
       items.add({'productId': p['id'], 'name': p['name'], 'barcode': p['barcode'], 'category': p['category'], 'qty': qty, 'costCents': p['cost_cents'], 'priceCents': p['price_cents']});
     }
@@ -265,15 +265,15 @@ extension _OrgRoutes on FixTrackServer {
     return {'id': id};
   }
 
-  /// استلام تحويل: الأصناف بتتطابق بالباركود أو الاسم، واللي مش موجود بيتعمل.
+  /// استلام تحويل: تُطابق الأصناف باستخدام الرمز الشريطي أو الاسم، ويُنشأ سجل للصنف غير الموجود.
   Future<Object?> _orgReceiveTransfer(Request req, AuthUser u) async {
     final orgId = _orgId;
     final fb = _fb;
     final id = req.params['id']!;
     final t = await fb.getDoc('orgs/$orgId/transfers/$id');
-    if (t == null) throw ApiError(404, 'التحويل ده مش موجود');
-    if (t['toUid'] != await fb.uid()) throw ApiError(403, 'التحويل ده مش للفرع ده');
-    if (t['status'] != 'sent') throw ApiError(400, 'التحويل ده اتستلم قبل كده');
+    if (t == null) throw ApiError(404, 'عملية التحويل غير موجودة');
+    if (t['toUid'] != await fb.uid()) throw ApiError(403, 'عملية التحويل غير مخصصة لهذا الفرع');
+    if (t['status'] != 'sent') throw ApiError(400, 'سبق استلام عملية التحويل هذه.');
     await fb.setDoc('orgs/$orgId/transfers/$id', {...t, 'status': 'received', 'receivedAt': DateTime.now().toUtc()});
     db.transaction(() {
       for (final it in (t['items'] as List).whereType<Map>()) {

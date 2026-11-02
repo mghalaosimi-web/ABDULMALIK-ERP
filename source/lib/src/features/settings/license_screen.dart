@@ -12,10 +12,17 @@ import '../../widgets/form_fields.dart';
 import '../messages/message_dialog.dart';
 import '../tickets/providers.dart';
 
+String _remainingDaysLabel(int days) {
+  if (days == 1) return 'يوم واحد';
+  if (days == 2) return 'يومين';
+  if (days >= 3 && days <= 10) return '$days أيام';
+  return '$days يوماً';
+}
+
 const _planLabelsAr = {'trial': 'تجربة مجانية', 'monthly': 'شهري', 'yearly': 'سنوي', 'lifetime': 'مدى الحياة', 'custom': 'اشتراك'};
 const _planLabelsEn = {'trial': 'Free trial', 'monthly': 'Monthly', 'yearly': 'Yearly', 'lifetime': 'Lifetime', 'custom': 'Custom'};
 
-/// شريط بيظهر فوق الرئيسية لو التجربة أو الاشتراك قرّب يخلص أو خلص.
+/// شريط يظهر أعلى الشاشة الرئيسية عند اقتراب انتهاء الفترة التجريبية أو الاشتراك أو انتهائهما.
 class LicenseBanner extends ConsumerWidget {
   const LicenseBanner({super.key});
 
@@ -30,16 +37,16 @@ class LicenseBanner extends ConsumerWidget {
     String? text;
     var color = brandOrange;
     if (state == 'expired') {
-      text = s['plan'] == 'trial' ? (ar ? 'انتهت الفترة التجريبية المجانية. فعّل البرنامج لمتابعة تسجيل عمليات جديدة.' : 'The free trial has ended. Activate the app to continue creating new records.') : (ar ? 'انتهت صلاحية الاشتراك. جدّده لمتابعة تسجيل عمليات جديدة.' : 'The license has expired. Renew it to continue creating new records.');
+      text = s['plan'] == 'trial' ? (ar ? 'انتهت الفترة التجريبية المجانية. يرجى تفعيل البرنامج لمتابعة تسجيل عمليات جديدة.' : 'The free trial has ended. Activate the app to continue creating new records.') : (ar ? 'انتهت صلاحية الاشتراك. يرجى تجديده لمتابعة تسجيل عمليات جديدة.' : 'The license has expired. Renew it to continue creating new records.');
       color = scheme.error;
     } else if (state == 'tampered') {
-      text = ar ? 'تاريخ الكمبيوتر غير صحيح. يرجى ضبط التاريخ والوقت حتى يعمل البرنامج.' : 'The computer clock appears incorrect. Correct the date and time.';
+      text = ar ? 'تاريخ الحاسوب غير صحيح. يرجى ضبط التاريخ والوقت حتى يعمل البرنامج.' : 'The computer clock appears incorrect. Correct the date and time.';
       color = scheme.error;
     } else if (state == 'trial') {
-      text = ar ? 'تجربة مجانية: فاضل ${days ?? 0} يوم' : 'Free trial: ${days ?? 0} days remaining';
+      text = ar ? 'تجربة مجانية: يتبقى ${_remainingDaysLabel(days ?? 0)}' : 'Free trial: ${days ?? 0} days remaining';
       color = brandBlue;
     } else if (days != null && days <= 7) {
-      text = ar ? 'الاشتراك هيخلص بعد $days يوم' : 'License expires in $days days';
+      text = ar ? 'تنتهي صلاحية الاشتراك خلال ${_remainingDaysLabel(days)}' : 'License expires in $days days';
     }
     if (text == null) return const SizedBox.shrink();
     final isOwner = ref.watch(sessionProvider).value?.user?.isOwner ?? false;
@@ -93,7 +100,7 @@ class _LicenseScreenState extends ConsumerState<LicenseScreen> {
       await ref.read(sessionProvider).value!.api!.post('/api/license', {'code': _code.text.trim()});
       ref.invalidate(licenseProvider);
       _code.clear();
-      if (mounted) showMessage(context, ref.read(localeProvider).languageCode == 'ar' ? 'اتفعّل البرنامج ✅ شكراً!' : 'License activated successfully!');
+      if (mounted) showMessage(context, ref.read(localeProvider).languageCode == 'ar' ? 'اتيرجى تفعيل البرنامج ✅ شكراً!' : 'License activated successfully!');
     } catch (e) {
       if (mounted) setState(() => _error = errorText(e));
     } finally {
@@ -134,14 +141,14 @@ class _LicenseScreenState extends ConsumerState<LicenseScreen> {
                         Text(label, style: text.headlineSmall?.bold.copyWith(color: color)),
                         const SizedBox(height: 6),
                         Text(ar ? 'النوع: ${planLabels[s['plan']] ?? s['plan']}' : 'Plan: ${planLabels[s['plan']] ?? s['plan']}'),
-                        Text(exp == null ? (ar ? 'مدى الحياة' : 'Lifetime') : '${state == 'expired' ? (ar ? 'خلص' : 'Expired') : (ar ? 'لحد' : 'Until')} ${formatDate(exp)}'
-                            '${s['daysLeft'] != null && state != 'expired' ? (ar ? ' (فاضل ${s['daysLeft']} يوم)' : ' (${s['daysLeft']} days left)') : ''}'),
+                        Text(exp == null ? (ar ? 'مدى الحياة' : 'Lifetime') : '${state == 'expired' ? (ar ? 'انتهت الصلاحية' : 'Expired') : (ar ? 'حتى' : 'Until')} ${formatDate(exp)}'
+                            '${s['daysLeft'] != null && state != 'expired' ? (ar ? ' (المتبقي ${_remainingDaysLabel(s['daysLeft'] as int)})' : ' (${s['daysLeft']} days left)') : ''}'),
                         Text(ar ? 'عدد الأجهزة المسموح: ${s['devices']}' : 'Allowed devices: ${s['devices']}'),
                       ]),
                     ),
                   ),
                   const SizedBox(height: 12),
-                  SectionCard(title: ar ? 'كود الجهاز' : 'Device code', icon: Icons.fingerprint_rounded, children: [
+                  SectionCard(title: ar ? 'رمز الجهاز' : 'Device code', icon: Icons.fingerprint_rounded, children: [
                     Text(ar ? 'أرسل هذا الرمز إلى مطوّر البرنامج للحصول على رمز التفعيل:' : 'Send this code to the software owner to issue your activation key:'),
                     const SizedBox(height: 8),
                     Row(children: [
@@ -153,7 +160,7 @@ class _LicenseScreenState extends ConsumerState<LicenseScreen> {
                         icon: const Icon(Icons.copy_rounded),
                         onPressed: () {
                           Clipboard.setData(ClipboardData(text: device));
-                          showMessage(context, ar ? 'اتنسخ كود الجهاز' : 'Device code copied');
+                          showMessage(context, ar ? 'تم نسخ رمز الجهاز' : 'Device code copied');
                         },
                       ),
                     ]),
@@ -166,14 +173,14 @@ class _LicenseScreenState extends ConsumerState<LicenseScreen> {
                       ),
                   ]),
                   const SizedBox(height: 12),
-                  SectionCard(title: ar ? 'كود التفعيل' : 'Activation code', icon: Icons.key_rounded, children: [
+                  SectionCard(title: ar ? 'رمز التفعيل' : 'Activation code', icon: Icons.key_rounded, children: [
                     TextField(
                       controller: _code,
                       minLines: 3,
                       maxLines: 5,
                       textDirection: TextDirection.ltr,
                       style: const TextStyle(fontSize: 12),
-                      decoration: InputDecoration(hintText: ar ? 'الصق كود التفعيل هنا (بيبدأ بـ AERP1.)' : 'Paste your activation code here (starts with AERP1.)'),
+                      decoration: InputDecoration(hintText: ar ? 'الصق رمز التفعيل هنا (يبدأ بـ AERP1.)' : 'Paste your activation code here (starts with AERP1.)'),
                     ),
                     if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],
                     const SizedBox(height: 12),
@@ -192,7 +199,7 @@ class _LicenseScreenState extends ConsumerState<LicenseScreen> {
   }
 }
 
-/// رسالة طلب التفعيل اللي بتتبعت لصاحب البرنامج على واتساب.
+/// رسالة طلب التفعيل التي تُرسل إلى مسؤول البرنامج عبر واتساب.
 String activationMessage(Map<String, dynamic> s) {
   String? v(String k) {
     final x = (s[k] as String?)?.trim();
@@ -205,6 +212,6 @@ String activationMessage(Map<String, dynamic> s) {
     if (v('branchName') != null && v('branchName') != 'الفرع الرئيسي') 'الفرع: ${v('branchName')}',
     if (v('ownerName') != null) 'صاحب المحل: ${v('ownerName')}',
     if (v('shopPhone') != null) 'رقم الهاتف: ${v('shopPhone')}',
-    'كود الجهاز: ${s['deviceCode']}',
+    'رمز الجهاز: ${s['deviceCode']}',
   ].join('\n');
 }

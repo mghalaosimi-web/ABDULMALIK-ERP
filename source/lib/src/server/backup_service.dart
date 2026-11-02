@@ -3,8 +3,8 @@ part of 'api_server.dart';
 const _keepBackups = 14;
 
 /// نسخ احتياطي أوتوماتيك كل يوم: قاعدة البيانات + الصور + اللوجو في ملف zip واحد.
-/// بيتحفظ في فولدر البرنامج، ونسخة كمان في فولدر تاني لو المحل اختاره
-/// (فلاشة، أو هارد تاني، أو فولدر Google Drive على الكمبيوتر عشان يبقى على النت ببلاش).
+/// بيتحفظ في فولدر البرنامج، ونسخة كمان في فولدر آخر إذا المحل اختاره
+/// (فلاشة، أو قرص صلب آخر، أو فولدر Google Drive على الكمبيوتر لإتاحته عبر الإنترنت دون تكلفة إضافية).
 extension _BackupRoutes on FixTrackServer {
   void _registerBackupRoutes(Router r) {
     r.get('/api/backups', _authed(_listBackups, only: {'owner'}));
@@ -37,7 +37,7 @@ extension _BackupRoutes on FixTrackServer {
   Future<Object?> _backupSettings(Request req, AuthUser u) async {
     final body = await _body(req);
     final dir = _optionalText(body, 'backupDir');
-    if (dir != null && !Directory(dir).existsSync()) throw ApiError(400, 'الفولدر ده مش موجود على كمبيوتر السيرفر');
+    if (dir != null && !Directory(dir).existsSync()) throw ApiError(400, 'المجلد غير موجود على حاسوب الخادم');
     db.setSetting('backup_dir', dir ?? '');
     if (dir != null) await _createBackup(manual: true);
     return _listBackups(req, u);
@@ -73,7 +73,7 @@ extension _BackupRoutes on FixTrackServer {
     final out = File(outPath);
     snapshot.deleteSync();
 
-    // نسخة في الفولدر التاني (لو المحل اختاره)
+    // نسخة في المجلد الآخر (لو المحل اختاره)
     final external = db.setting('backup_dir');
     String? externalError;
     if (external != null && external.isNotEmpty) {
@@ -85,7 +85,7 @@ extension _BackupRoutes on FixTrackServer {
           f.deleteSync();
         }
       } catch (e) {
-        externalError = 'مش قادر أحفظ في الفولدر التاني: $e';
+        externalError = 'تعذّر الحفظ في المجلد الآخر: $e';
       }
     }
 
@@ -98,17 +98,17 @@ extension _BackupRoutes on FixTrackServer {
     return name;
   }
 
-  /// الاسترجاع بيحصل وقت ما البرنامج يتفتح تاني (عشان قاعدة البيانات مش مفتوحة).
+  /// الاسترجاع بيحصل وقت ما البرنامج يتفتح مرة أخرى (لأن قاعدة البيانات لا تكون مفتوحة).
   Future<Object?> _stageRestore(Request req, AuthUser u) async {
     final body = await _body(req);
     final name = p.basename(body['name'] as String? ?? '');
     final file = File(p.join(_backupDir.path, name));
-    if (!name.endsWith('.zip') || !file.existsSync()) throw ApiError(404, 'النسخة دي مش موجودة');
+    if (!name.endsWith('.zip') || !file.existsSync()) throw ApiError(404, 'النسخة غير موجودة');
     final valid = await zipHasFile(file.path, 'fixtrack.db');
-    if (!valid) throw ApiError(400, 'الملف ده مش نسخة احتياطية من ABDULMALIK ERP');
+    if (!valid) throw ApiError(400, 'الملف ليس نسخة احتياطية صالحة من ABDULMALIK ERP');
     File(p.join(dataDir, 'restore.pending')).writeAsStringSync(file.path);
     _audit(u.id, 'backup.restore', 'backup', null, name);
-    return {'ok': true, 'message': 'اقفل البرنامج على كمبيوتر السيرفر وافتحه تاني عشان الاسترجاع يتم'};
+    return {'ok': true, 'message': 'أغلق البرنامج على حاسوب الخادم ثم أعد تشغيله لإتمام عملية الاستعادة.'};
   }
 }
 
@@ -133,7 +133,7 @@ void applyPendingRestore(String dataDir) {
   for (final entry in archive.files) {
     if (!entry.isFile || entry.name == 'backup.json') continue;
     final target = p.normalize(p.join(dataDir, entry.name));
-    if (!p.isWithin(dataDir, target)) continue; // حماية من ملفات zip فيها مسارات برا الفولدر
+    if (!p.isWithin(dataDir, target)) continue; // حماية من ملفات zip فيها مسارات برا المجلد
     File(target)
       ..parent.createSync(recursive: true)
       ..writeAsBytesSync(entry.content as List<int>);

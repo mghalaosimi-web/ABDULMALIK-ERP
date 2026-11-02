@@ -61,7 +61,7 @@ class AuthUser {
   bool get isOwner => role == 'owner';
 }
 
-/// سيرفر المحل: بيشتغل على كمبيوتر المحل، وكل الموبايلات والكمبيوترات التانية بتكلمه.
+/// سيرفر المحل: بيشتغل على كمبيوتر المحل، وكل الهواتف المحمولة والكمبيوترات الأخرى بتكلمه.
 class FixTrackServer {
   FixTrackServer({required this.dataDir, this.requestedPort = serverPort, this.cloudSync = false});
 
@@ -102,7 +102,7 @@ class FixTrackServer {
       _http = await shelf_io.serve(handler, InternetAddress.anyIPv4, requestedPort, shared: false, backlog: 1024);
     } on SocketException {
       db.close();
-      throw ApiError(500, 'البورت $requestedPort مستخدم. غالباً البرنامج مفتوح بالفعل على الجهاز ده.');
+      throw ApiError(500, 'المنفذ $requestedPort مستخدم بالفعل. يُرجى التحقق من عدم تشغيل نسخة أخرى من البرنامج على هذا الجهاز.');
     }
     _http!.autoCompress = true;
 
@@ -113,7 +113,7 @@ class FixTrackServer {
     try {
       await _discovery!.start();
     } catch (_) {
-      // لو بورت البحث مش متاح، الموبايلات لسه تقدر تتصل يدوي بالـ IP
+      // لو بورت البحث مش متاح، الهواتف المحمولة لسه تقدر تتصل يدوي بالـ IP
     }
 
     if (cloudSync) _cloud = FirebaseSync(this)..start();
@@ -208,7 +208,7 @@ class FixTrackServer {
     _registerLicenseRoutes(r);
 
     r.get('/api/ws', _webSocket);
-    r.all('/<ignored|.*>', (Request _) => _json(404, {'error': 'المسار ده مش موجود'}));
+    r.all('/<ignored|.*>', (Request _) => _json(404, {'error': 'المسار غير موجود'}));
     return r;
   }
 
@@ -223,12 +223,12 @@ class FixTrackServer {
         } on ApiError catch (e) {
           return _json(e.status, {'error': e.message});
         } on HijackException {
-          // ده مش خطأ: الـ WebSocket بياخد الاتصال، وshelf لازم يشوف الاستثناء ده عشان يكمّل
+          // ده مش خطأ: الـ WebSocket بياخد الاتصال، وshelf لازم يشوف الاستثناء ده ليتابع التنفيذ
           rethrow;
         } catch (e, st) {
           stderr.writeln('Server error on ${req.method} /${req.url.path}: $e\n$st');
           _log.error('${req.method} /${req.url.path}: $e', st);
-          return _json(500, {'error': 'حصل خطأ في السيرفر، جرّب تاني'});
+          return _json(500, {'error': 'حدث خطأ في الخادم. يُرجى المحاولة مرة أخرى.'});
         }
       };
 
@@ -237,7 +237,7 @@ class FixTrackServer {
   Handler _authed(FutureOr<Object?> Function(Request req, AuthUser user) fn, {Set<String>? only}) => (req) async {
         final user = _authenticate(req);
         if (only != null && !only.contains(user.role)) {
-          throw ApiError(403, 'مش مسموحلك تعمل العملية دي');
+          throw ApiError(403, 'لا تملك صلاحية تنفيذ هذه العملية.');
         }
         final result = await fn(req, user);
         // الملفات (زي صور البطايق) بترجع Response جاهز مش JSON
@@ -249,15 +249,15 @@ class FixTrackServer {
     final token = header != null && header.startsWith('Bearer ')
         ? header.substring(7).trim()
         : null;
-    if (token == null || token.isEmpty) throw ApiError(401, 'لازم تسجل دخول الأول');
+    if (token == null || token.isEmpty) throw ApiError(401, 'يجب تسجيل الدخول أولاً.');
 
     final tokenHash = sha256Hex(token);
     final row = db.selectOne(
       'SELECT u.* FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = ?',
       [tokenHash],
     );
-    if (row == null) throw ApiError(401, 'الجلسة انتهت، سجل دخول تاني');
-    if (row['active'] != 1) throw ApiError(401, 'الحساب ده متوقف، كلم صاحب المحل');
+    if (row == null) throw ApiError(401, 'انتهت الجلسة. يُرجى تسجيل الدخول مجدداً.');
+    if (row['active'] != 1) throw ApiError(401, 'هذا الحساب موقوف؛ يُرجى التواصل مع مالك المحل.');
     // آخر ظهور للجهاز بيتسجل مرة كل دقيقة بس، مش مع كل طلب (كانت كتابة زيادة في كل عملية)
     final now = DateTime.now();
     final last = _lastSeenWrites[tokenHash];
@@ -288,7 +288,7 @@ class FixTrackServer {
     final connection = req.context['shelf.io.connection_info'];
     final remoteAddress = connection is HttpConnectionInfo ? connection.remoteAddress : null;
     if (remoteAddress == null || !remoteAddress.isLoopback) {
-      throw ApiError(403, 'الإعداد الأولي مسموح من كمبيوتر السيرفر فقط');
+      throw ApiError(403, 'يُسمح بإجراء الإعداد الأولي من حاسوب الخادم فقط.');
     }
     final body = await _body(req);
     if (db.selectOne('SELECT id FROM shop LIMIT 1') != null) {
@@ -324,7 +324,7 @@ class FixTrackServer {
     final failures = _loginFailures[ip];
     if (failures != null && failures.lockedUntil != null && DateTime.now().isBefore(failures.lockedUntil!)) {
       final seconds = failures.lockedUntil!.difference(DateTime.now()).inSeconds + 1;
-      throw ApiError(429, 'محاولات كتير غلط. استنى $seconds ثانية وجرّب تاني');
+      throw ApiError(429, 'تكررت المحاولات غير الصحيحة. يُرجى الانتظار $seconds ثانية ثم المحاولة مجدداً.');
     }
 
     final body = await _body(req);
@@ -339,9 +339,9 @@ class FixTrackServer {
         f.lockedUntil = DateTime.now().add(const Duration(minutes: 1));
         f.count = 0;
       }
-      throw ApiError(401, 'اسم المستخدم أو كلمة السر غلط');
+      throw ApiError(401, 'اسم المستخدم أو كلمة المرور غير صحيحة.');
     }
-    if (user['active'] != 1) throw ApiError(403, 'الحساب ده متوقف، كلم صاحب المحل');
+    if (user['active'] != 1) throw ApiError(403, 'هذا الحساب موقوف؛ يُرجى التواصل مع مالك المحل.');
 
     await _checkDeviceLimit(body['deviceName'] as String?);
     _loginFailures.remove(ip);
@@ -352,12 +352,12 @@ class FixTrackServer {
   Future<Object?> _changeOwnPassword(Request req, AuthUser u) async {
     final body = await _body(req);
     if (!verifyPassword(body['currentPassword'] as String? ?? '', u.row['password_hash'] as String)) {
-      throw ApiError(400, 'كلمة السر الحالية غلط');
+      throw ApiError(400, 'كلمة المرور الحالية غير صحيحة.');
     }
     final password = _validPassword(body['newPassword']);
     db.transaction(() {
       db.execute('UPDATE users SET password_hash = ?, updated_at = ? WHERE id = ?', [hashPassword(password), nowIso(), u.id]);
-      // نخرج من كل الأجهزة التانية ونسيب الجهاز الحالي بس
+      // نخرج من كل الأجهزة الأخرى ونسيب الجهاز الحالي بس
       db.execute('DELETE FROM sessions WHERE user_id = ? AND token_hash <> ?', [u.id, u.tokenHash]);
     });
     _audit(u.id, 'user.password', 'user', u.id, null);
@@ -388,7 +388,7 @@ class FixTrackServer {
     final password = _validPassword(body['password']);
     final role = _validRole(body['role']);
     if (db.selectOne('SELECT id FROM users WHERE username = ?', [username]) != null) {
-      throw ApiError(409, 'اسم المستخدم "$username" موجود بالفعل، اختار اسم تاني');
+      throw ApiError(409, 'اسم المستخدم "$username" مستخدم بالفعل؛ يُرجى اختيار اسم آخر.');
     }
     final id = _uuid.v4();
     final now = nowIso();
@@ -406,7 +406,7 @@ class FixTrackServer {
   Future<Object?> _updateUser(Request req, AuthUser u) async {
     final id = req.params['id']!;
     final target = db.selectOne('SELECT * FROM users WHERE id = ?', [id]);
-    if (target == null) throw ApiError(404, 'الموظف ده مش موجود');
+    if (target == null) throw ApiError(404, 'الموظف غير موجود');
     final body = await _body(req);
 
     final name = body.containsKey('name') ? _requiredText(body, 'name', 'الاسم') : target['name'] as String;
@@ -417,11 +417,11 @@ class FixTrackServer {
         : null;
 
     if (id == u.id && (role != 'owner' || active != 1)) {
-      throw ApiError(400, 'مينفعش توقف حسابك أو تغيّر صلاحيتك بنفسك');
+      throw ApiError(400, 'لا يمكنك إيقاف حسابك أو تغيير صلاحياتك بنفسك.');
     }
     if (target['role'] == 'owner' && (role != 'owner' || active != 1)) {
       final owners = db.selectOne("SELECT COUNT(*) AS c FROM users WHERE role = 'owner' AND active = 1")!['c'] as int;
-      if (owners <= 1) throw ApiError(400, 'لازم يفضل فيه مالك واحد على الأقل');
+      if (owners <= 1) throw ApiError(400, 'يجب الإبقاء على مالك واحد على الأقل.');
     }
 
     db.transaction(() {
@@ -442,7 +442,7 @@ class FixTrackServer {
       if (name != target['name']) 'الاسم: من ${target['name']} لـ $name',
       if (role != target['role']) 'الصلاحية: من ${target['role']} لـ $role',
       if (active != target['active']) active == 1 ? 'تفعيل الحساب' : 'إيقاف الحساب',
-      if (newPassword != null) 'تغيير كلمة السر',
+      if (newPassword != null) 'تغيير كلمة المرور',
     ];
     if (changes.isNotEmpty) _audit(u.id, 'user.update', 'user', id, changes.join('، '));
     _broadcast('users');
@@ -501,7 +501,7 @@ class FixTrackServer {
     })(req);
   }
 
-  /// بيبلّغ كل الأجهزة المتصلة إن فيه حاجة اتغيرت عشان تحدّث الشاشة.
+  /// بيبلّغ كل الأجهزة المتصلة إن فيه حاجة اتغيرت لتحديث الشاشة.
   void _broadcast(String topic) {
     if (topic == 'tickets' || topic == 'shop') _cloud?.kick();
     final msg = jsonEncode({'type': 'changed', 'topic': topic});
@@ -529,7 +529,7 @@ class FixTrackServer {
       final decoded = jsonDecode(text);
       if (decoded is Map<String, dynamic>) return decoded;
     } catch (_) {}
-    throw ApiError(400, 'البيانات المبعوتة مش مفهومة');
+    throw ApiError(400, 'تعذّر فهم البيانات المرسلة');
   }
 
   String _clientIp(Request req) =>
@@ -537,7 +537,7 @@ class FixTrackServer {
 
   String _requiredText(Map<String, dynamic> body, String key, String label) {
     final v = (body[key] as String? ?? '').trim();
-    if (v.isEmpty) throw ApiError(400, 'لازم تكتب $label');
+    if (v.isEmpty) throw ApiError(400, 'يُرجى إدخال $label.');
     if (v.length > 200) throw ApiError(400, '$label طويل جداً');
     return v;
   }
@@ -550,20 +550,20 @@ class FixTrackServer {
   String _validUsername(Object? raw) {
     final v = (raw as String? ?? '').trim().toLowerCase();
     if (!RegExp(r'^[a-z0-9_.]{3,30}$').hasMatch(v)) {
-      throw ApiError(400, 'اسم المستخدم لازم يكون بالإنجليزي من 3 لـ 30 حرف (حروف وأرقام و _ و . بس)');
+      throw ApiError(400, 'يجب أن يتكون اسم المستخدم من 3 إلى 30 حرفاً باللغة الإنجليزية، ويُسمح بالأحرف والأرقام والشرطة السفلية والنقطة فقط.');
     }
     return v;
   }
 
   String _validPassword(Object? raw) {
     final v = raw as String? ?? '';
-    if (v.length < 6) throw ApiError(400, 'كلمة السر لازم تكون 6 حروف أو أرقام على الأقل');
-    if (v.length > 100) throw ApiError(400, 'كلمة السر طويلة جداً');
+    if (v.length < 6) throw ApiError(400, 'يجب ألا تقل كلمة المرور عن ستة أحرف أو أرقام.');
+    if (v.length > 100) throw ApiError(400, 'كلمة المرور طويلة جداً');
     return v;
   }
 
   String _validRole(Object? raw) {
-    if (raw is! String || !roles.contains(raw)) throw ApiError(400, 'الصلاحية مش صحيحة');
+    if (raw is! String || !roles.contains(raw)) throw ApiError(400, 'الصلاحية غير صحيحة');
     return raw;
   }
 }

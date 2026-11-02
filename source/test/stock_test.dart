@@ -155,6 +155,21 @@ void main() {
     expect(img, isA<Map>());
   });
 
+  test('used phone purchase accepts Saudi national ID or residency number', () async {
+    final photo = (await cashier.post('/api/files', {'data': _jpeg, 'kind': 'national_id'}))['id'] as String;
+    final response = await cashier.post('/api/units/buy-used', {
+      'model': 'Samsung Galaxy S23',
+      'imei': '356789104561242',
+      'sellerName': 'محمد أحمد',
+      'sellerPhone': '+966 50 123 4567',
+      'sellerNationalId': '١٠٩٨٧٦٥٤٣٢',
+      'idPhotoId': photo,
+      'costCents': 700000,
+      'priceCents': 850000,
+    });
+    expect(response['unit']['sellerNationalId'], '1098765432');
+  });
+
   test('IMEI history includes repair tickets', () async {
     await owner.post('/api/tickets', {
       'customer': {'name': 'سارة', 'phone': '01001234567'},

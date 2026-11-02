@@ -90,7 +90,7 @@ class _MessageDialogState extends ConsumerState<_MessageDialog> {
       Navigator.pop(context);
       showMessage(
         context,
-        channel == 'sms' ? 'أُضيفت الرسالة إلى قائمة انتظار الرسائل النصية، وسيرسلها هاتف المحل.' : 'فُتح واتساب؛ اضغط على زر الإرسال هناك.',
+        channel == 'sms' ? 'أُضيفت الرسالة إلى قائمة انتظار الرسائل النصية، وسيرسلها هاتف المحل.' : 'فُتح تطبيق واتساب؛ يُرجى اختيار زر الإرسال لإتمام العملية.',
       );
     } catch (e) {
       if (mounted) setState(() => _error = e is Exception ? e.toString().replaceFirst('Exception: ', '') : errorText(e));
@@ -160,7 +160,7 @@ class _MessageDialogState extends ConsumerState<_MessageDialog> {
   }
 }
 
-/// بعد حدث معين (زي "الجهاز جاهز")، لو قاعدة الحدث واتساب بيظهر اقتراح للإرسال.
+/// عند وقوع حدث محدد (مثل «الجهاز جاهز»)، يظهر اقتراح لإرسال رسالة عبر واتساب إذا كانت قاعدة الحدث مضبوطة على ذلك.
 void suggestMessage(BuildContext context, WidgetRef ref, String ticketId, MessageEvent event, MessageRule rule) {
   if (rule == MessageRule.whatsapp) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(

@@ -6,8 +6,8 @@ import 'ticket_status.dart';
 enum MessageEvent {
   received('استلام الجهاز'),
   ready('الجهاز جاهز'),
-  waitingParts('مستني قطع غيار'),
-  approval('طلب موافقة على تكلفة'),
+  waitingParts('بانتظار قطع الغيار'),
+  approval('طلب الموافقة على تكلفة إضافية'),
   dueChanged('تغيير الموعد المتوقع'),
   delivered('بعد التسليم'),
   reminder('تذكير بالاستلام'),
@@ -33,9 +33,9 @@ enum MessageEvent {
 
 /// طريقة الإرسال لكل حدث.
 enum MessageRule {
-  off('من غير رسالة'),
-  whatsapp('واتساب (بزرار)'),
-  sms('SMS أوتوماتيك');
+  off('دون رسالة'),
+  whatsapp('واتساب (عبر زر الإرسال)'),
+  sms('رسائل نصية تلقائية');
 
   const MessageRule(this.label);
   final String label;
@@ -54,56 +54,56 @@ const defaultMessageRules = {
 };
 
 const defaultTemplates = {
-  'received': 'أهلاً {customer} 👋\n'
+  'received': 'مرحباً {customer} 👋\n'
       'استلمنا جهازك {device} في {shop}.\n'
-      'رقم الوصل: {number}\n'
-      'كود الاستلام: {pin} (ستحتاج إليه عند استلام الجهاز)\n'
+      'رقم الإيصال: {number}\n'
+      'رمز الاستلام: {pin} (ستحتاج إليه عند استلام الجهاز)\n'
       'الموعد المتوقع: {due}\n'
       'تابع حالة جهازك من هنا: {link}\n'
       'للاستفسار: {shop_phone}',
-  'ready': 'أهلاً {customer}، جهازك {device} جاهز للاستلام ✅\n'
+  'ready': 'مرحباً {customer}، جهازك {device} جاهز للاستلام ✅\n'
       'المبلغ المتبقي: {remaining}\n'
       'لا تنسَ رمز الاستلام: {pin}\n'
       '{shop} - {shop_phone}',
-  'waitingParts': 'أهلاً {customer}، جهازك {device} في انتظار قطعة غيار.\n'
+  'waitingParts': 'مرحباً {customer}، جهازك {device} في انتظار قطعة غيار.\n'
       'الموعد المتوقع الجديد: {due}\n'
       'نعتذر عن التأخير 🙏\n'
       '{shop}',
-  'approval': 'أهلاً {customer}، الفني لقى في جهازك {device}:\n'
+  'approval': 'مرحباً {customer}، أثناء فحص جهازك {device}، تبيّن للفني ما يلي:\n'
       '{approval_note}\n'
       'التكلفة الجديدة: {approval_total}\n'
       'يمكنك الموافقة أو الرفض من هنا: {link}\n'
-      'أو رد علينا على {shop_phone}',
-  'dueChanged': 'أهلاً {customer}، الموعد المتوقع لجهازك {device} أصبح {due}.\n'
+      'أو أرسل ردك إلى {shop_phone}',
+  'dueChanged': 'مرحباً {customer}، الموعد المتوقع لجهازك {device} أصبح {due}.\n'
       'تابع حالة جهازك من هنا: {link}\n'
       '{shop}',
   'delivered': 'شكراً لتعاملك مع {shop} 🙏\n'
       'تم تسليم جهازك {device}. إذا واجهت أي مشكلة، يُرجى التواصل معنا على {shop_phone}.',
-  'reminder': 'أهلاً {customer}، جهازك {device} جاهز من {days} يوم ومستنيك ✅\n'
+  'reminder': 'مرحباً {customer}، جهازك {device} جاهز منذ {days} يوماً، ونحن بانتظارك لاستلامه ✅\n'
       'المبلغ المتبقي: {remaining}\n'
       'لا تنسَ رمز الاستلام: {pin}\n'
       '{shop} - {shop_phone}',
-  'custom': 'أهلاً {customer}،\n\n{shop}',
+  'custom': 'مرحباً {customer}،\n\n{shop}',
 };
 
-/// المتغيرات اللي ينفع تتكتب في القوالب، مع شرحها.
+/// المتغيرات المتاحة للاستخدام في القوالب مع شرحها.
 const templateVariables = {
   'customer': 'اسم العميل',
   'device': 'الجهاز',
-  'number': 'رقم الوصل',
-  'pin': 'كود الاستلام',
-  'status': 'المرحلة الحالية',
+  'number': 'رقم الإيصال',
+  'pin': 'رمز الاستلام',
+  'status': 'حالة الجهاز الحالية',
   'due': 'الموعد المتوقع',
-  'total': 'التكلفة',
-  'paid': 'المدفوع',
-  'remaining': 'الباقي',
+  'total': 'التكلفة الإجمالية',
+  'paid': 'المبلغ المدفوع',
+  'remaining': 'المبلغ المتبقي',
   'approval_total': 'التكلفة الجديدة (طلب الموافقة)',
-  'approval_note': 'سبب التكلفة الزيادة',
-  'pickup': 'معاد الاستلام المحجوز',
-  'days': 'عدد الأيام من ساعة ما بقى جاهز',
+  'approval_note': 'سبب التكلفة الإضافية',
+  'pickup': 'موعد الاستلام المحجوز',
+  'days': 'عدد الأيام منذ جاهزية الجهاز',
   'link': 'رابط متابعة الجهاز',
   'shop': 'اسم المحل',
-  'shop_phone': 'هاتف المحل',
+  'shop_phone': 'رقم هاتف المحل',
 };
 
 /// يملأ القالب بالقيم. يُحذف أي سطر يحتوي على متغير لا تتوفر له قيمة
@@ -128,9 +128,10 @@ String renderTemplate(String template, Map<String, String?> values) {
   return lines.join('\n').replaceAll(RegExp(r'\n{3,}'), '\n\n').trim();
 }
 
-/// الرقم بصيغة دولية للواتساب: 01001234567 ← 201001234567
+/// يحوّل الرقم المحلي إلى الصيغة الدولية المناسبة لواتساب؛ يدعم السعودية ومصر للأرقام القديمة.
 String whatsappNumber(String phone) {
   final d = normalizePhone(phone);
-  if (d.startsWith('0') && d.length == 11) return '20${d.substring(1)}';
+  if (d.startsWith('05') && d.length == 10) return '966${d.substring(1)}';
+  if (d.startsWith('01') && d.length == 11) return '20${d.substring(1)}';
   return d;
 }

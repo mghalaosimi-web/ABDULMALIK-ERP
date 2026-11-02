@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
-/// مسح باركود أو QR بكاميرا الموبايل. على الكمبيوتر بيستخدم سكانر USB (بيكتب في خانة البحث).
+/// مسح باركود أو QR بكاميرا الهاتف. على الكمبيوتر بيستخدم سكانر USB (بيكتب في خانة البحث).
 bool get cameraScanSupported => Platform.isAndroid || Platform.isIOS;
 
 Future<String?> scanBarcode(BuildContext context) =>
@@ -33,7 +33,7 @@ class _ScanPageState extends State<_ScanPage> {
       appBar: AppBar(
         backgroundColor: Colors.black,
         foregroundColor: Colors.white,
-        title: const Text('وجّه الكاميرا على الباركود'),
+        title: const Text('وجّه الكاميرا نحو الرمز الشريطي'),
         actions: [
           IconButton(icon: const Icon(Icons.flash_on_rounded), onPressed: () => _controller.toggleTorch()),
           IconButton(icon: const Icon(Icons.cameraswitch_rounded), onPressed: () => _controller.switchCamera()),
@@ -55,8 +55,8 @@ class _ScanPageState extends State<_ScanPage> {
                 padding: const EdgeInsets.all(24),
                 child: Text(
                   error.errorCode == MobileScannerErrorCode.permissionDenied
-                      ? 'لازم تسمح للتطبيق يستخدم الكاميرا من إعدادات الموبايل'
-                      : 'الكاميرا مش شغالة: ${error.errorCode.name}',
+                      ? 'يجب السماح للتطبيق باستخدام الكاميرا من إعدادات الهاتف.'
+                      : 'تعذّر تشغيل الكاميرا: ${error.errorCode.name}',
                   style: const TextStyle(color: Colors.white),
                   textAlign: TextAlign.center,
                 ),

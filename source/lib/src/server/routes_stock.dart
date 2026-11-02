@@ -101,7 +101,7 @@ extension _StockRoutes on FixTrackServer {
     if (s == null) throw ApiError(404, 'هذا المورد غير موجود');
     final body = await _body(req);
     final amount = _cents(body['amountCents'], 'المبلغ');
-    if (amount <= 0) throw ApiError(400, 'اكتب المبلغ');
+    if (amount <= 0) throw ApiError(400, 'يُرجى إدخال المبلغ');
     final method = PaymentMethod.parse(body['method'] as String?);
     db.transaction(() {
       db.execute(
@@ -170,7 +170,7 @@ extension _StockRoutes on FixTrackServer {
       throw ApiError(400, 'هذا المورد غير موجود');
     }
     final items = body['items'];
-    if (items is! List || items.isEmpty) throw ApiError(400, 'الفاتورة فاضية');
+    if (items is! List || items.isEmpty) throw ApiError(400, 'الفاتورة فارغة');
     final updateCost = body['updateCost'] != false;
 
     final plan = <({Map<String, Object?> product, int qty, int cost, List<Map> units})>[];
@@ -240,7 +240,7 @@ extension _StockRoutes on FixTrackServer {
     return v;
   }
 
-  /// IMEI الموبايلات 15 رقم وآخر رقم فيهم check digit (Luhn). بنستخدمه كتنبيه بس.
+  /// IMEI الهواتف المحمولة 15 رقم وآخر رقم فيهم check digit (Luhn). بنستخدمه كتنبيه بس.
   bool _luhnOk(String imei) {
     if (!RegExp(r'^\d{15}$').hasMatch(imei)) return false;
     var sum = 0;
@@ -340,7 +340,7 @@ extension _StockRoutes on FixTrackServer {
     final body = await _body(req);
     final p = db.selectOne('SELECT * FROM products WHERE id = ?', [body['productId']]);
     if (p == null) throw ApiError(400, 'هذا الصنف غير موجود');
-    if (p['serialized'] != 1) throw ApiError(400, 'الصنف ده غير مسجل كجهاز ذي رقم IMEI');
+    if (p['serialized'] != 1) throw ApiError(400, 'هذا الصنف غير مسجل بوصفه جهازاً ذا رقم IMEI');
     final units = (body['units'] as List? ?? const []).whereType<Map>().toList();
     if (units.isEmpty) throw ApiError(400, 'سجّل رقم IMEI لجهاز واحد على الأقل');
     final cost = body['costCents'] == null ? p['cost_cents'] as int : _cents(body['costCents'], 'سعر الشراء');
@@ -365,7 +365,7 @@ extension _StockRoutes on FixTrackServer {
   Future<Object?> _updateUnit(Request req, AuthUser u) async {
     final id = req.params['id']!;
     final x = db.selectOne('SELECT * FROM units WHERE id = ?', [id]);
-    if (x == null) throw ApiError(404, 'الجهاز ده مش موجود');
+    if (x == null) throw ApiError(404, 'الجهاز غير موجود.');
     final body = await _body(req);
     db.execute(
       'UPDATE units SET price_cents = ?, color = ?, storage = ?, notes = ?, warranty_months = ?, updated_at = ? WHERE id = ?',
@@ -430,17 +430,17 @@ extension _StockRoutes on FixTrackServer {
     final sellerName = _requiredText(body, 'sellerName', 'اسم البائع');
     final sellerPhone = _validPhone(body['sellerPhone']);
     final nationalId = latinDigits((body['sellerNationalId'] as String? ?? '').trim());
-    if (!RegExp(r'^[23]\d{13}$').hasMatch(nationalId)) throw ApiError(400, 'الرقم القومي لازم يكون 14 رقم');
+    if (!isValidNationalId(nationalId)) throw ApiError(400, 'رقم الهوية الوطنية أو الإقامة غير صحيح.');
     final photo = body['idPhotoId'] as String?;
     if (photo == null || db.selectOne('SELECT id FROM files WHERE id = ?', [photo]) == null) {
-      throw ApiError(400, 'لازم تصوّر بطاقة البائع');
+      throw ApiError(400, 'يجب إرفاق صورة هوية البائع.');
     }
     final imei = _validImei(body['imei']);
     if (db.selectOne("SELECT id FROM units WHERE (imei = ? OR imei2 = ?) AND status = 'in_stock'", [imei, imei]) != null) {
-      throw ApiError(409, 'الجهاز ده موجود في المخزون بالفعل');
+      throw ApiError(409, 'الجهاز موجود في المخزون بالفعل.');
     }
     final cost = _cents(body['costCents'], 'سعر الشراء');
-    if (cost <= 0) throw ApiError(400, 'أدخل المبلغ الذي ستدفعه للبائع');
+    if (cost <= 0) throw ApiError(400, 'يُرجى إدخال المبلغ المستحق للبائع.');
     final method = PaymentMethod.parse(body['method'] as String?);
 
     // الموديل: صنف موجود، أو صنف جديد بيتعمل (مستعمل وله IMEI)
@@ -492,11 +492,11 @@ extension _StockRoutes on FixTrackServer {
     } catch (_) {
       throw ApiError(400, 'الملف غير صحيح');
     }
-    if (bytes.isEmpty) throw ApiError(400, 'الملف فاضي');
+    if (bytes.isEmpty) throw ApiError(400, 'الملف فارغ');
     if (bytes.length > 4 * 1024 * 1024) throw ApiError(400, 'الصورة كبيرة جداً');
     final jpeg = bytes.length > 3 && bytes[0] == 0xFF && bytes[1] == 0xD8;
     final png = bytes.length > 3 && bytes[0] == 0x89 && bytes[1] == 0x50;
-    if (!jpeg && !png) throw ApiError(400, 'لازم تكون صورة JPG أو PNG');
+    if (!jpeg && !png) throw ApiError(400, 'يجب أن تكون الصورة بصيغة JPG أو PNG.');
     final id = _uuid.v4();
     final dir = Directory(p.join(dataDir, 'files'))..createSync(recursive: true);
     File(p.join(dir.path, id)).writeAsBytesSync(bytes);
@@ -510,7 +510,7 @@ extension _StockRoutes on FixTrackServer {
   Response _downloadFileResponse(String id) {
     final meta = db.selectOne('SELECT * FROM files WHERE id = ?', [id]);
     final f = File(p.join(dataDir, 'files', id));
-    if (meta == null || !f.existsSync()) throw ApiError(404, 'الملف مش موجود');
+    if (meta == null || !f.existsSync()) throw ApiError(404, 'الملف غير موجود');
     return Response.ok(f.readAsBytesSync(), headers: {'content-type': meta['mime'] as String, 'cache-control': 'private, max-age=86400'});
   }
 

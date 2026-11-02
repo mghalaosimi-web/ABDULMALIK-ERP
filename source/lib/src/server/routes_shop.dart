@@ -63,14 +63,14 @@ extension _ShopRoutes on FixTrackServer {
     };
   }
 
-  static const _defaultTerms = 'المحل غير مسؤول عن الأجهزة اللي بتعدّي 30 يوم من غير استلام.\n'
-      'المحل غير مسؤول عن البيانات والصور اللي على الجهاز.\n'
-      'لازم تقدّم الوصل أو كود الاستلام وقت الاستلام.';
+  static const _defaultTerms = 'لا يتحمل المحل مسؤولية الأجهزة التي لم يستلمها أصحابها خلال مدة تتجاوز ثلاثين يوماً.\n'
+      'لا يتحمل المحل مسؤولية البيانات أو الصور المخزنة على الجهاز.\n'
+      'يجب تقديم الإيصال أو رمز الاستلام عند تسليم الجهاز.';
 
   Future<Object?> _updateShop(Request req, AuthUser u) async {
     final body = await _body(req);
     final shop = db.selectOne('SELECT id FROM shop LIMIT 1');
-    if (shop == null) throw ApiError(400, 'المحل لسه ما اتسجلش');
+    if (shop == null) throw ApiError(400, 'لم تُسجّل بيانات المحل بعد');
 
     db.transaction(() {
       if (body.containsKey('name')) {
@@ -88,19 +88,19 @@ extension _ShopRoutes on FixTrackServer {
       if (body.containsKey('receiptTerms')) db.setSetting('receipt_terms', (body['receiptTerms'] as String? ?? '').trim());
       if (body.containsKey('receiptPaper')) {
         final paper = body['receiptPaper'];
-        if (!receiptPapers.contains(paper)) throw ApiError(400, 'مقاس الورق مش صحيح');
+        if (!receiptPapers.contains(paper)) throw ApiError(400, 'مقاس الورق غير صحيح');
         db.setSetting('receipt_paper', paper as String);
       }
       if (body.containsKey('trackingBaseUrl')) {
         final url = _optionalText(body, 'trackingBaseUrl');
-        if (url != null && !url.startsWith('https://')) throw ApiError(400, 'لينك التتبع لازم يبدأ بـ https://');
+        if (url != null && !url.startsWith('https://')) throw ApiError(400, 'يجب أن يبدأ رابط التتبع بـ https://');
         db.setSetting('tracking_base_url', url?.replaceAll(RegExp(r'/+$'), '') ?? '');
       }
       if (body['templates'] is Map) {
         final current = _jsonSetting('message_templates', defaultTemplates);
         (body['templates'] as Map).forEach((k, v) {
           if (defaultTemplates.containsKey(k) && v is String) {
-            if (v.trim().isEmpty) throw ApiError(400, 'قالب "${MessageEvent.parse(k as String).label}" فاضي');
+            if (v.trim().isEmpty) throw ApiError(400, 'قالب "${MessageEvent.parse(k as String).label}" فارغ');
             if (v.length > 1000) throw ApiError(400, 'القالب طويل جداً');
             current[k as String] = v;
           }
@@ -117,8 +117,8 @@ extension _ShopRoutes on FixTrackServer {
         final timeRe = RegExp(r'^([01]\d|2[0-3]):[0-5]\d$');
         final from = h['from'] as String? ?? '', to = h['to'] as String? ?? '';
         final slot = h['slotMinutes'] is int ? h['slotMinutes'] as int : 30;
-        if (!timeRe.hasMatch(from) || !timeRe.hasMatch(to) || from.compareTo(to) >= 0) throw ApiError(400, 'مواعيد الاستلام مش صحيحة');
-        if (![15, 30, 60].contains(slot)) throw ApiError(400, 'مدة الفترة لازم تكون 15 أو 30 أو 60 دقيقة');
+        if (!timeRe.hasMatch(from) || !timeRe.hasMatch(to) || from.compareTo(to) >= 0) throw ApiError(400, 'مواعيد الاستلام غير صحيحة');
+        if (![15, 30, 60].contains(slot)) throw ApiError(400, 'يجب أن تكون مدة الفترة 15 أو 30 أو 60 دقيقة.');
         db.setSetting('pickup_hours', jsonEncode({'days': days, 'from': from, 'to': to, 'slotMinutes': slot}));
       }
       if (body['rules'] is Map) {
@@ -142,11 +142,11 @@ extension _ShopRoutes on FixTrackServer {
     try {
       bytes = base64.decode(body['png'] as String? ?? '');
     } catch (_) {
-      throw ApiError(400, 'الصورة مش صحيحة');
+      throw ApiError(400, 'الصورة غير صالحة');
     }
     const pngMagic = [0x89, 0x50, 0x4E, 0x47];
     if (bytes.length < 8 || !List.generate(4, (i) => bytes[i] == pngMagic[i]).every((b) => b)) {
-      throw ApiError(400, 'الصورة لازم تكون PNG');
+      throw ApiError(400, 'يجب أن تكون الصورة بصيغة PNG.');
     }
     if (bytes.length > 1024 * 1024) throw ApiError(400, 'الصورة كبيرة جداً');
     File(p.join(dataDir, 'logo.png')).writeAsBytesSync(bytes);
@@ -186,7 +186,7 @@ extension _ShopRoutes on FixTrackServer {
       'due': due == null ? null : formatDateTime(due),
       'total': total > 0 ? money(total) : null,
       'paid': paid > 0 ? money(paid) : null,
-      'remaining': total - paid > 0 ? money(total - paid) : 'مفيش، الحساب خالص',
+      'remaining': total - paid > 0 ? money(total - paid) : 'لا يوجد؛ الحساب مسدد بالكامل',
       'link': _trackingLink(t),
       'shop': shop['name'] as String?,
       'shop_phone': shop['phone'] as String?,
@@ -236,7 +236,7 @@ extension _ShopRoutes on FixTrackServer {
     return id;
   }
 
-  /// لو قاعدة الحدث ده "SMS أوتوماتيك"، بتتحط رسالة في الطابور وأي موبايل شغال كبوابة SMS بيبعتها.
+  /// لو قاعدة الحدث ده "SMS أوتوماتيك"، بتتحط رسالة في الطابور وأي هاتف محمول شغال كبوابة SMS بيبعتها.
   void _autoMessage(String ticketId, MessageEvent event) {
     final rules = _jsonSetting('message_rules', defaultMessageRules);
     if (MessageRule.parse(rules[event.name] as String?) != MessageRule.sms) return;

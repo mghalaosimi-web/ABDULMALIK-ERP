@@ -161,7 +161,7 @@ class _Tag extends StatelessWidget {
       );
 }
 
-/// شاشة فاضية بأيقونة ورسالة (مثلاً: مفيش أجهزة).
+/// شاشة فاضية بأيقونة ورسالة (مثلاً: لا يوجد أجهزة).
 class EmptyState extends StatelessWidget {
   const EmptyState({super.key, required this.icon, required this.message, this.action});
 

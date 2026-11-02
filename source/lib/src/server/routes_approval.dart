@@ -16,7 +16,7 @@ extension _ApprovalRoutes on FixTrackServer {
     if (TicketStatus.parse(t['status'] as String?) == TicketStatus.delivered) throw ApiError(400, 'الجهاز اتسلم خلاص');
     final body = await _body(req);
     final total = _cents(body['totalCents'], 'التكلفة الجديدة');
-    if (total <= 0) throw ApiError(400, 'اكتب التكلفة الجديدة');
+    if (total <= 0) throw ApiError(400, 'يُرجى إدخال التكلفة الجديدة');
     final note = _requiredText(body, 'note', 'سبب التكلفة الزيادة');
     final from = t['status'] as String;
 
@@ -37,7 +37,7 @@ extension _ApprovalRoutes on FixTrackServer {
     return _ticketDetail(_loadTicket(id, u), u);
   }
 
-  /// الموظف بيسجل رد العميل (مثلاً رد في التليفون).
+  /// الموظف بيسجل رد العميل (مثلاً رد في الهاتف).
   Future<Object?> _resolveApprovalByStaff(Request req, AuthUser u) async {
     final t = _loadTicket(req.params['id']!, u);
     final body = await _body(req);
@@ -47,7 +47,7 @@ extension _ApprovalRoutes on FixTrackServer {
 
   /// بيطبّق رد العميل: موافقة ← التكلفة الجديدة وكمّل إصلاح، رفض ← الجهاز يستنى العميل ياخده.
   void _applyApproval(Map<String, Object?> t, bool approved, {required String source, String? userId}) {
-    if (t['approval_state'] != 'pending') throw ApiError(400, 'مفيش طلب موافقة مستني رد');
+    if (t['approval_state'] != 'pending') throw ApiError(400, 'لا يوجد طلب موافقة بانتظار الرد.');
     final id = t['id'] as String;
     final newStatus = approved ? TicketStatus.repairing : TicketStatus.cancelled;
     final by = source == 'customer' ? 'العميل من صفحة التتبع' : 'اتسجل بواسطة الموظف';
@@ -77,7 +77,7 @@ extension _ApprovalRoutes on FixTrackServer {
     final id = t['id'] as String;
     if (t['status'] == 'delivered') throw ApiError(400, 'الجهاز اتسلم خلاص');
     if (at != null && source == 'customer' && !_isValidSlot(DateTime.parse(at).toLocal())) {
-      throw ApiError(400, 'المعاد ده مش متاح');
+      throw ApiError(400, 'الموعد المحدد غير متاح');
     }
     db.execute('UPDATE tickets SET pickup_at = ?, updated_at = ? WHERE id = ?', [at, nowIso(), id]);
     _event(id, 'pickup', to: at, note: source == 'customer' ? 'حجز من العميل' : null, userId: userId, internal: false);

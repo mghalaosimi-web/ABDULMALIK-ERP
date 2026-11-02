@@ -42,7 +42,7 @@ extension _ReportRoutes on FixTrackServer {
       range,
     );
 
-    // ---------------- الصيانة (الأجهزة اللي اتسلمت في الفترة)
+    // ---------------- الصيانة (الأجهزة التي سُلّمت خلال الفترة)
     final repairsRow = db.selectOne(
       "SELECT COUNT(*) AS c, COALESCE(SUM(COALESCE(final_cents, estimated_cents)), 0) AS revenue, "
       "COALESCE(AVG((julianday(delivered_at) - julianday(created_at)) * 24), 0) AS hours "
@@ -151,7 +151,7 @@ extension _ReportRoutes on FixTrackServer {
     );
     addDaily("SELECT date(created_at, 'localtime') AS d, -SUM(amount_cents) AS v FROM cash_moves WHERE type = 'expense' AND created_at >= ? AND created_at < ? GROUP BY d", 'expenses');
 
-    // ---------------- المخزون والديون (دلوقتي، مش حسب الفترة)
+    // ---------------- المخزون والذمم (الأرصدة الحالية، وليست مقيدة بالفترة)
     final stockValue = sum('SELECT COALESCE(SUM(qty * cost_cents), 0) FROM products WHERE active = 1 AND track_stock = 1 AND qty > 0 AND serialized = 0') +
         sum("SELECT COALESCE(SUM(cost_cents), 0) FROM units WHERE status = 'in_stock'");
     final deadStock = db.select(

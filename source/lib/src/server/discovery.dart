@@ -2,16 +2,16 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-/// البورت اللي السيرفر بيسمع عليه طلبات "فين السيرفر؟" من الموبايلات.
+/// البورت اللي السيرفر بيسمع عليه طلبات "فين السيرفر؟" من الهواتف المحمولة.
 const discoveryPort = 8744;
 const _request = 'ABDULMALIK_ERP_DISCOVER';
 const _replyPrefix = 'ABDULMALIK_ERP_HERE:';
 
-/// بيشتغل على السيرفر: يرد على أي موبايل بيدوّر على سيرفر في الشبكة.
+/// بيشتغل على السيرفر: يرد على أي هاتف محمول بيدوّر على سيرفر في الشبكة.
 class DiscoveryResponder {
   DiscoveryResponder(this.describe);
 
-  /// بيرجع بيانات السيرفر اللي هتتبعت للموبايل (البورت، اسم المحل، ...).
+  /// بيرجع بيانات السيرفر اللي هتتبعت للهاتف محمول (البورت، اسم المحل، ...).
   final Map<String, Object?> Function() describe;
   RawDatagramSocket? _socket;
 
@@ -39,7 +39,7 @@ class DiscoveredServer {
   final String serverId;
 }
 
-/// بيشتغل على الموبايل: يبعت طلب في الشبكة كلها ويجمع الردود.
+/// بيشتغل على الهاتف: يبعت طلب في الشبكة كلها ويجمع الردود.
 Future<List<DiscoveredServer>> discoverServers({Duration timeout = const Duration(seconds: 3)}) async {
   final socket = await RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
   socket.broadcastEnabled = true;
@@ -67,7 +67,7 @@ Future<List<DiscoveredServer>> discoverServers({Duration timeout = const Duratio
 
   final payload = utf8.encode(_request);
   final targets = {InternetAddress('255.255.255.255'), ...await _subnetBroadcasts()};
-  // بنبعت أكتر من مرة لأن الـ UDP ممكن يضيع على الواي فاي
+  // بنبعت أكتر من مرة لأن بروتوكول UDP قد يفقد بعض الحزم عبر الشبكة اللاسلكية
   for (var i = 0; i < 3; i++) {
     for (final target in targets) {
       try {
@@ -96,7 +96,7 @@ Future<Set<InternetAddress>> _subnetBroadcasts() async {
   return result;
 }
 
-/// عناوين الـ IP بتاعة الجهاز في الشبكة المحلية (بتظهر في الإعدادات عشان الاتصال اليدوي).
+/// عناوين الـ IP بتاعة الجهاز في الشبكة المحلية (تُعرض في الإعدادات لإتاحة الاتصال اليدوي).
 Future<List<String>> localIpAddresses() async {
   final ips = <String>[];
   try {

@@ -22,6 +22,8 @@ void main() {
     });
 
     test('whatsapp number format', () {
+      expect(whatsappNumber('050 123 4567'), '966501234567');
+      expect(whatsappNumber('+966501234567'), '966501234567');
       expect(whatsappNumber('0100 123 4567'), '201001234567');
       expect(whatsappNumber('+201001234567'), '201001234567');
     });
@@ -52,8 +54,8 @@ void main() {
       await dir.delete(recursive: true);
     });
 
-    Future<Map<String, dynamic>> intake() async => (await api.post('/api/tickets', {
-          'customer': {'name': 'سارة', 'phone': '01001234567'},
+    Future<Map<String, dynamic>> intake({String phone = '01001234567'}) async => (await api.post('/api/tickets', {
+          'customer': {'name': 'سارة', 'phone': phone},
           'brand': 'Samsung',
           'model': 'A55',
           'problems': ['الشاشة'],
@@ -106,6 +108,13 @@ void main() {
       expect(body, contains('https://x.web.app/t/'));
       // مفيش موعد متوقع، فالسطر بتاعه اتشال
       expect(body.contains('الموعد المتوقع'), false);
+    });
+
+    test('Saudi WhatsApp previews use the Saudi international dialing code', () async {
+      await api.patch('/api/shop', {'trackingBaseUrl': 'https://x.web.app'});
+      final t = await intake(phone: '+966 50 123 4567');
+      final message = await api.get('/api/tickets/${t['id']}/message', query: {'event': 'received'});
+      expect(message['whatsapp'], '966501234567');
     });
 
     test('whatsapp messages are logged on the ticket', () async {

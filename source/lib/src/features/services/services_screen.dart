@@ -57,7 +57,7 @@ class ServicesScreen extends ConsumerWidget {
                 Card(
                   child: ListTile(
                     leading: const Icon(Icons.trending_up_rounded, color: Color(0xFF16A34A)),
-                    title: const Text('عمولات النهارده'),
+                    title: const Text('عمولات اليوم'),
                     trailing: Text(money(d.todayCommissionCents), style: text.titleLarge?.bold),
                   ),
                 ),
@@ -100,7 +100,7 @@ class _WalletCard extends StatelessWidget {
             Text('${walletKindLabels[w.kind] ?? ''}${w.phone != null ? ' • ${w.phone}' : ''}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
             const SizedBox(height: 8),
             Text(money(w.balanceCents), style: text.headlineSmall?.bold.copyWith(color: Colors.white)),
-            Text('النهارده: ${w.todayCount} عملية • عمولة ${money(w.todayCommissionCents)}', style: const TextStyle(color: Colors.white, fontSize: 12)),
+            Text('اليوم: ${w.todayCount} عملية • عمولة ${money(w.todayCommissionCents)}', style: const TextStyle(color: Colors.white, fontSize: 12)),
           ]),
         ),
         Padding(
@@ -175,9 +175,9 @@ class _TxnDialogState extends ConsumerState<_TxnDialog> {
     final amount = parseMoney(_amount.text) ?? 0;
     final commission = parseMoney(_commission.text) ?? 0;
     final hint = switch (widget.type) {
-      'cash_in' => 'العميل هيدفعلك كاش ${money(amount + commission)}، وإنت تحوّل ${money(amount)} على محفظته',
-      'cash_out' => 'العميل يحوّل ${money(amount)} على محفظتك، وإنت تديله كاش ${money(amount - commission)}',
-      'recharge' || 'bill' => 'العميل هيدفعلك ${money(amount + commission)} كاش',
+      'cash_in' => 'يسدد العميل ${money(amount + commission)} نقداً، ثم يُحوّل ${money(amount)} إلى محفظته',
+      'cash_out' => 'يحوّل العميل ${money(amount)} إلى محفظة المحل، ثم يتسلّم ${money(amount - commission)} نقداً',
+      'recharge' || 'bill' => 'يسدد العميل ${money(amount + commission)} نقداً',
       'topup' => 'ستُخصم ${money(amount)} من الصندوق وتُضاف إلى المحفظة',
       _ => 'سيُحوّل مبلغ ${money(amount)} من المحفظة إلى الصندوق',
     };

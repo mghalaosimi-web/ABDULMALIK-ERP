@@ -11,19 +11,19 @@ import 'models.dart';
 final appConfigProvider = Provider<AppConfig>((ref) => throw UnimplementedError('overridden in main'));
 
 enum SessionStatus {
-  /// أول تشغيل: الجهاز ده هيبقى سيرفر ولا هيتصل بسيرفر؟
+  /// عند التشغيل الأول: هل سيعمل هذا الجهاز خادماً أم سيتصل بخادم قائم؟
   chooseMode,
 
   /// السيرفر ما اشتغلش على الجهاز ده
   serverFailed,
 
-  /// مش قادرين نوصل للسيرفر (للأجهزة المتصلة)
+  /// تعذّر الاتصال بالخادم (للأجهزة المتصلة)
   unreachable,
 
   /// الجهاز محتاج يختار سيرفر يتصل بيه
   needsServer,
 
-  /// السيرفر شغال بس المحل لسه ما اتسجلش
+  /// الخادم يعمل، لكن بيانات المحل لم تُسجّل بعد
   needsSetup,
   needsLogin,
   ready,
@@ -74,7 +74,7 @@ class SessionController extends AsyncNotifier<Session> {
     } on ApiException catch (e) {
       return Session(SessionStatus.unreachable, api: api, error: e.message);
     } on FormatException {
-      return Session(SessionStatus.unreachable, api: api, error: 'العنوان ده مش سيرفر ABDULMALIK ERP');
+      return Session(SessionStatus.unreachable, api: api, error: 'العنوان لا يشير إلى خادم ABDULMALIK ERP');
     }
 
     if (!info.setupDone) return Session(SessionStatus.needsSetup, api: api, info: info);
@@ -100,7 +100,7 @@ class SessionController extends AsyncNotifier<Session> {
     if (s == null || s.status != SessionStatus.ready) return;
     _config.setToken(null);
     s.api?.token = null;
-    state = AsyncData(Session(SessionStatus.needsLogin, api: s.api, info: s.info, error: 'الجلسة انتهت، سجل دخول تاني'));
+    state = AsyncData(Session(SessionStatus.needsLogin, api: s.api, info: s.info, error: 'انتهت الجلسة. يُرجى تسجيل الدخول مجدداً.'));
   }
 
   Future<void> retry() async {
@@ -126,13 +126,13 @@ class SessionController extends AsyncNotifier<Session> {
     await retry();
   }
 
-  /// بيتأكد إن العنوان ده سيرفر ABDULMALIK ERP قبل ما يحفظه.
+  /// يتحقق من أن العنوان يعود إلى خادم ABDULMALIK ERP قبل حفظه.
   Future<ServerInfo> probeServer(String url) async {
     final api = ApiClient(url);
     try {
       return ServerInfo.fromJson(await api.get('/api/info'));
     } on FormatException {
-      throw ApiException('العنوان ده مش سيرفر ABDULMALIK ERP');
+      throw ApiException('العنوان لا يشير إلى خادم ABDULMALIK ERP');
     } finally {
       api.close();
     }
@@ -170,7 +170,7 @@ class SessionController extends AsyncNotifier<Session> {
     try {
       await s?.api?.post('/api/auth/logout');
     } catch (_) {
-      // حتى لو السيرفر مش متاح، نخرج من الجهاز ده
+      // نسجل الخروج من هذا الجهاز حتى عند تعذّر الاتصال بالخادم.
     }
     await _config.setToken(null);
     await retry();

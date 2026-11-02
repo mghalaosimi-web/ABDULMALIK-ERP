@@ -23,7 +23,7 @@ Future<void> printTicket(BuildContext context, WidgetRef ref, String ticketId, P
     final detail = TicketDetail(await api.get('/api/tickets/$ticketId'));
     final shop = await ref.read(shopProvider.future);
     final bytes = kind == PrintKind.receipt ? await buildReceiptPdf(detail, shop) : await buildStickerPdf(detail, shop);
-    final name = '${kind == PrintKind.receipt ? 'وصل' : 'ستيكر'}-${detail.ticket.number}';
+    final name = '${kind == PrintKind.receipt ? 'إيصال' : 'ملصق'}-${detail.ticket.number}';
     final format = paperFormat(shop.receiptPaper);
 
     final config = ref.read(appConfigProvider);
@@ -36,13 +36,13 @@ Future<void> printTicket(BuildContext context, WidgetRef ref, String ticketId, P
         format: format,
       );
       if (context.mounted) {
-        showMessage(context, ok ? 'اتبعت للطابعة ${config.receiptPrinterName ?? ''}' : 'الطباعة ما تمتش، اتأكد إن الطابعة شغالة', error: !ok);
+        showMessage(context, ok ? 'أُرسل إلى الطابعة ${config.receiptPrinterName ?? ''}' : 'تعذّرت الطباعة؛ يُرجى التحقق من تشغيل الطابعة.', error: !ok);
       }
       return;
     }
     await Printing.layoutPdf(onLayout: (_) async => bytes, name: name, format: format);
   } catch (e) {
-    if (context.mounted) showMessage(context, 'مشكلة في الطباعة: ${errorText(e)}', error: true);
+    if (context.mounted) showMessage(context, 'تعذّرت الطباعة: ${errorText(e)}', error: true);
   }
 }
 
@@ -53,7 +53,7 @@ Future<void> shareReceipt(BuildContext context, WidgetRef ref, String ticketId) 
     final detail = TicketDetail(await api.get('/api/tickets/$ticketId'));
     final shop = await ref.read(shopProvider.future);
     final Uint8List bytes = await buildReceiptPdf(detail, shop, paper: 'a5');
-    await Printing.sharePdf(bytes: bytes, filename: 'وصل-${detail.ticket.number}.pdf');
+    await Printing.sharePdf(bytes: bytes, filename: 'إيصال-${detail.ticket.number}.pdf');
   } catch (e) {
     if (context.mounted) showMessage(context, errorText(e), error: true);
   }
@@ -69,7 +69,7 @@ Future<void> printSale(BuildContext context, WidgetRef ref, String saleId) async
     if (!context.mounted) return;
     await _printBytes(context, ref, bytes, 'فاتورة-${detail.sale.number}', paperFormat(shop.receiptPaper));
   } catch (e) {
-    if (context.mounted) showMessage(context, 'مشكلة في الطباعة: ${errorText(e)}', error: true);
+    if (context.mounted) showMessage(context, 'تعذّرت الطباعة: ${errorText(e)}', error: true);
   }
 }
 
@@ -77,9 +77,9 @@ Future<void> printBarcodeLabels(BuildContext context, WidgetRef ref, List<({Prod
   try {
     final shop = await ref.read(shopProvider.future);
     final bytes = await buildBarcodeLabelsPdf(items, shop, a4: a4);
-    await Printing.layoutPdf(onLayout: (_) async => bytes, name: 'باركود');
+    await Printing.layoutPdf(onLayout: (_) async => bytes, name: 'الرمز-الشريطي');
   } catch (e) {
-    if (context.mounted) showMessage(context, 'مشكلة في الطباعة: ${errorText(e)}', error: true);
+    if (context.mounted) showMessage(context, 'تعذّرت الطباعة: ${errorText(e)}', error: true);
   }
 }
 
@@ -93,7 +93,7 @@ Future<void> _printBytes(BuildContext context, WidgetRef ref, Uint8List bytes, S
       name: name,
       format: format,
     );
-    if (!ok && context.mounted) showMessage(context, 'الطباعة ما تمتش، اتأكد إن الطابعة شغالة', error: true);
+    if (!ok && context.mounted) showMessage(context, 'تعذّرت الطباعة؛ يُرجى التحقق من تشغيل الطابعة.', error: true);
     return;
   }
   await Printing.layoutPdf(onLayout: (_) async => bytes, name: name, format: format);
@@ -113,8 +113,8 @@ Future<void> printUsedPurchase(BuildContext context, WidgetRef ref, PhoneUnit un
     final shop = await ref.read(shopProvider.future);
     final bytes = await buildUsedPurchasePdf(unit, shop);
     if (!context.mounted) return;
-    await _printBytes(context, ref, bytes, 'إيصال-شرا-${unit.imei}', paperFormat(shop.receiptPaper));
+    await _printBytes(context, ref, bytes, 'إيصال-شراء-${unit.imei}', paperFormat(shop.receiptPaper));
   } catch (e) {
-    if (context.mounted) showMessage(context, 'مشكلة في الطباعة: ${errorText(e)}', error: true);
+    if (context.mounted) showMessage(context, 'تعذّرت الطباعة: ${errorText(e)}', error: true);
   }
 }

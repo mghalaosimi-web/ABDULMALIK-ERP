@@ -67,7 +67,7 @@ class MoneyField extends StatelessWidget {
       onChanged: onChanged,
       validator: (v) {
         final cents = parseMoney(v ?? '');
-        if (cents == null) return 'اكتب رقم صحيح';
+        if (cents == null) return 'يُرجى إدخال رقم صحيح';
         return validator?.call(cents);
       },
     );
@@ -106,8 +106,8 @@ class DuePicker extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final options = <String, DateTime>{
-      'النهارده': _at(0, 20),
-      'بكرة': _at(1, 18),
+      'اليوم': _at(0, 20),
+      'غداً': _at(1, 18),
       'بعد يومين': _at(2, 18),
       'بعد 3 أيام': _at(3, 18),
       'بعد أسبوع': _at(7, 18),
@@ -142,7 +142,7 @@ class DuePicker extends StatelessWidget {
               const SizedBox(width: 6),
               Text('الموعد المتوقع: ${formatDateTime(value!)}', style: const TextStyle().semiBold),
               IconButton(
-                tooltip: 'من غير موعد',
+                tooltip: 'دون موعد',
                 icon: const Icon(Icons.close_rounded, size: 18),
                 onPressed: () => onChanged(null),
               ),

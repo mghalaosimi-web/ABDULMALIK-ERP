@@ -33,7 +33,7 @@ class WarrantyBanner extends StatelessWidget {
             const SizedBox(width: 10),
             Expanded(
               child: Text(
-                'مرتجع ضمان من جهاز #${origin['number']}${until != null ? ' • الضمان لحد ${formatDate(until)}' : ''}',
+                'مرتجع ضمان من جهاز #${origin['number']}${until != null ? ' • الضمان حتى ${formatDate(until)}' : ''}',
                 style: const TextStyle().semiBold,
               ),
             ),
@@ -45,7 +45,7 @@ class WarrantyBanner extends StatelessWidget {
   }
 }
 
-/// قطع الغيار اللي اتركبت في الجهاز (بتتخصم من المخزون).
+/// قطع الغيار التي رُكّبت في الجهاز وتُخصم من المخزون.
 class PartsCard extends ConsumerWidget {
   const PartsCard({super.key, required this.detail, required this.user});
   final TicketDetail detail;
@@ -156,7 +156,7 @@ class _AddPartDialogState extends ConsumerState<AddPartDialog> {
           if (picked == null) ...[
             TextField(
               autofocus: true,
-              decoration: const InputDecoration(hintText: 'دوّر في المخزون (شاشة، بطارية، فلاتة...)', prefixIcon: Icon(Icons.search_rounded)),
+              decoration: const InputDecoration(hintText: 'ابحث في المخزون (شاشة، بطارية، كابل مرن...)', prefixIcon: Icon(Icons.search_rounded)),
               onChanged: _search,
             ),
             const SizedBox(height: 8),

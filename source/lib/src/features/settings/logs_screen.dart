@@ -10,7 +10,7 @@ import '../../core/diagnostics.dart';
 import '../../core/file_save.dart';
 import '../../widgets/common.dart';
 
-/// سجل المشاكل: التعليق والأخطاء والطلبات البطيئة على الجهاز ده (ولو هو السيرفر، سجل السيرفر كمان).
+/// سجل الأعطال: حالات توقف الاستجابة والأخطاء والطلبات البطيئة على هذا الجهاز، ويشمل سجل الخادم إذا كان الجهاز يعمل خادماً.
 class LogsScreen extends StatefulWidget {
   const LogsScreen({super.key});
 
@@ -50,14 +50,14 @@ class _LogsScreenState extends State<LogsScreen> {
     final bytes = Uint8List.fromList(utf8.encode(header + _text));
     final stamp = DateTime.now().toIso8601String().substring(0, 16).replaceAll(':', '-');
     final path = await saveOrShareFile(bytes, 'سجل-المشاكل-$stamp.txt', 'text/plain');
-    if (path != null && mounted) showMessage(context, 'اتحفظ: $path');
+    if (path != null && mounted) showMessage(context, 'تم حفظ الملف في: $path');
   }
 
   Future<void> _clear() async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (context) => AlertDialog(
-        content: const Text('تمسح سجل المشاكل من الجهاز ده؟'),
+        content: const Text('هل تريد مسح سجل الأعطال من هذا الجهاز؟'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
           FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('امسح')),
@@ -80,7 +80,7 @@ class _LogsScreenState extends State<LogsScreen> {
     final slow = RegExp(r'\[SLOW\]').allMatches(_text).length;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('سجل المشاكل'),
+        title: const Text('سجل الأعطال'),
         actions: [
           IconButton(tooltip: 'تحديث', onPressed: _load, icon: const Icon(Icons.refresh_rounded)),
           IconButton(tooltip: 'مسح', onPressed: _files.isEmpty ? null : _clear, icon: const Icon(Icons.delete_outline_rounded)),
@@ -105,7 +105,7 @@ class _LogsScreenState extends State<LogsScreen> {
                   ),
                   const Padding(
                     padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
-                    child: Text('إذا توقف البرنامج عن الاستجابة، اضغط على "إرسال" وأرسل الملف إلى مطوّر البرنامج لتحديد السبب بدقة.'),
+                    child: Text('إذا توقف البرنامج عن الاستجابة، اختر «إرسال» ثم أرسل الملف إلى مطوّر البرنامج لتحديد السبب بدقة.'),
                   ),
                   Expanded(
                     child: Container(

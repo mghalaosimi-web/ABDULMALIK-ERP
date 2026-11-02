@@ -98,7 +98,7 @@ class _TicketView extends ConsumerWidget {
               ),
             ),
             IconButton(
-              tooltip: 'طباعة الوصل',
+              tooltip: 'طباعة الإيصال',
               icon: const Icon(Icons.print_rounded),
               onPressed: () => printTicket(context, ref, t.id, PrintKind.receipt),
             ),
@@ -111,7 +111,7 @@ class _TicketView extends ConsumerWidget {
               },
               itemBuilder: (_) => const [
                 PopupMenuItem(value: 'sticker', child: ListTile(leading: Icon(Icons.sell_rounded), title: Text('طباعة ستيكر للجهاز'))),
-                PopupMenuItem(value: 'share', child: ListTile(leading: Icon(Icons.picture_as_pdf_rounded), title: Text('حفظ / مشاركة الوصل PDF'))),
+                PopupMenuItem(value: 'share', child: ListTile(leading: Icon(Icons.picture_as_pdf_rounded), title: Text('حفظ الإيصال أو مشاركته بصيغة PDF'))),
               ],
             ),
           ],
@@ -200,7 +200,7 @@ class _HeaderCard extends ConsumerWidget {
                   ltr: true,
                   onTap: () {
                     Clipboard.setData(ClipboardData(text: t.customerPhone));
-                    showMessage(context, 'اتنسخ الرقم');
+                    showMessage(context, 'تم نسخ الرقم');
                   },
                 ),
                 _InfoItem(icon: Icons.engineering_rounded, label: 'الفني', value: t.technicianName ?? 'لم يُحدّد بعد'),
@@ -212,7 +212,7 @@ class _HeaderCard extends ConsumerWidget {
                 ),
                 _InfoItem(icon: Icons.move_to_inbox_rounded, label: 'اتسلم', value: formatDateTime(t.createdAt)),
                 if (t.pickupPin != null && t.status != TicketStatus.delivered)
-                  _InfoItem(icon: Icons.pin_rounded, label: 'كود الاستلام', value: t.pickupPin!, ltr: true, color: brandOrange),
+                  _InfoItem(icon: Icons.pin_rounded, label: 'رمز الاستلام', value: t.pickupPin!, ltr: true, color: brandOrange),
                 if (t.deliveredAt != null)
                   _InfoItem(
                     icon: Icons.handshake_rounded,
@@ -223,7 +223,7 @@ class _HeaderCard extends ConsumerWidget {
                   _InfoItem(
                     icon: Icons.verified_user_rounded,
                     label: 'الضمان',
-                    value: t.underWarranty ? 'لحد ${formatDate(t.warrantyUntil!)}' : 'خلص ${formatDate(t.warrantyUntil!)}',
+                    value: t.underWarranty ? 'حتى ${formatDate(t.warrantyUntil!)}' : 'انتهى بتاريخ ${formatDate(t.warrantyUntil!)}',
                     color: t.underWarranty ? const Color(0xFF16A34A) : scheme.onSurfaceVariant,
                   ),
                 if (t.pickupAt != null && t.status != TicketStatus.delivered)
@@ -332,7 +332,7 @@ class _ProgressCardState extends ConsumerState<_ProgressCard> {
     final scheme = Theme.of(context).colorScheme;
 
     final flow = TicketStatus.flow;
-    // مراحل الانتظار والإلغاء بتظهر مكان المرحلة اللي هي فيها
+    // تظهر مراحل الانتظار والإلغاء بدلاً من المرحلة الحالية.
     final currentIndex = switch (t.status) {
       TicketStatus.waitingApproval || TicketStatus.waitingParts => 1,
       TicketStatus.cancelled || TicketStatus.unrepairable => 4,
@@ -502,7 +502,7 @@ class _DetailsCard extends ConsumerWidget {
         )),
         row('هل يعمل؟', Text(switch (t.powersOn) { true => 'نعم', false => 'لا', null => 'غير معروف' })),
         row('ملاحظات الشكل', chips(t.conditionFlags)),
-        if (t.conditionNotes != null) row('ملاحظات تانية', Text(t.conditionNotes!)),
+        if (t.conditionNotes != null) row('ملاحظات إضافية', Text(t.conditionNotes!)),
         row('مع الجهاز', chips(t.accessories)),
         if (t.imei != null) row('IMEI', SelectableText(t.imei!, textDirection: TextDirection.ltr)),
         row('قفل الشاشة', Row(
@@ -516,7 +516,7 @@ class _DetailsCard extends ConsumerWidget {
                 label: const Text('إظهار الرمز'),
               ),
             ] else if (t.hasLockSecret)
-              Text('  (بيظهر للفني المسؤول بس)', style: text.bodySmall),
+              Text('  (يظهر للفني المسؤول فقط)', style: text.bodySmall),
           ],
         )),
         if (t.createdByName != null) row('استلمه', Text(t.createdByName!)),
@@ -769,7 +769,7 @@ class _MessagesCard extends StatelessWidget {
                     children: [
                       Text(
                         '${MessageEvent.parse(m.event).label} • ${switch (m.status) {
-                          'queued' => 'مستنية الإرسال',
+                          'queued' => 'بانتظار الإرسال',
                           'sending' => 'بتتبعت',
                           'sent' => 'اتبعتت ✓',
                           'failed' => 'فشلت',
@@ -794,7 +794,7 @@ class _MessagesCard extends StatelessWidget {
   }
 }
 
-/// كارت بيظهر لما فيه طلب موافقة مستني رد العميل.
+/// بطاقة تظهر عند وجود طلب موافقة ينتظر رد العميل.
 class _ApprovalCard extends ConsumerStatefulWidget {
   const _ApprovalCard({required this.ticket, required this.isStaff});
   final Ticket ticket;
@@ -812,7 +812,7 @@ class _ApprovalCardState extends ConsumerState<_ApprovalCard> {
     try {
       await ref.read(sessionProvider).value!.api!.post('/api/tickets/${widget.ticket.id}/approval/resolve', {'approved': approved});
       ref.invalidate(ticketDetailProvider(widget.ticket.id));
-      if (mounted) showMessage(context, approved ? 'اتسجلت موافقة العميل، والجهاز رجع للإصلاح' : 'اتسجل رفض العميل، والجهاز مستني يستلمه');
+      if (mounted) showMessage(context, approved ? 'سُجّلت موافقة العميل، وعاد الجهاز إلى مرحلة الإصلاح.' : 'سُجّل رفض العميل، والجهاز بانتظار الاستلام.');
     } catch (e) {
       if (mounted) showMessage(context, errorText(e), error: true);
     } finally {
@@ -836,7 +836,7 @@ class _ApprovalCardState extends ConsumerState<_ApprovalCard> {
           Row(children: [
             const Icon(Icons.hourglass_top_rounded, color: brandOrange),
             const SizedBox(width: 8),
-            Expanded(child: Text('مستنيين رد العميل على تكلفة زيادة', style: Theme.of(context).textTheme.titleSmall?.bold)),
+            Expanded(child: Text('بانتظار رد العميل بشأن التكلفة الإضافية', style: Theme.of(context).textTheme.titleSmall?.bold)),
           ]),
           const SizedBox(height: 8),
           Text(t.approvalNote ?? ''),

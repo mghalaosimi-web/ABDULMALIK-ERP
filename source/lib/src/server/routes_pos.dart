@@ -23,7 +23,7 @@ const cashMoveTypes = {
   'wallet_withdraw': 'سحب من محفظة',
 };
 
-const defaultExpenseCategories = ['إيجار', 'كهرباء', 'مرتبات', 'بضاعة', 'أكل وشرب', 'مواصلات', 'إنترنت وهاتف', 'تصليحات للمحل', 'أخرى'];
+const defaultExpenseCategories = ['إيجار', 'كهرباء', 'رواتب', 'بضاعة', 'مأكولات ومشروبات', 'مواصلات', 'إنترنت وهاتف', 'تصليحات للمحل', 'أخرى'];
 
 extension _PosRoutes on FixTrackServer {
   void _registerPosRoutes(Router r) {
@@ -95,8 +95,11 @@ extension _PosRoutes on FixTrackServer {
     if (qp['inactive'] == '1') where[0] = 'active = 0';
     final limit = (int.tryParse(qp['limit'] ?? '') ?? 100).clamp(1, 500);
     final offset = int.tryParse(qp['offset'] ?? '') ?? 0;
+    final orderBy = qp['section'] == 'accessories'
+        ? 'created_at DESC, name COLLATE NOCASE'
+        : 'name COLLATE NOCASE';
     final rows = db.select(
-      'SELECT * FROM products WHERE ${where.join(' AND ')} ORDER BY name COLLATE NOCASE LIMIT ? OFFSET ?',
+      'SELECT * FROM products WHERE ${where.join(' AND ')} ORDER BY $orderBy LIMIT ? OFFSET ?',
       [...params, limit, offset],
     );
     final summaryWhere = <String>['active = 1'];
@@ -133,16 +136,21 @@ extension _PosRoutes on FixTrackServer {
   }
 
   Object? _productCategories(Request req, AuthUser u) {
-    final rows = db.select("SELECT DISTINCT category FROM products WHERE category IS NOT NULL AND category <> '' AND active = 1 ORDER BY category");
+    // اعرض التصنيفات المستخدمة حديثاً أولاً، حتى يظهر التصنيف الذي أُضيف للتو في مقدمة الاقتراحات.
+    final rows = db.select(
+      "SELECT category, MAX(updated_at) AS latest FROM products "
+      "WHERE category IS NOT NULL AND category <> '' AND active = 1 "
+      "GROUP BY category ORDER BY latest DESC, category COLLATE NOCASE",
+    );
     return {'categories': rows.map((r) => r['category']).toList()};
   }
 
   String? _validBarcode(Object? raw, {String? exceptId}) {
     final v = (raw as String? ?? '').trim();
     if (v.isEmpty) return null;
-    if (v.length > 64) throw ApiError(400, 'الباركود طويل جداً');
+    if (v.length > 64) throw ApiError(400, 'الرمز الشريطي طويل جداً');
     final other = db.selectOne('SELECT id, name FROM products WHERE barcode = ?', [v]);
-    if (other != null && other['id'] != exceptId) throw ApiError(409, 'الباركود ده متسجل على صنف تاني: ${other['name']}');
+    if (other != null && other['id'] != exceptId) throw ApiError(409, 'الرمز الشريطي مسجل لصنف آخر: ${other['name']}');
     return v;
   }
 
@@ -195,7 +203,7 @@ extension _PosRoutes on FixTrackServer {
     if (p == null) throw ApiError(404, 'هذا الصنف غير موجود');
     final body = await _body(req);
     // سعر الشراء بيبان لصاحب المحل بس، فالاستقبال مايقدرش يغيّره
-    if (!u.isOwner && body.containsKey('costCents')) throw ApiError(403, 'سعر الشراء بيتعدل من صاحب المحل بس');
+    if (!u.isOwner && body.containsKey('costCents')) throw ApiError(403, 'يقتصر تعديل سعر الشراء على مالك المحل');
     final sets = <String, Object?>{};
     if (body.containsKey('name')) sets['name'] = _requiredText(body, 'name', 'اسم الصنف');
     if (body.containsKey('barcode')) sets['barcode'] = _validBarcode(body['barcode'], exceptId: id);
@@ -223,7 +231,7 @@ extension _PosRoutes on FixTrackServer {
     return {'product': _productJson(db.selectOne('SELECT * FROM products WHERE id = ?', [id])!)};
   }
 
-  /// كل تغيير في الكمية بيعدي من هنا عشان يتسجل في حركة المخزون.
+  /// تمر جميع تغييرات الكمية من هنا لضمان تسجيلها في سجل حركة المخزون.
   int _moveStock(String productId, int change, String reason, {String? refType, String? refId, String? note, String? userId}) {
     final p = db.selectOne('SELECT qty, track_stock FROM products WHERE id = ?', [productId]);
     if (p == null) throw ApiError(400, 'الصنف غير موجود');
@@ -248,7 +256,7 @@ extension _PosRoutes on FixTrackServer {
     } else if (body['qtyChange'] is int) {
       change = body['qtyChange'] as int;
     } else {
-      throw ApiError(400, 'اكتب الكمية');
+      throw ApiError(400, 'يُرجى إدخال الكمية');
     }
     if (change == 0) return {'product': _productJson(p)};
     if (p['serialized'] == 1) throw ApiError(400, 'تُضاف الأجهزة المسجلة بأرقام IMEI وتُحذف بصورة فردية، ولا تُدار من خلال الجرد');
@@ -310,7 +318,7 @@ extension _PosRoutes on FixTrackServer {
         final name = (r['name'] as String? ?? '').trim();
         final barcode = (r['barcode'] as String? ?? '').trim();
         if (name.isEmpty) {
-          errors.add('صف ${i + 1}: الاسم فاضي');
+          errors.add('صف ${i + 1}: الاسم فارغ');
           continue;
         }
         int? cents(Object? v) => v is int && v >= 0 ? v : null;
@@ -378,7 +386,7 @@ extension _PosRoutes on FixTrackServer {
 
   Object? _customerLedger(Request req, AuthUser u) {
     final id = req.params['id']!;
-    if (db.selectOne('SELECT id FROM customers WHERE id = ?', [id]) == null) throw ApiError(404, 'العميل ده مش موجود');
+    if (db.selectOne('SELECT id FROM customers WHERE id = ?', [id]) == null) throw ApiError(404, 'العميل غير موجود');
     final entries = <Map<String, Object?>>[
       for (final s in db.select('SELECT id, number, total_cents, paid_cents, returned_cents, created_at FROM sales WHERE customer_id = ? AND total_cents - returned_cents - paid_cents <> 0', [id]))
         {'type': 'sale', 'refId': s['id'], 'label': 'فاتورة بيع #${s['number']}', 'amountCents': (s['total_cents'] as int) - (s['returned_cents'] as int) - (s['paid_cents'] as int), 'createdAt': s['created_at']},
@@ -395,12 +403,12 @@ extension _PosRoutes on FixTrackServer {
   Future<Object?> _collectFromCustomer(Request req, AuthUser u) async {
     final id = req.params['id']!;
     final c = db.selectOne('SELECT * FROM customers WHERE id = ?', [id]);
-    if (c == null) throw ApiError(404, 'العميل ده مش موجود');
+    if (c == null) throw ApiError(404, 'العميل غير موجود');
     final body = await _body(req);
     final amount = _cents(body['amountCents'], 'المبلغ');
-    if (amount <= 0) throw ApiError(400, 'اكتب المبلغ');
+    if (amount <= 0) throw ApiError(400, 'يُرجى إدخال المبلغ');
     final balance = _customerBalance(id);
-    if (amount > balance) throw ApiError(400, 'المبلغ أكبر من اللي على العميل (${_money(balance)})');
+    if (amount > balance) throw ApiError(400, 'المبلغ أكبر من المستحق على العميل (${_money(balance)})');
     final method = PaymentMethod.parse(body['method'] as String?);
     final pid = _uuid.v4();
     db.transaction(() {
@@ -422,10 +430,10 @@ extension _PosRoutes on FixTrackServer {
     await _requireLicense();
     final body = await _body(req);
     final items = body['items'];
-    if (items is! List || items.isEmpty) throw ApiError(400, 'الفاتورة فاضية');
+    if (items is! List || items.isEmpty) throw ApiError(400, 'الفاتورة فارغة');
     final customerId = body['customerId'] as String?;
     if (customerId != null && db.selectOne('SELECT id FROM customers WHERE id = ?', [customerId]) == null) {
-      throw ApiError(400, 'العميل ده مش موجود');
+      throw ApiError(400, 'العميل غير موجود');
     }
     final canDiscount = u.isOwner || db.setting('cashier_can_discount') != '0';
 
@@ -434,21 +442,21 @@ extension _PosRoutes on FixTrackServer {
     for (final it in items) {
       if (it is! Map) continue;
       final qty = it['qty'] is int ? it['qty'] as int : 0;
-      if (qty <= 0 || qty > 100000) throw ApiError(400, 'الكمية مش صحيحة');
+      if (qty <= 0 || qty > 100000) throw ApiError(400, 'الكمية غير صحيحة');
       final p = db.selectOne('SELECT * FROM products WHERE id = ? AND active = 1', [it['productId']]);
-      if (p == null) throw ApiError(400, 'فيه صنف في الفاتورة مش موجود');
-      // الموبايلات بتتباع جهاز جهاز بالـ IMEI
+      if (p == null) throw ApiError(400, 'يوجد صنف في الفاتورة غير موجود');
+      // الهواتف المحمولة بتتباع جهاز جهاز بالـ IMEI
       Map<String, Object?>? unit;
       if (p['serialized'] == 1) {
         unit = db.selectOne('SELECT * FROM units WHERE id = ? AND product_id = ?', [it['unitId'], p['id']]);
-        if (unit == null) throw ApiError(400, 'اختار الجهاز (IMEI) اللي هيتباع من "${p['name']}"');
-        if (unit['status'] != 'in_stock') throw ApiError(409, 'الجهاز ${unit['imei']} اتباع قبل كده');
+        if (unit == null) throw ApiError(400, 'يُرجى تحديد الجهاز (IMEI) المراد بيعه من "${p['name']}"');
+        if (unit['status'] != 'in_stock') throw ApiError(409, 'الجهاز ${unit['imei']} سبق بيعه');
         if (qty != 1) throw ApiError(400, 'كل جهاز بـ IMEI بيتباع لوحده');
         if (lines.any((l) => (l['unit'] as Map?)?['id'] == unit!['id'])) throw ApiError(400, 'الجهاز ${unit['imei']} متكرر في الفاتورة');
       }
       final listPrice = (unit?['price_cents'] as int?) ?? p['price_cents'] as int;
       final price = it['unitPriceCents'] == null ? listPrice : _cents(it['unitPriceCents'], 'السعر');
-      if (price < listPrice && !canDiscount) throw ApiError(403, 'مش مسموحلك تبيع بأقل من السعر');
+      if (price < listPrice && !canDiscount) throw ApiError(403, 'لا يُسمح لك بالبيع بسعر أقل من السعر المحدد');
       if (unit == null && p['track_stock'] == 1 && (p['qty'] as int) < qty && db.setting('allow_negative_stock') == '0') {
         throw ApiError(400, 'الكمية المتاحة من "${p['name']}" هي ${p['qty']} بس');
       }
@@ -456,7 +464,7 @@ extension _PosRoutes on FixTrackServer {
       subtotal += price * qty;
     }
     final discount = body['discountCents'] == null ? 0 : _cents(body['discountCents'], 'الخصم');
-    if (discount > 0 && !canDiscount) throw ApiError(403, 'مش مسموحلك تعمل خصم');
+    if (discount > 0 && !canDiscount) throw ApiError(403, 'لا يُسمح لك بإجراء خصم');
     if (discount > subtotal) throw ApiError(400, 'الخصم أكبر من الفاتورة');
     final total = subtotal - discount;
 
@@ -468,7 +476,7 @@ extension _PosRoutes on FixTrackServer {
     }
     final paid = payments.fold<int>(0, (s, p) => s + p.$2);
     if (paid > total) throw ApiError(400, 'المدفوع أكبر من الفاتورة');
-    if (paid < total && customerId == null) throw ApiError(400, 'البيع الآجل لازم يكون على عميل. اختار العميل الأول');
+    if (paid < total && customerId == null) throw ApiError(400, 'يتطلب البيع الآجل تحديد العميل. يُرجى اختيار العميل أولاً.');
 
     final id = _uuid.v4();
     final now = nowIso();
@@ -558,7 +566,7 @@ extension _PosRoutes on FixTrackServer {
 
   Map<String, Object?> _saleDetail(String id, {int? number, bool showCost = false}) {
     final s = db.selectOne('$_saleSelect WHERE s.id = ?', [id]);
-    if (s == null) throw ApiError(404, 'الفاتورة دي مش موجودة');
+    if (s == null) throw ApiError(404, 'الفاتورة غير موجودة');
     final items = db.select(
       'SELECT i.*, x.imei, x.imei2, x.condition, COALESCE(x.warranty_months, p.warranty_months, 0) AS warranty_months '
       'FROM sale_items i LEFT JOIN units x ON x.id = i.unit_id LEFT JOIN products p ON p.id = i.product_id WHERE i.sale_id = ? ORDER BY i.rowid',
@@ -591,10 +599,10 @@ extension _PosRoutes on FixTrackServer {
   Future<Object?> _returnSale(Request req, AuthUser u) async {
     final id = req.params['id']!;
     final s = db.selectOne('SELECT * FROM sales WHERE id = ?', [id]);
-    if (s == null) throw ApiError(404, 'الفاتورة دي مش موجودة');
+    if (s == null) throw ApiError(404, 'الفاتورة غير موجودة');
     final body = await _body(req);
     final wanted = body['items'];
-    if (wanted is! List || wanted.isEmpty) throw ApiError(400, 'اختار الأصناف اللي هترجع');
+    if (wanted is! List || wanted.isEmpty) throw ApiError(400, 'يُرجى تحديد الأصناف المراد إرجاعها');
     final method = PaymentMethod.parse(body['method'] as String?);
 
     var value = 0;
@@ -602,15 +610,15 @@ extension _PosRoutes on FixTrackServer {
     for (final w in wanted) {
       if (w is! Map) continue;
       final item = db.selectOne('SELECT * FROM sale_items WHERE id = ? AND sale_id = ?', [w['saleItemId'], id]);
-      if (item == null) throw ApiError(400, 'صنف مش في الفاتورة دي');
+      if (item == null) throw ApiError(400, 'الصنف غير مدرج في هذه الفاتورة');
       final qty = w['qty'] is int ? w['qty'] as int : 0;
       final left = (item['qty'] as int) - (item['returned_qty'] as int);
       if (qty <= 0) continue;
-      if (qty > left) throw ApiError(400, 'مينفعش ترجع أكتر من $left من "${item['name']}"');
+      if (qty > left) throw ApiError(400, 'لا يمكن إرجاع كمية تتجاوز $left من "${item['name']}"');
       plan.add((item, qty));
       value += qty * (item['unit_price_cents'] as int);
     }
-    if (plan.isEmpty) throw ApiError(400, 'اختار الأصناف اللي هترجع');
+    if (plan.isEmpty) throw ApiError(400, 'يُرجى تحديد الأصناف المراد إرجاعها');
     // الخصم بيتوزع على الأصناف بالنسبة، فالمرتجع بيتحسب بعد الخصم
     final subtotal = s['subtotal_cents'] as int;
     if ((s['discount_cents'] as int) > 0 && subtotal > 0) value = (value * (s['total_cents'] as int) / subtotal).round();
@@ -644,7 +652,7 @@ extension _PosRoutes on FixTrackServer {
 
   // ================================================================ cash drawer
 
-  /// الوردية المفتوحة، ولو مفيش بتتفتح واحدة جديدة بالفلوس اللي اتسابت في الخزنة آخر مرة.
+  /// يعيد هذا الإجراء الوردية المفتوحة، أو ينشئ وردية جديدة برصيد النقدية المتبقي في الخزنة من المرة السابقة.
   String _openSessionId(String? userId) {
     final open = db.selectOne('SELECT id FROM register_sessions WHERE closed_at IS NULL ORDER BY opened_at DESC LIMIT 1');
     if (open != null) return open['id'] as String;
@@ -723,12 +731,12 @@ extension _PosRoutes on FixTrackServer {
   Future<Object?> _addCashMove(Request req, AuthUser u) async {
     final body = await _body(req);
     final type = body['type'];
-    if (!const {'expense', 'deposit', 'withdraw'}.contains(type)) throw ApiError(400, 'نوع الحركة مش صحيح');
+    if (!const {'expense', 'deposit', 'withdraw'}.contains(type)) throw ApiError(400, 'نوع الحركة غير صحيح');
     final amount = _cents(body['amountCents'], 'المبلغ');
-    if (amount <= 0) throw ApiError(400, 'اكتب المبلغ');
+    if (amount <= 0) throw ApiError(400, 'يُرجى إدخال المبلغ');
     if (type == 'withdraw' && !u.isOwner) throw ApiError(403, 'السحب من الخزنة لصاحب المحل بس');
     final note = _optionalText(body, 'note');
-    if (type == 'expense' && note == null && _optionalText(body, 'category') == null) throw ApiError(400, 'اكتب المصروف ده إيه');
+    if (type == 'expense' && note == null && _optionalText(body, 'category') == null) throw ApiError(400, 'يُرجى تحديد بند المصروف');
     final id = db.transaction(() {
       _cashMove(type as String, type == 'deposit' ? amount : -amount, PaymentMethod.parse(body['method'] as String?),
           userId: u.id, category: _optionalText(body, 'category'), note: note);
@@ -742,9 +750,9 @@ extension _PosRoutes on FixTrackServer {
 
   Future<Object?> _closeCash(Request req, AuthUser u) async {
     final body = await _body(req);
-    final counted = _cents(body['countedCashCents'], 'النقدية اللي في الدرج');
-    final kept = body['keptCashCents'] == null ? counted : _cents(body['keptCashCents'], 'اللي هيفضل في الدرج');
-    if (kept > counted) throw ApiError(400, 'اللي هيفضل في الدرج أكبر من اللي اتعد');
+    final counted = _cents(body['countedCashCents'], 'النقدية الموجودة في الصندوق');
+    final kept = body['keptCashCents'] == null ? counted : _cents(body['keptCashCents'], 'المبلغ المتبقي في الصندوق');
+    if (kept > counted) throw ApiError(400, 'المبلغ المتبقي في الصندوق يتجاوز المبلغ الذي جرى إحصاؤه');
     final id = db.transaction(() => _openSessionId(u.id));
     final summary = _sessionSummary(id);
     final expected = summary['expectedCashCents'] as int;

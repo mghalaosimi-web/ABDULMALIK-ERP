@@ -1,7 +1,7 @@
-/// أكواد التفعيل. الملف ده من غير Flutter عشان السيرفر وبرنامج توليد الأكواد يستخدموه.
+/// أكواد التفعيل. الملف ده من غير Flutter لأن السيرفر وبرنامج توليد الأكواد يستخدموه.
 ///
-/// الكود = بيانات الاشتراك (JSON) + توقيع Ed25519 بالمفتاح السري اللي مع صاحب البرنامج بس.
-/// البرنامج فيه المفتاح العام بس، فيقدر يتأكد إن الكود سليم، لكن مايقدرش يعمل كود جديد.
+/// يتكوّن الرمز من بيانات الاشتراك (JSON) وتوقيع Ed25519 باستخدام المفتاح الخاص المحفوظ لدى مالك البرنامج فقط.
+/// يحتوي البرنامج على المفتاح العام للتحقق من صحة الرمز، ولا يتيح إنشاء رموز جديدة.
 library;
 
 import 'dart:convert';
@@ -38,7 +38,7 @@ class LicenseData {
   final String id;
   final String shop;
 
-  /// كود الجهاز اللي الكود مربوط بيه.
+  /// رمز الجهاز المرتبط برمز التفعيل.
   final String device;
 
   /// monthly / yearly / lifetime / custom
@@ -47,7 +47,7 @@ class LicenseData {
   /// null = مدى الحياة
   final DateTime? expires;
 
-  /// أقصى عدد أجهزة (موبايلات وكمبيوترات) تتصل بالسيرفر ده.
+  /// أقصى عدد أجهزة (الهواتف المحمولة وكمبيوترات) تتصل بالسيرفر ده.
   final int devices;
   final int branches;
   final DateTime issued;
@@ -85,7 +85,7 @@ String deviceCodeFor(String serverId) {
 String _b64(List<int> b) => base64Url.encode(b).replaceAll('=', '');
 List<int> _unb64(String s) => base64Url.decode(s.padRight((s.length + 3) ~/ 4 * 4, '='));
 
-/// برنامج توليد الأكواد بس اللي بيستخدمها (معاه المفتاح السري).
+/// يستخدمها برنامج إنشاء الرموز فقط، لاحتوائه على المفتاح الخاص.
 Future<String> signLicense(LicenseData data, List<int> privateSeed) async {
   final payload = utf8.encode(jsonEncode(data.toJson()));
   final pair = await Ed25519().newKeyPairFromSeed(privateSeed);
@@ -96,20 +96,20 @@ Future<String> signLicense(LicenseData data, List<int> privateSeed) async {
 /// بيتأكد من التوقيع ومن إن الكود لنفس الجهاز. بيرمي LicenseException برسالة للمستخدم.
 Future<LicenseData> verifyLicense(String code, {required String deviceCode, String publicKey = licensePublicKey}) async {
   final parts = code.trim().replaceAll(RegExp(r'\s'), '').split('.');
-  if (parts.length != 3 || parts[0] != 'AERP1') throw LicenseException('كود التفعيل ده مش صحيح');
+  if (parts.length != 3 || parts[0] != 'AERP1') throw LicenseException('رمز التفعيل غير صحيح');
   final List<int> payload, sig;
   try {
     payload = _unb64(parts[1]);
     sig = _unb64(parts[2]);
   } catch (_) {
-    throw LicenseException('كود التفعيل ده مش صحيح');
+    throw LicenseException('رمز التفعيل غير صحيح');
   }
   final ok = await Ed25519().verify(
     payload,
     signature: Signature(sig, publicKey: SimplePublicKey(base64.decode(publicKey), type: KeyPairType.ed25519)),
   );
-  if (!ok) throw LicenseException('كود التفعيل ده مش صحيح (التوقيع مش مطابق)');
+  if (!ok) throw LicenseException('رمز التفعيل غير صحيح؛ التوقيع غير مطابق.');
   final data = LicenseData.fromJson(jsonDecode(utf8.decode(payload)) as Map<String, dynamic>);
-  if (data.device != deviceCode) throw LicenseException('الكود ده معمول لجهاز تاني (كود جهازك: $deviceCode)');
+  if (data.device != deviceCode) throw LicenseException('هذا الرمز مخصص لجهاز آخر (رمز جهازك: $deviceCode)');
   return data;
 }

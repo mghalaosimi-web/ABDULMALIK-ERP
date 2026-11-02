@@ -38,7 +38,7 @@ class UsersScreen extends ConsumerWidget {
             child: Column(mainAxisSize: MainAxisSize.min, children: [
               ErrorBanner(errorText(e)),
               const SizedBox(height: 12),
-              OutlinedButton(onPressed: () => ref.invalidate(usersProvider), child: const Text('حاول تاني')),
+              OutlinedButton(onPressed: () => ref.invalidate(usersProvider), child: const Text('حاول مرة أخرى')),
             ]),
           ),
         ),
@@ -84,7 +84,7 @@ class _UserTile extends StatelessWidget {
           title: Row(
             children: [
               Flexible(child: Text(user.name, style: text.titleSmall?.bold, overflow: TextOverflow.ellipsis)),
-              if (isMe) Text('  (إنت)', style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
+              if (isMe) Text('  (أنت)', style: text.bodySmall?.copyWith(color: scheme.onSurfaceVariant)),
             ],
           ),
           subtitle: Text('@${user.username}${user.active ? '' : ' • متوقف'}', textDirection: TextDirection.ltr, textAlign: TextAlign.right),
@@ -168,7 +168,7 @@ class _UserDialogState extends ConsumerState<UserDialog> {
       ref.invalidate(usersProvider);
       if (!mounted) return;
       Navigator.pop(context);
-      showMessage(context, _isNew ? 'تم إضافة ${_name.text}' : 'تم حفظ التعديلات');
+      showMessage(context, _isNew ? 'تمت إضافة ${_name.text}' : 'تم حفظ التعديلات');
     } catch (e) {
       if (mounted) setState(() => _error = errorText(e));
     } finally {
@@ -193,7 +193,7 @@ class _UserDialogState extends ConsumerState<UserDialog> {
                 TextFormField(
                   controller: _name,
                   decoration: const InputDecoration(labelText: 'الاسم'),
-                  validator: (v) => (v ?? '').trim().isEmpty ? 'لازم تكتب الاسم' : null,
+                  validator: (v) => (v ?? '').trim().isEmpty ? 'يُرجى إدخال الاسم' : null,
                 ),
                 const SizedBox(height: 12),
                 Directionality(
@@ -213,7 +213,7 @@ class _UserDialogState extends ConsumerState<UserDialog> {
                   controller: _password,
                   obscureText: true,
                   decoration: InputDecoration(
-                    labelText: _isNew ? 'كلمة السر' : 'كلمة مرور جديدة (اتركها فارغة إذا لم ترغب في تغييرها)',
+                    labelText: _isNew ? 'كلمة المرور' : 'كلمة مرور جديدة (اتركها فارغة إذا لم ترغب في تغييرها)',
                   ),
                   validator: (v) {
                     final value = v ?? '';
@@ -233,7 +233,7 @@ class _UserDialogState extends ConsumerState<UserDialog> {
                 Text(
                   switch (_role) {
                     Role.owner => 'جميع الصلاحيات: التقارير، والعمليات المالية، والإعدادات، وإدارة الموظفين.',
-                    Role.reception => 'استلام وتسليم الأجهزة، وطباعة الوصولات، وتحصيل الفلوس.',
+                    Role.reception => 'استلام الأجهزة وتسليمها، وطباعة الإيصالات، وتحصيل المبالغ.',
                     Role.technician => 'يمكنه الاطلاع على الأجهزة المسندة إليه فقط وتحديث حالة الإصلاح.',
                   },
                   style: Theme.of(context).textTheme.bodySmall,
@@ -244,7 +244,7 @@ class _UserDialogState extends ConsumerState<UserDialog> {
                   const SizedBox(height: 8),
                   SegmentedButton<String>(
                     segments: const [
-                      ButtonSegment(value: 'none', label: Text('من غير')),
+                      ButtonSegment(value: 'none', label: Text('دون')),
                       ButtonSegment(value: 'percent', label: Text('نسبة %')),
                       ButtonSegment(value: 'fixed', label: Text('مبلغ لكل جهاز')),
                     ],
@@ -267,7 +267,7 @@ class _UserDialogState extends ConsumerState<UserDialog> {
                   const SizedBox(height: 8),
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
-                    title: const Text('الحساب شغال'),
+                    title: const Text('الحساب مفعّل'),
                     subtitle: const Text('عند إيقافه، سيتم تسجيل خروج الموظف من جميع الأجهزة ولن يتمكن من تسجيل الدخول.'),
                     value: _active,
                     onChanged: (v) => setState(() => _active = v),

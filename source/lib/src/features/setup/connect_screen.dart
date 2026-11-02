@@ -54,7 +54,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
 
   Future<void> _connect(String url) async {
     if (url.trim().isEmpty) {
-      setState(() => _error = ref.read(localeProvider).languageCode == 'ar' ? 'اكتب عنوان الخادم أولاً' : 'Enter the server address first');
+      setState(() => _error = ref.read(localeProvider).languageCode == 'ar' ? 'يُرجى إدخال عنوان الخادم أولاً' : 'Enter the server address first');
       return;
     }
     setState(() {
@@ -85,7 +85,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
           const SizedBox(height: 24),
           Text(ar ? 'الاتصال بخادم المحل' : 'Connect to shop server', style: text.titleLarge?.bold),
           const SizedBox(height: 4),
-          Text(ar ? 'تأكد أن هذا الجهاز متصل بشبكة Wi-Fi نفسها وأن البرنامج مفتوح على الكمبيوتر الرئيسي.' : 'Make sure this device is on the shop Wi-Fi network and the app is running on the main PC.',
+          Text(ar ? 'تأكد أن هذا الجهاز متصل بشبكة Wi-Fi نفسها وأن البرنامج مفتوح على الحاسوب الرئيسي.' : 'Make sure this device is on the shop Wi-Fi network and the app is running on the main PC.',
               style: text.bodyMedium?.copyWith(color: scheme.onSurfaceVariant)),
           const SizedBox(height: 20),
           Row(
@@ -116,7 +116,7 @@ class _ConnectScreenState extends ConsumerState<ConnectScreen> {
                 padding: const EdgeInsets.all(18),
                 child: Text(
                   ar
-                      ? 'لم يتم العثور على خادم. تحقق من شبكة Wi-Fi أو أدخل العنوان أدناه (على الكمبيوتر: الإعدادات ← الاتصال).'
+                      ? 'لم يتم العثور على خادم. تحقق من شبكة Wi-Fi أو أدخل العنوان أدناه (على الحاسوب: الإعدادات ← الاتصال).'
                       : 'No server found. Check Wi-Fi or enter the address below (on the PC: Settings → Connection).',
                   style: text.bodyMedium,
                 ),

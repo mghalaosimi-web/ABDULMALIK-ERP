@@ -50,7 +50,7 @@ List<_Destination> _destinations(bool ar) => [
     () => const DashboardScreen(),
   ),
   _Destination(
-    ar ? 'الكاشير' : 'Cashier',
+    ar ? 'أمين الصندوق' : 'Cashier',
     Icons.point_of_sale_outlined,
     Icons.point_of_sale_rounded,
     () => const PosScreen(),
@@ -84,7 +84,7 @@ List<_Destination> _destinations(bool ar) => [
     roles: _staff,
   ),
   _Destination(
-    ar ? 'الموبايلات' : 'Phones',
+    ar ? 'الهواتف المحمولة' : 'Phones',
     Icons.phone_iphone_outlined,
     Icons.phone_iphone_rounded,
     () => const PhonesScreen(),
@@ -147,7 +147,7 @@ List<_Destination> _destinations(bool ar) => [
   ),
 ];
 
-/// الهيكل الأساسي بعد الدخول: قائمة جانبية على الشاشات الكبيرة، وشريط تحت على الموبايل.
+/// الهيكل الأساسي بعد الدخول: قائمة جانبية على الشاشات الكبيرة، وشريط تحت على الهاتف.
 class HomeShell extends ConsumerStatefulWidget {
   const HomeShell({super.key});
 
@@ -161,7 +161,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(sessionProvider).value!.user!;
-    // بوابة الـ SMS (لو متفعّلة على الموبايل ده) بتشتغل طول ما البرنامج مفتوح
+    // بوابة الـ SMS (لو متفعّلة على هذا الهاتف) بتشتغل طول ما البرنامج مفتوح
     ref.watch(smsGatewayProvider);
     final ar = ref.watch(localeProvider).languageCode == 'ar';
     final items = _destinations(ar)
@@ -175,7 +175,7 @@ class _HomeShellState extends ConsumerState<HomeShell> {
     final wide = MediaQuery.sizeOf(context).width >= 840;
 
     if (!wide) {
-      // الموبايل بيشيل 5 أزرار بالكتير تحت؛ الباقي في "المزيد"
+      // الهاتف بيشيل 5 أزرار بالكتير تحت؛ الباقي في "المزيد"
       final primary = items.length <= 5 ? items : items.take(4).toList();
       final more = items.length <= 5
           ? const <_Destination>[]

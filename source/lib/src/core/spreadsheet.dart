@@ -4,14 +4,14 @@ import 'dart:typed_data';
 import 'package:archive/archive.dart';
 import 'package:xml/xml.dart';
 
-/// قارئ بسيط لملفات Excel (xlsx) و CSV عشان استيراد البيانات من البرنامج القديم.
+/// قارئ بسيط لملفات Excel (xlsx) و CSV لتسهيل استيراد البيانات من البرنامج القديم.
 /// بيرجع أول شيت كجدول صفوف ونصوص.
 class SpreadsheetReader {
   static List<List<String>> read(Uint8List bytes, String fileName) {
     final lower = fileName.toLowerCase();
     if (lower.endsWith('.csv') || lower.endsWith('.txt')) return readCsv(_decodeText(bytes));
     if (lower.endsWith('.xls')) {
-      throw const FormatException('ملفات .xls القديمة مش مدعومة. افتح الملف في Excel واحفظه باسم "Excel Workbook (.xlsx)" أو CSV.');
+      throw const FormatException('ملفات .xls القديمة غير مدعومة. افتح الملف في Excel واحفظه باسم "Excel Workbook (.xlsx)" أو CSV.');
     }
     return readXlsx(bytes);
   }
@@ -77,14 +77,14 @@ class SpreadsheetReader {
     try {
       zip = ZipDecoder().decodeBytes(bytes);
     } catch (_) {
-      throw const FormatException('الملف ده مش ملف Excel صالح');
+      throw const FormatException('هذا الملف ليس ملف Excel صالحاً');
     }
     String? file(String path) {
       final f = zip.findFile(path);
       return f == null ? null : utf8.decode(f.content as List<int>);
     }
 
-    // الشيت الأول حسب ترتيب الـ workbook
+    // ورقة العمل الأول حسب ترتيب الـ workbook
     var sheetPath = 'xl/worksheets/sheet1.xml';
     final workbook = file('xl/workbook.xml');
     final rels = file('xl/_rels/workbook.xml.rels');
@@ -99,7 +99,7 @@ class SpreadsheetReader {
       if (target != null) sheetPath = target.startsWith('/') ? target.substring(1) : 'xl/$target';
     }
     final sheet = file(sheetPath);
-    if (sheet == null) throw const FormatException('مفيش شيت في الملف');
+    if (sheet == null) throw const FormatException('لا تحتوي الوثيقة على ورقة عمل');
 
     final shared = <String>[];
     final sst = file('xl/sharedStrings.xml');
@@ -166,7 +166,7 @@ class _Cp1256Decoder {
       String.fromCharCodes(bytes.map((b) => b < 0x80 ? b : _high.codeUnitAt(b - 0x80)));
 }
 
-/// كاتب بسيط لملفات Excel (xlsx): كذا شيت، نصوص وأرقام، والشيت من اليمين للشمال.
+/// كاتب بسيط لملفات Excel (xlsx): كذا شيت، نصوص وأرقام، وورقة العمل من اليمين للشمال.
 class XlsxWriter {
   final _sheets = <({String name, List<List<Object?>> rows})>[];
 

@@ -4,7 +4,7 @@ import 'dart:typed_data';
 import 'package:file_selector/file_selector.dart';
 import 'package:share_plus/share_plus.dart';
 
-/// حفظ ملف: على الكمبيوتر بيسأل تحفظه فين، وعلى الموبايل بيفتح المشاركة (واتساب، Drive، ...).
+/// حفظ ملف: على الكمبيوتر بيسأل تحفظه فين، وعلى الهاتف بيفتح المشاركة (واتساب، Drive، ...).
 /// بيرجع مكان الملف لو اتحفظ على الكمبيوتر.
 Future<String?> saveOrShareFile(Uint8List bytes, String fileName, String mimeType) async {
   if (Platform.isAndroid || Platform.isIOS) {

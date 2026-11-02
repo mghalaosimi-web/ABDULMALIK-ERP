@@ -155,7 +155,7 @@ class CustomerDetailScreen extends ConsumerWidget {
                             InkWell(
                               onTap: () {
                                 Clipboard.setData(ClipboardData(text: c.phone));
-                                showMessage(context, 'اتنسخ الرقم');
+                                showMessage(context, 'تم نسخ الرقم');
                               },
                               child: Text(c.phone, textDirection: TextDirection.ltr, style: TextStyle(color: scheme.onSurfaceVariant)),
                             ),
@@ -274,7 +274,7 @@ class _EditCustomerDialogState extends ConsumerState<_EditCustomerDialog> {
             TextFormField(
               controller: _name,
               decoration: const InputDecoration(labelText: 'الاسم'),
-              validator: (v) => (v ?? '').trim().isEmpty ? 'لازم تكتب الاسم' : null,
+              validator: (v) => (v ?? '').trim().isEmpty ? 'يُرجى إدخال الاسم' : null,
             ),
             const SizedBox(height: 12),
             TextFormField(controller: _phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'رقم الهاتف')),

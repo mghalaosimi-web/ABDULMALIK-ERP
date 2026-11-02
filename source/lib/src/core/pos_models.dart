@@ -40,7 +40,7 @@ class CartLine {
 
   final Product product;
 
-  /// الجهاز نفسه (لو الصنف موبايل بـ IMEI).
+  /// الجهاز نفسه (لو الصنف هاتف محمول بـ IMEI).
   final PhoneUnit? unit;
   int qty;
   int unitPriceCents;
@@ -160,8 +160,8 @@ const cashMoveLabels = {
   'deposit': 'إيداع',
   'withdraw': 'سحب',
   'supplier_payment': 'دفعة لمورد',
-  'purchase_payment': 'فاتورة شرا',
-  'used_purchase': 'شرا مستعمل',
+  'purchase_payment': 'فاتورة شراء',
+  'used_purchase': 'شراء جهاز مستعمل',
   'service': 'خدمات ومحافظ',
   'wallet_topup': 'تغذية محفظة',
   'wallet_withdraw': 'سحب من محفظة',
@@ -208,7 +208,7 @@ class CashSession {
   int get expensesCents => -(byType['expense'] ?? 0);
 }
 
-/// جهاز واحد بالـ IMEI بتاعه (موبايل جديد أو مستعمل).
+/// جهاز واحد برقم IMEI الخاص به، سواء أكان جديداً أم مستعملاً.
 class PhoneUnit {
   PhoneUnit(Map<String, dynamic> j)
       : id = j['id'] as String,

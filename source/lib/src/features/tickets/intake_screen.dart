@@ -62,7 +62,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
   final _lockText = TextEditingController();
   List<int> _pattern = [];
 
-  // الفلوس والمعاد
+  // النقود والمعاد
   final _estimated = TextEditingController();
   final _deposit = TextEditingController();
   PaymentMethod _depositMethod = PaymentMethod.cash;
@@ -127,7 +127,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
       return;
     }
     if (!valid) {
-      setState(() => _error = 'فيه بيانات ناقصة أو غلط، راجع الحقول اللي باللون الأحمر');
+      setState(() => _error = 'توجد بيانات ناقصة أو غير صحيحة؛ يُرجى مراجعة الحقول المحددة باللون الأحمر.');
       return;
     }
     if (_lockType != LockType.none && _lockSecret == null) {
@@ -252,7 +252,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
                 _warrantyOf = v == true ? w.id : null;
                 if (v == true && _estimated.text.trim().isEmpty) _estimated.text = '0';
               }),
-              title: Text('${w.deviceName} عليه ضمان من وصل #${w.number} لحد ${formatDate(w.warrantyUntil!)}'),
+              title: Text('${w.deviceName} مشمول بضمان بموجب الإيصال رقم #${w.number} حتى ${formatDate(w.warrantyUntil!)}'),
               subtitle: const Text('حدد هذا الخيار إذا كان الجهاز مرتجعاً ضمن ضمان الإصلاح نفسه'),
             ),
           ),
@@ -283,7 +283,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
         TextFormField(
           controller: _name,
           decoration: const InputDecoration(labelText: 'اسم العميل *', prefixIcon: Icon(Icons.badge_rounded)),
-          validator: (v) => (v ?? '').trim().isEmpty ? 'لازم تكتب اسم العميل' : null,
+          validator: (v) => (v ?? '').trim().isEmpty ? 'يُرجى إدخال اسم العميل' : null,
         ),
         CheckboxListTile(
           contentPadding: EdgeInsets.zero,
@@ -327,14 +327,14 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
                 textDirection: TextDirection.ltr,
                 options: () => deviceCatalog.keys,
                 onSelected: (_) => setState(() {}),
-                validator: (v) => (v ?? '').trim().isEmpty ? 'اكتب الماركة' : null,
+                validator: (v) => (v ?? '').trim().isEmpty ? 'يُرجى إدخال العلامة التجارية' : null,
               ),
             ),
             const SizedBox(width: 12),
             Expanded(
               child: SuggestField(
                 controller: _model,
-                label: 'الموديل *',
+                label: 'الطراز *',
                 textDirection: TextDirection.ltr,
                 options: () {
                   final brand = deviceCatalog.keys.firstWhere(
@@ -343,7 +343,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
                   );
                   return brand.isEmpty ? deviceCatalog.values.expand((m) => m) : deviceCatalog[brand]!;
                 },
-                validator: (v) => (v ?? '').trim().isEmpty ? 'اكتب الموديل' : null,
+                validator: (v) => (v ?? '').trim().isEmpty ? 'يُرجى إدخال الطراز' : null,
               ),
             ),
           ],
@@ -413,13 +413,13 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
         const SizedBox(height: 8),
         MultiChips(options: conditionOptions, selected: _condition, onChanged: (s) => setState(() => _condition = s)),
         const SizedBox(height: 14),
-        Text('الحاجات اللي العميل سابها مع الجهاز', style: const TextStyle().semiBold),
+        Text('المتعلقات التي سلّمها العميل مع الجهاز', style: const TextStyle().semiBold),
         const SizedBox(height: 8),
         MultiChips(options: accessoryOptions, selected: _accessories, onChanged: (s) => setState(() => _accessories = s)),
         const SizedBox(height: 12),
         TextFormField(
           controller: _conditionNotes,
-          decoration: const InputDecoration(labelText: 'ملاحظات تانية'),
+          decoration: const InputDecoration(labelText: 'ملاحظات إضافية'),
         ),
       ],
     );
@@ -451,7 +451,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
             controller: _lockText,
             textDirection: TextDirection.ltr,
             keyboardType: _lockType == LockType.pin ? TextInputType.number : TextInputType.visiblePassword,
-            decoration: InputDecoration(labelText: _lockType == LockType.pin ? 'الرقم السري' : 'الباسورد', prefixIcon: const Icon(Icons.key_rounded)),
+            decoration: InputDecoration(labelText: _lockType == LockType.pin ? 'كلمة المرور' : 'الكلمة مرور', prefixIcon: const Icon(Icons.key_rounded)),
           ),
         ],
       ],
@@ -511,7 +511,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
           items: [
             const DropdownMenuItem(value: null, child: Text('لم يتم التحديد بعد')),
             for (final s in staff.where((s) => s.role != Role.reception))
-              DropdownMenuItem(value: s.id, child: Text('${s.name}${s.id == me.id ? ' (إنت)' : ''}')),
+              DropdownMenuItem(value: s.id, child: Text('${s.name}${s.id == me.id ? ' (أنت)' : ''}')),
           ],
           onChanged: (v) => setState(() => _technicianId = v),
         ),
@@ -538,9 +538,9 @@ class _IntakeDoneDialog extends ConsumerWidget {
           const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(child: _BigValue(label: 'رقم الوصل', value: '#${ticket.number}', color: scheme.primary)),
+              Expanded(child: _BigValue(label: 'رقم الإيصال', value: '#${ticket.number}', color: scheme.primary)),
               const SizedBox(width: 12),
-              Expanded(child: _BigValue(label: 'كود الاستلام', value: ticket.pickupPin ?? '', color: brandOrange)),
+              Expanded(child: _BigValue(label: 'رمز الاستلام', value: ticket.pickupPin ?? '', color: brandOrange)),
             ],
           ),
           const SizedBox(height: 12),
@@ -557,9 +557,9 @@ class _IntakeDoneDialog extends ConsumerWidget {
         OutlinedButton.icon(
           onPressed: () => printTicket(context, ref, ticket.id, PrintKind.receipt),
           icon: const Icon(Icons.print_rounded),
-          label: const Text('طباعة الوصل'),
+          label: const Text('طباعة الإيصال'),
         ),
-        FilledButton(onPressed: () => Navigator.pop(context), child: const Text('تمام')),
+        FilledButton(onPressed: () => Navigator.pop(context), child: const Text('حسناً')),
       ],
     );
   }
@@ -585,7 +585,7 @@ class _BigValue extends StatelessWidget {
 }
 
 extension on _IntakeScreenState {
-  /// لو العميل أو الجهاز عليه ضمان من إصلاح قبل كده، بنعرضه عشان يتسجل كمرتجع ضمان.
+  /// إذا كان العميل أو الجهاز مشمولاً بضمان إصلاح سابق، تُعرض بياناته لتسجيل الحالة بوصفها مطالبة ضمان.
   Future<void> _checkWarranty({String? phone, String? imei}) async {
     try {
       final res = await ref.read(sessionProvider).value!.api!.get('/api/warranty-check', query: {'phone': ?phone, 'imei': ?imei});

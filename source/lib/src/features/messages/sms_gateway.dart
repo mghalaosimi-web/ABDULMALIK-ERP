@@ -22,7 +22,7 @@ class SmsNative {
       _channel.invokeMethod<bool>('send', {'phone': phone, 'body': body}).timeout(const Duration(seconds: 60));
 }
 
-/// حالة بوابة الـ SMS على الجهاز ده (بتظهر في الإعدادات).
+/// حالة بوابة الرسائل النصية على هذا الجهاز، وتُعرض في الإعدادات.
 class SmsGatewayState {
   const SmsGatewayState({this.active = false, this.sent = 0, this.failed = 0, this.lastError});
   final bool active;
@@ -31,8 +31,8 @@ class SmsGatewayState {
   final String? lastError;
 }
 
-/// لو الموبايل ده متفعّل كبوابة SMS: بيسحب الرسائل من طابور السيرفر ويبعتها من الشريحة.
-/// شغال طول ما التطبيق مفتوح (حتى لو في الخلفية لفترة).
+/// عند تفعيل هذا الهاتف بوصفه بوابة للرسائل النصية، يستقبل الرسائل من قائمة انتظار الخادم ويرسلها باستخدام الشريحة.
+/// يظل قيد التشغيل ما دام التطبيق مفتوحاً، حتى عند عمله في الخلفية لفترة.
 final smsGatewayProvider = NotifierProvider<SmsGateway, SmsGatewayState>(SmsGateway.new);
 
 class SmsGateway extends Notifier<SmsGatewayState> {
@@ -56,7 +56,7 @@ class SmsGateway extends Notifier<SmsGatewayState> {
 
   Future<void> setEnabled(bool v) async {
     if (v && !await SmsNative.requestPermission()) {
-      throw Exception('لازم توافق على صلاحية إرسال الرسائل عشان البوابة تشتغل');
+      throw Exception('يجب منح إذن إرسال الرسائل النصية حتى تعمل البوابة.');
     }
     await ref.read(appConfigProvider).setSmsGateway(v);
     ref.invalidateSelf();
@@ -92,7 +92,7 @@ class SmsGateway extends Notifier<SmsGatewayState> {
         }
       }
     } catch (_) {
-      // السيرفر مش متاح دلوقتي، هنحاول تاني في الدورة الجاية
+      // الخادم غير متاح حالياً؛ ستُعاد المحاولة في الدورة التالية.
     } finally {
       _running = false;
     }

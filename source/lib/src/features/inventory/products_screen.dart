@@ -138,7 +138,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
               label: const Text('استيراد من Excel'),
             ),
           IconButton(
-            tooltip: 'طباعة باركود',
+            tooltip: 'طباعة رمز شريطي',
             icon: const Icon(Icons.qr_code_2_rounded),
             onPressed: r == null || r.items.isEmpty
                 ? null
@@ -170,7 +170,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       onTap: () => setState(() => _lowOnly = !_lowOnly),
                       child: Text('${r.lowCount} أوشك على النفاد', style: TextStyle(color: scheme.error).semiBold),
                     ),
-                  if (r.stockValueCents != null) Text('قيمة البضاعة (بسعر الشراء): ${money(r.stockValueCents!)}'),
+                  if (r.stockValueCents != null) Text('قيمة المخزون (بسعر الشراء): ${money(r.stockValueCents!)}'),
                 ],
               ),
             ),
@@ -270,7 +270,7 @@ class _ProductRow extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         title: Text(p.name, style: const TextStyle().semiBold),
-        subtitle: Text([if ((p.category ?? '').isNotEmpty) visibleProductCategory(p.category), if (p.barcode != null) p.barcode!, if (showCost) 'شراء ${money(p.costCents)}'].join(' • ')),
+        subtitle: Text([if ((p.category ?? '').isNotEmpty) visibleProductCategory(p.category), if (p.barcode != null) p.barcode!, if (showCost) 'سعر الشراء ${money(p.costCents)}'].join(' • ')),
         leading: p.imageFileId != null
             ? _ProductImageThumbnail(fileId: p.imageFileId!, size: 52)
             : p.trackStock && !p.serialized
@@ -626,6 +626,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
         }
       }
       ref.invalidate(productsProvider);
+      ref.invalidate(categoriesProvider);
       if (!mounted) return;
       Navigator.pop(context);
       showMessage(context, _isNew ? 'تمت إضافة "${_name.text}"' : 'تم الحفظ');
@@ -639,6 +640,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
   Future<void> _archive() async {
     await ref.read(sessionProvider).value!.api!.patch('/api/products/${p!.id}', {'active': false});
     ref.invalidate(productsProvider);
+    ref.invalidate(categoriesProvider);
     if (mounted) Navigator.pop(context);
   }
 
@@ -703,7 +705,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                   controller: _name,
                   autofocus: _isNew,
                   decoration: const InputDecoration(labelText: 'اسم الصنف *'),
-                  validator: (v) => (v ?? '').trim().isEmpty ? 'اكتب اسم الصنف' : null,
+                  validator: (v) => (v ?? '').trim().isEmpty ? 'يُرجى إدخال اسم الصنف' : null,
                 ),
                 const SizedBox(height: 12),
                 TextFormField(
@@ -762,7 +764,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                   controller: _category,
                   label: widget.accessories ? 'تصنيف الأكسسوار' : 'القسم (مثلاً: أجهزة، قطع غيار)',
                   options: () => widget.accessories
-                      ? accessoriesCategories
+                      ? accessoryCategorySuggestions(categories)
                       : categories.where((c) => !isAccessoriesCategory(c)).toList(),
                 ),
                 const SizedBox(height: 12),
@@ -776,7 +778,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                       const SizedBox(width: 12),
                     ],
                     Expanded(
-                      child: MoneyField(controller: _price, label: 'سعر البيع *', validator: (c) => (c ?? 0) <= 0 ? 'اكتب السعر' : null),
+                      child: MoneyField(controller: _price, label: 'سعر البيع *', validator: (c) => (c ?? 0) <= 0 ? 'يُرجى إدخال السعر' : null),
                     ),
                   ],
                 ),
@@ -844,7 +846,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                         await showDialog<void>(context: context, builder: (_) => AddStockDialog(product: p!));
                       },
                       icon: const Icon(Icons.add_box_rounded),
-                      label: Text('إضافة كمية وصلت (الموجود ${p!.qty})'),
+                      label: Text('إضافة كمية مستلمة (الموجود ${p!.qty})'),
                     ),
                   ),
                 ],
@@ -884,7 +886,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
   }
 }
 
-/// إضافة كمية وصلت: بيظهر الموجود، وتكتب الجديد، والإجمالي بيتحسب قدامك، ولما تحفظ بيتجمعوا.
+/// إضافة كمية مستلمة: يُعرض الرصيد الحالي، وتُدخل الكمية المستلمة، ويُحسب الإجمالي تلقائياً قبل الحفظ.
 class AddStockDialog extends ConsumerStatefulWidget {
   const AddStockDialog({super.key, required this.product});
   final Product product;
@@ -913,7 +915,7 @@ class _AddStockDialogState extends ConsumerState<AddStockDialog> {
 
   Future<void> _save() async {
     final added = _added;
-    if (added == null) return setState(() => _error = 'اكتب العدد اللي وصل');
+    if (added == null) return setState(() => _error = 'يُرجى إدخال الكمية المستلمة');
     setState(() {
       _busy = true;
       _error = null;
@@ -923,7 +925,7 @@ class _AddStockDialogState extends ConsumerState<AddStockDialog> {
       final res = await ref.read(sessionProvider).value!.api!.post('/api/products/${widget.product.id}/adjust', {
         'qtyChange': added,
         'reason': 'purchase',
-        'note': 'كمية وصلت',
+        'note': 'كمية مستلمة',
         if (cost != null && cost > 0) 'costCents': cost,
       });
       ref.invalidate(productsProvider);
@@ -960,11 +962,11 @@ class _AddStockDialogState extends ConsumerState<AddStockDialog> {
         width: 400,
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
           Row(children: [
-            box('كان عندك', '${p.qty}', scheme.outline),
+            box('الرصيد الحالي', '${p.qty}', scheme.outline),
             const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Icon(Icons.add_rounded)),
-            box('وصل', added == null ? '—' : '$added', brandOrange),
+            box('الكمية المستلمة', added == null ? '—' : '$added', brandOrange),
             const Padding(padding: EdgeInsets.symmetric(horizontal: 6), child: Text('=', style: TextStyle(fontSize: 22))),
-            box('هيبقى', '${p.qty + (added ?? 0)}', scheme.primary),
+            box('سيصبح', '${p.qty + (added ?? 0)}', scheme.primary),
           ]),
           const SizedBox(height: 14),
           TextField(
@@ -973,11 +975,11 @@ class _AddStockDialogState extends ConsumerState<AddStockDialog> {
             keyboardType: TextInputType.number,
             onChanged: (_) => setState(() => _error = null),
             onSubmitted: (_) => _save(),
-            decoration: const InputDecoration(labelText: 'العدد الجديد اللي وصل'),
+            decoration: const InputDecoration(labelText: 'الكمية المستلمة حديثاً'),
           ),
           if (isOwner) ...[
             const SizedBox(height: 10),
-            MoneyField(controller: _cost, label: 'كم دفعت؟ (اختياري، لتحديث سعر الشراء)'),
+            MoneyField(controller: _cost, label: 'المبلغ المدفوع (اختياري، لتحديث سعر الشراء)'),
           ],
           if (_error != null) ...[const SizedBox(height: 10), ErrorBanner(_error!)],
         ]),
@@ -1001,8 +1003,8 @@ const _moveReasons = {
   'return_supplier': 'مرتجع للمورد',
   'import': 'استيراد',
   'repair': 'صيانة',
-  'transfer_out': 'تحويل لفرع تاني',
-  'transfer_in': 'تحويل من فرع تاني',
+  'transfer_out': 'تحويل إلى فرع آخر',
+  'transfer_in': 'تحويل من فرع آخر',
   'other': 'أخرى',
 };
 
@@ -1069,7 +1071,7 @@ class _LabelsDialogState extends ConsumerState<_LabelsDialog> {
   Widget build(BuildContext context) {
     final total = _copies.values.fold<int>(0, (s, c) => s + c);
     return AlertDialog(
-      title: const Text('طباعة ستيكرات باركود'),
+      title: const Text('طباعة ملصقات الرموز الشريطية'),
       content: SizedBox(
         width: 460,
         height: 480,

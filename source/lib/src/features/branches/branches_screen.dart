@@ -93,29 +93,29 @@ class _NotLinkedState extends ConsumerState<_NotLinked> {
                     '• عرض مبيعات وأرباح كل فرع من أي مكان\n'
                     '• تعرف الصنف موجود في أنهي فرع\n'
                     '• تحوّل بضاعة من فرع لفرع\n\n'
-                    'كل فرع بيفضل شغال لوحده حتى لو النت فصل، والربط بيتحدّث لما النت يرجع.'),
+                    'يواصل كل فرع العمل بصورة مستقلة عند انقطاع الاتصال بالإنترنت، وتُحدّث بيانات الربط عند عودة الاتصال.'),
               ),
             ),
             const SizedBox(height: 12),
             SectionCard(title: 'أول فرع', icon: Icons.add_business_rounded, children: [
-              const Text('لو ده أول فرع بتربطه، اعمل مجموعة جديدة، وبعدين طلّع كود وادخله في الفروع التانية.'),
+              const Text('إذا كان هذا أول فرع تريد ربطه، فأنشئ مجموعة جديدة، ثم أنشئ رمز ربط وأدخله في الفروع الأخرى.'),
               const SizedBox(height: 12),
-              BusyButton(label: 'اعمل مجموعة فروع', icon: Icons.hub_rounded, busy: _busy, onPressed: () => _do('/api/org/create')),
+              BusyButton(label: 'إنشاء مجموعة فروع', icon: Icons.hub_rounded, busy: _busy, onPressed: () => _do('/api/org/create')),
             ]),
             const SizedBox(height: 12),
-            SectionCard(title: 'فرع تاني', icon: Icons.link_rounded, children: [
-              const Text('إذا كانت هناك مجموعة فروع مُعدّة مسبقاً: من الفرع الأول اضغط على "رمز ربط فرع جديد"، ثم أدخل الرمز هنا.'),
+            SectionCard(title: 'فرع آخر', icon: Icons.link_rounded, children: [
+              const Text('إذا كانت هناك مجموعة فروع مُعدّة مسبقاً: من الفرع الأول اختر «رمز ربط فرع جديد»، ثم أدخل الرمز هنا.'),
               const SizedBox(height: 12),
               TextField(
                 controller: _code,
                 textDirection: TextDirection.ltr,
                 textCapitalization: TextCapitalization.characters,
-                decoration: const InputDecoration(labelText: 'كود الربط (8 حروف)'),
+                decoration: const InputDecoration(labelText: 'رمز الربط (8 حروف)'),
               ),
               const SizedBox(height: 12),
               OutlinedButton.icon(onPressed: _busy ? null : () => _do('/api/org/join', {'code': _code.text}), icon: const Icon(Icons.link_rounded), label: const Text('ربط')),
             ]),
-            if (!widget.cloud) ...[const SizedBox(height: 12), const ErrorBanner('المزامنة مع النت مقفولة على السيرفر ده، والربط محتاجها.')],
+            if (!widget.cloud) ...[const SizedBox(height: 12), const ErrorBanner('المزامنة عبر الإنترنت غير مفعّلة على هذا الخادم، وهي مطلوبة لربط الفروع.')],
             if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],
           ]),
         ),
@@ -140,7 +140,7 @@ class _Linked extends ConsumerWidget {
             ? TextButton.icon(
                 onPressed: () => _invite(context, ref),
                 icon: const Icon(Icons.qr_code_rounded, size: 18),
-                label: const Text('كود ربط فرع جديد'),
+                label: const Text('رمز ربط فرع جديد'),
               )
             : null,
         children: [
@@ -148,7 +148,7 @@ class _Linked extends ConsumerWidget {
             ListTile(
               contentPadding: EdgeInsets.zero,
               leading: Icon(Icons.storefront_rounded, color: m['isMe'] == true ? brandBlue : null),
-              title: Text('${m['branchName']}${m['isMe'] == true ? ' (الفرع ده)' : ''}'),
+              title: Text('${m['branchName']}${m['isMe'] == true ? ' (هذا الفرع)' : ''}'),
             ),
           if (isOwner)
             Align(
@@ -169,7 +169,7 @@ class _Linked extends ConsumerWidget {
                   await ref.read(sessionProvider).value!.api!.post('/api/org/leave');
                   ref.invalidate(_orgProvider);
                 },
-                child: Text('فصل الفرع ده', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+                child: Text('فصل هذا الفرع', style: TextStyle(color: Theme.of(context).colorScheme.error)),
               ),
             ),
         ],
@@ -190,15 +190,15 @@ class _Linked extends ConsumerWidget {
       await showDialog<void>(
         context: context,
         builder: (c) => AlertDialog(
-          title: const Text('كود ربط فرع جديد'),
+          title: const Text('رمز ربط فرع جديد'),
           content: Column(mainAxisSize: MainAxisSize.min, children: [
             SelectableText(code, style: Theme.of(c).textTheme.displaySmall?.bold.copyWith(letterSpacing: 6), textDirection: TextDirection.ltr),
             const SizedBox(height: 8),
-            const Text('في الفرع التاني: الفروع ← "ربط" واكتب الكود ده.\nالكود شغال 24 ساعة.', textAlign: TextAlign.center),
+            const Text('في الفرع الآخر: افتح «الفروع» ثم اختر «ربط» وأدخل الرمز.\nتظل صلاحية الرمز سارية لمدة 24 ساعة.', textAlign: TextAlign.center),
           ]),
           actions: [
             TextButton(onPressed: () => Clipboard.setData(ClipboardData(text: code)), child: const Text('نسخ')),
-            FilledButton(onPressed: () => Navigator.pop(c), child: const Text('تمام')),
+            FilledButton(onPressed: () => Navigator.pop(c), child: const Text('حسناً')),
           ],
         ),
       );
@@ -237,7 +237,7 @@ class _SummaryCardState extends ConsumerState<_SummaryCard> {
   Widget build(BuildContext context) {
     return SectionCard(title: 'ملخص الفروع', icon: Icons.insights_rounded, children: [
       Wrap(spacing: 6, children: [
-        for (final e in const {0: 'النهارده', 6: 'آخر 7 أيام', 29: 'آخر 30 يوم'}.entries)
+        for (final e in const {0: 'اليوم', 6: 'آخر سبعة أيام', 29: 'آخر ثلاثين يوماً'}.entries)
           ChoiceChip(label: Text(e.value), selected: _days == e.key, onSelected: (_) => setState(() {
             _days = e.key;
             _load();
@@ -394,7 +394,7 @@ class _SendTransferDialogState extends ConsumerState<_SendTransferDialog> {
       ref.invalidate(_transfersProvider);
       if (!mounted) return;
       Navigator.pop(context);
-      showMessage(context, 'اتبعت التحويل، والفرع التاني هيأكد الاستلام');
+      showMessage(context, 'أُرسل طلب التحويل، وسيؤكد الفرع الآخر الاستلام.');
     } catch (e) {
       if (mounted) setState(() => _error = errorText(e));
     } finally {
@@ -417,7 +417,7 @@ class _SendTransferDialogState extends ConsumerState<_SendTransferDialog> {
           ),
           const SizedBox(height: 12),
           TextField(
-            decoration: const InputDecoration(hintText: 'دوّر على الصنف', prefixIcon: Icon(Icons.search_rounded)),
+            decoration: const InputDecoration(hintText: 'ابحث عن الصنف', prefixIcon: Icon(Icons.search_rounded)),
             onChanged: (v) {
               _debounce?.cancel();
               _debounce = Timer(const Duration(milliseconds: 300), () => _find(v));
@@ -489,7 +489,7 @@ class _StockLookupCardState extends ConsumerState<_StockLookupCard> {
     return SectionCard(title: 'الصنف موجود في أنهي فرع؟', icon: Icons.travel_explore_rounded, children: [
       TextField(
         decoration: InputDecoration(
-          hintText: 'اسم الصنف أو الباركود',
+          hintText: 'اسم الصنف أو الرمز الشريطي',
           prefixIcon: const Icon(Icons.search_rounded),
           suffixIcon: _busy ? const Padding(padding: EdgeInsets.all(14), child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))) : null,
         ),
@@ -509,7 +509,7 @@ class _StockLookupCardState extends ConsumerState<_StockLookupCard> {
           trailing: Text('${r['qty']} • ${money(r['priceCents'] as int? ?? 0)}', style: const TextStyle().semiBold),
         ),
       const SizedBox(height: 4),
-      Text('المخزون في الفروع التانية بيتحدّث كل ساعة.', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
+      Text('تُحدّث بيانات المخزون في الفروع الأخرى كل ساعة.', style: TextStyle(fontSize: 12, color: Theme.of(context).colorScheme.onSurfaceVariant)),
     ]);
   }
 }

@@ -1,15 +1,24 @@
 import 'package:intl/intl.dart';
 
 const _arabicDigits = '٠١٢٣٤٥٦٧٨٩';
+const _persianDigits = '۰۱۲۳۴۵۶۷۸۹';
 
-/// Converts Arabic-Indic digits to Latin digits for consistent identifiers.
+/// Converts Arabic-Indic and Persian digits to Latin digits for consistent identifiers.
 String latinDigits(String s) {
   final b = StringBuffer();
   for (final ch in s.split('')) {
     final i = _arabicDigits.indexOf(ch);
-    b.write(i >= 0 ? '$i' : ch);
+    final p = _persianDigits.indexOf(ch);
+    b.write(i >= 0 ? '$i' : p >= 0 ? '$p' : ch);
   }
   return b.toString();
+}
+
+/// يقبل رقم الهوية الوطنية أو الإقامة السعودية، مع دعم أرقام الهوية المصرية القديمة المحفوظة سابقاً.
+bool isValidNationalId(String input) {
+  final digits = latinDigits(input).trim();
+  return RegExp(r'^[12]\d{9}$').hasMatch(digits) ||
+      RegExp(r'^[23]\d{13}$').hasMatch(digits);
 }
 
 String get _locale => Intl.defaultLocale == 'en' ? 'en' : 'ar';

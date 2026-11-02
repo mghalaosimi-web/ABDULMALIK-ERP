@@ -7,7 +7,7 @@ import '../../core/locale.dart';
 import '../../core/theme.dart';
 import '../../widgets/common.dart';
 
-/// أول شاشة بعد التثبيت: الجهاز ده هيبقى سيرفر المحل ولا هيتصل بسيرفر موجود؟
+/// أول شاشة بعد التثبيت: هل سيعمل هذا الجهاز خادماً للمحل أم سيتصل بخادم قائم؟
 class WelcomeScreen extends ConsumerWidget {
   const WelcomeScreen({super.key});
 
@@ -44,7 +44,7 @@ class WelcomeScreen extends ConsumerWidget {
               isArabic: ar,
               icon: Icons.dns_rounded,
               title: ar ? 'هذا الجهاز هو الخادم الرئيسي للمحل' : 'This device will be the shop server',
-              subtitle: ar ? 'ستُحفظ بيانات المحل على هذا الكمبيوتر، ويمكن للأجهزة الأخرى الاتصال به. اختر هذا الخيار إذا كان أول جهاز في المحل.' : 'Shop data will be stored on this computer. Other devices can connect to it. Choose this if this is the first device.',
+              subtitle: ar ? 'ستُحفظ بيانات المحل على هذا الحاسوب، ويمكن للأجهزة الأخرى الاتصال به. اختر هذا الخيار إذا كان أول جهاز في المحل.' : 'Shop data will be stored on this computer. Other devices can connect to it. Choose this if this is the first device.',
               recommended: true,
               onTap: () => controller.chooseMode(AppMode.server),
             ),
@@ -54,7 +54,7 @@ class WelcomeScreen extends ConsumerWidget {
             isArabic: ar,
             icon: Icons.wifi_rounded,
             title: ar ? 'الاتصال بخادم المحل' : 'Connect to an existing shop server',
-            subtitle: ar ? 'يوجد كمبيوتر آخر يعمل كخادم للمحل، وتريد ربط هذا الجهاز به عبر شبكة Wi-Fi نفسها.' : 'Another computer already runs the shop server. Connect this device over the same Wi-Fi network.',
+            subtitle: ar ? 'يوجد حاسوب آخر يعمل كخادم للمحل، وتريد ربط هذا الجهاز به عبر شبكة Wi-Fi نفسها.' : 'Another computer already runs the shop server. Connect this device over the same Wi-Fi network.',
             onTap: () => controller.chooseMode(AppMode.client),
           ),
         ],

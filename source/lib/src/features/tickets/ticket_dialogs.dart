@@ -14,7 +14,7 @@ import '../../widgets/form_fields.dart';
 import '../../widgets/suggest_field.dart';
 import 'providers.dart';
 
-/// أساس مشترك للـ dialogs اللي بتبعت طلب للسيرفر وتعرض خطأ لو فشل.
+/// أساس مشترك للنوافذ الحوارية التي ترسل طلباً إلى الخادم وتعرض رسالة خطأ عند فشله.
 mixin _Submitting<T extends ConsumerStatefulWidget> on ConsumerState<T> {
   bool busy = false;
   String? error;
@@ -115,17 +115,17 @@ class _EditTicketDialogState extends ConsumerState<EditTicketDialog> with _Submi
                         label: 'الماركة',
                         textDirection: TextDirection.ltr,
                         options: () => deviceCatalog.keys,
-                        validator: (v) => (v ?? '').trim().isEmpty ? 'اكتب الماركة' : null,
+                        validator: (v) => (v ?? '').trim().isEmpty ? 'يُرجى إدخال العلامة التجارية' : null,
                       ),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
                       child: SuggestField(
                         controller: _model,
-                        label: 'الموديل',
+                        label: 'الطراز',
                         textDirection: TextDirection.ltr,
                         options: () => deviceCatalog[_brand.text.trim()] ?? deviceCatalog.values.expand((m) => m),
-                        validator: (v) => (v ?? '').trim().isEmpty ? 'اكتب الموديل' : null,
+                        validator: (v) => (v ?? '').trim().isEmpty ? 'يُرجى إدخال الطراز' : null,
                       ),
                     ),
                   ]),
@@ -220,7 +220,7 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> with _Submitting 
   @override
   Widget build(BuildContext context) {
     return AlertDialog(
-      title: const Text('تسجيل فلوس'),
+      title: const Text('تسجيل دفعة'),
       content: SizedBox(
         width: 420,
         child: Form(
@@ -239,7 +239,7 @@ class _PaymentDialogState extends ConsumerState<PaymentDialog> with _Submitting 
                 controller: _amount,
                 label: 'المبلغ',
                 autofocus: true,
-                validator: (c) => (c ?? 0) <= 0 ? 'اكتب المبلغ' : null,
+                validator: (c) => (c ?? 0) <= 0 ? 'يُرجى إدخال المبلغ' : null,
               ),
               const SizedBox(height: 12),
               Wrap(spacing: 8, runSpacing: 8, children: [
@@ -349,8 +349,8 @@ class _DeliverDialogState extends ConsumerState<DeliverDialog> with _Submitting 
                   keyboardType: TextInputType.number,
                   textDirection: TextDirection.ltr,
                   maxLength: 4,
-                  decoration: const InputDecoration(labelText: 'كود الاستلام (من وصل العميل)', prefixIcon: Icon(Icons.pin_rounded), counterText: ''),
-                  validator: (v) => !_override && latinDigits(v ?? '').trim().length != 4 ? 'اكتب الكود (4 أرقام)' : null,
+                  decoration: const InputDecoration(labelText: 'رمز الاستلام (من إيصال العميل)', prefixIcon: Icon(Icons.pin_rounded), counterText: ''),
+                  validator: (v) => !_override && latinDigits(v ?? '').trim().length != 4 ? 'يُرجى إدخال الرمز المكوّن من أربعة أرقام' : null,
                   onChanged: (v) {
                     final latin = latinDigits(v);
                     if (latin != v) _pin.value = TextEditingValue(text: latin, selection: TextSelection.collapsed(offset: latin.length));
@@ -362,15 +362,15 @@ class _DeliverDialogState extends ConsumerState<DeliverDialog> with _Submitting 
                     controlAffinity: ListTileControlAffinity.leading,
                     value: _override,
                     onChanged: (v) => setState(() => _override = v ?? false),
-                    title: const Text('العميل ضيّع الوصل (تسليم من غير كود)'),
-                    subtitle: const Text('اتأكد من شخصية العميل الأول. العملية دي بتتسجل'),
+                    title: const Text('فقد العميل الإيصال (التسليم دون رمز)'),
+                    subtitle: const Text('تحقق أولاً من هوية العميل. سيُسجّل هذا الإجراء.'),
                   ),
                 const SizedBox(height: 8),
                 if (t.warrantyOf == null) ...[
                   TextFormField(
                     controller: _warranty,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: 'ضمان الصيانة (بالأيام)', prefixIcon: Icon(Icons.verified_user_rounded), helperText: '0 = من غير ضمان'),
+                    decoration: const InputDecoration(labelText: 'ضمان الصيانة (بالأيام)', prefixIcon: Icon(Icons.verified_user_rounded), helperText: '0 = دون ضمان'),
                   ),
                   const SizedBox(height: 12),
                 ],
@@ -397,7 +397,7 @@ class _DeliverDialogState extends ConsumerState<DeliverDialog> with _Submitting 
                 else if (_remainingAfter < 0)
                   Text(_payCents > 0 ? 'المبلغ أكبر من الباقي بـ ${money(-_remainingAfter)}' : 'المدفوع أكبر من التكلفة بـ ${money(-_remainingAfter)}. سجّل مرتجع بالفرق من كارت "الحساب" الأول', style: TextStyle(color: scheme.error).semiBold)
                 else
-                  const Text('الحساب خالص ✅'),
+                  const Text('الحساب مسدد بالكامل ✅'),
                 if (error != null) ...[const SizedBox(height: 12), ErrorBanner(error!)],
               ],
             ),
@@ -478,10 +478,10 @@ class _ApprovalRequestDialogState extends ConsumerState<ApprovalRequestDialog> w
               MoneyField(
                 controller: _total,
                 label: 'التكلفة الجديدة (الإجمالي)',
-                validator: (c) => (c ?? 0) <= 0 ? 'اكتب التكلفة الجديدة' : null,
+                validator: (c) => (c ?? 0) <= 0 ? 'يُرجى إدخال التكلفة الجديدة' : null,
               ),
               const SizedBox(height: 8),
-              const Text('يمكن للعميل الموافقة أو الرفض من صفحة التتبع، أو تسجل رده بنفسك لو رد في التليفون.',
+              const Text('يمكن للعميل الموافقة أو الرفض من صفحة التتبع، كما يمكن تسجيل رده يدوياً إذا أبلغ الموظف برده عبر الهاتف.',
                   style: TextStyle(fontSize: 12)),
               if (error != null) ...[const SizedBox(height: 12), ErrorBanner(error!)],
             ],

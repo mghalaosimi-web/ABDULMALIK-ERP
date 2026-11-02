@@ -45,6 +45,57 @@ void main() {
         'name': name, 'barcode': ?barcode, 'category': 'جرابات', 'costCents': cost, 'priceCents': price, 'qty': qty, 'lowStock': 2,
       }))['product'] as Map<String, dynamic>;
 
+  test('accessories are isolated and newest products and categories appear first', () async {
+    Future<Map<String, dynamic>> createAccessory(String name, String category) async =>
+        (await owner.post('/api/products', {
+          'name': name,
+          'category': 'الأكسسوارات::$category',
+          'costCents': 1000,
+          'priceCents': 2000,
+          'qty': 5,
+          'lowStock': 1,
+        }))['product'] as Map<String, dynamic>;
+
+    final older = await createAccessory('شاحن قديم', 'شواحن');
+    await Future<void>.delayed(const Duration(milliseconds: 25));
+    final newer = await createAccessory('غطاء جديد', 'أغطية مخصصة');
+
+    final accessories = await owner.get('/api/products', query: {'section': 'accessories'});
+    final accessoryIds = (accessories['products'] as List)
+        .map((item) => (item as Map<String, dynamic>)['id'])
+        .toList();
+    expect(accessoryIds, [newer['id'], older['id']]);
+    expect(accessories['count'], 2);
+
+    final general = await owner.get('/api/products', query: {'section': 'general'});
+    final generalIds = (general['products'] as List)
+        .map((item) => (item as Map<String, dynamic>)['id']);
+    expect(generalIds, isNot(contains(older['id'])));
+    expect(generalIds, isNot(contains(newer['id'])));
+
+    final categories = (await owner.get('/api/products/categories'))['categories'] as List;
+    expect(categories.take(2), ['الأكسسوارات::أغطية مخصصة', 'الأكسسوارات::شواحن']);
+
+    await owner.post('/api/products', {
+      'name': 'Zeta general',
+      'category': 'هواتف',
+      'costCents': 1000,
+      'priceCents': 2000,
+      'qty': 1,
+    });
+    await owner.post('/api/products', {
+      'name': 'Alpha general',
+      'category': 'هواتف',
+      'costCents': 1000,
+      'priceCents': 2000,
+      'qty': 1,
+    });
+    final generalNames = (await owner.get('/api/products', query: {'section': 'general'}))['products']
+        .map((item) => item['name'])
+        .toList();
+    expect(generalNames, ['Alpha general', 'Zeta general']);
+  });
+
   test('products: create, barcode lookup, duplicate barcode, low stock', () async {
     final p = await product('جراب A55 شفاف', barcode: '6221234567890', qty: 2);
     expect(p['qty'], 2);

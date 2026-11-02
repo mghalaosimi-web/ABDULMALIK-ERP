@@ -3,8 +3,8 @@ part of 'api_server.dart';
 const walletKinds = {'vodafone', 'etisalat', 'orange', 'we', 'instapay', 'fawry', 'aman', 'other'};
 
 /// حركات المحفظة، وأثر كل حركة على رصيد المحفظة وعلى الدرج.
-/// - cash_in: العميل بيدفع كاش وإحنا بنحوّله على محفظته ← المحفظة تقل، والدرج يزيد (المبلغ + العمولة).
-/// - cash_out: العميل بيحوّل لمحفظتنا وياخد كاش ← المحفظة تزيد، والدرج يقل (المبلغ − العمولة).
+/// - cash_in: العميل بيدفع نقداً وإحنا بنحوّله على محفظته ← المحفظة تقل، والدرج يزيد (المبلغ + العمولة).
+/// - cash_out: العميل بيحوّل لمحفظتنا وياخد نقداً ← المحفظة تزيد، والدرج يقل (المبلغ − العمولة).
 /// - recharge / bill: شحن رصيد أو دفع فاتورة من المحفظة ← المحفظة تقل، والدرج يزيد (المبلغ + العمولة).
 /// - topup: تغذية المحفظة من الدرج ← المحفظة تزيد، والدرج يقل.
 /// - withdraw: سحب من المحفظة للدرج ← المحفظة تقل، والدرج يزيد.
@@ -108,7 +108,7 @@ extension _ServiceRoutes on FixTrackServer {
     if (!walletTxnTypes.contains(type)) throw ApiError(400, 'نوع العملية غير صحيح');
     if (type == 'adjust' && !u.isOwner) throw ApiError(403, 'تسوية الرصيد لصاحب المحل بس');
     final amount = type == 'adjust' ? (body['amountCents'] as int? ?? 0) : _cents(body['amountCents'], 'المبلغ');
-    if (amount == 0 || (type != 'adjust' && amount < 0)) throw ApiError(400, 'اكتب المبلغ');
+    if (amount == 0 || (type != 'adjust' && amount < 0)) throw ApiError(400, 'يُرجى إدخال المبلغ');
     final commission = body['commissionCents'] == null ? 0 : _cents(body['commissionCents'], 'العمولة');
     if (type == 'cash_out' && commission > amount) throw ApiError(400, 'العمولة أكبر من المبلغ');
 

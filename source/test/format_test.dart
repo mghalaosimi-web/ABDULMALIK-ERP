@@ -20,5 +20,14 @@ void main() {
       expect(parseMoney('١٬٢٥٠٫٥ ر.س'), 125050);
       expect(parseMoney('SAR 2,500.75'), 250075);
     });
+
+    test('validates Saudi identity and residency numbers while retaining legacy Egyptian IDs', () {
+      expect(isValidNationalId('١٠٩٨٧٦٥٤٣٢'), isTrue);
+      expect(isValidNationalId('۱۰۹۸۷۶۵۴۳۲'), isTrue);
+      expect(isValidNationalId('2098765432'), isTrue);
+      expect(isValidNationalId('29001011234567'), isTrue);
+      expect(isValidNationalId('123'), isFalse);
+      expect(isValidNationalId('3098765432'), isFalse);
+    });
   });
 }

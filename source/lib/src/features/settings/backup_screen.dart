@@ -46,7 +46,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       path = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('مجلد النسخ الاحتياطية على كمبيوتر الخادم'),
+          title: const Text('مجلد النسخ الاحتياطية على حاسوب الخادم'),
           content: TextField(controller: c, textDirection: TextDirection.ltr, decoration: const InputDecoration(hintText: r'D:\Backups')),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
@@ -67,7 +67,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       context: context,
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.warning_amber_rounded, color: brandOrange, size: 40),
-        title: const Text('ترجيع نسخة قديمة؟'),
+        title: const Text('استعادة نسخة سابقة؟'),
         content: Text('ستعود جميع البيانات إلى حالتها وقت إنشاء النسخة ($name)، وستُحذف أي بيانات أُضيفت بعدها.\n'
             'البرنامج هيحتفظ بنسخة من البيانات الحالية للاحتياط.'),
         actions: [
@@ -79,7 +79,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     if (ok != true) return;
     await _run(
       () => ref.read(sessionProvider).value!.api!.post('/api/backups/restore', {'name': name}),
-      'أغلق البرنامج على كمبيوتر الخادم ثم افتحه مجدداً لإتمام الاستعادة',
+      'أغلق البرنامج على حاسوب الخادم ثم افتحه مجدداً لإتمام الاستعادة',
     );
   }
 
@@ -99,25 +99,25 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
           final backups = (d['backups'] as List).cast<Map<String, dynamic>>();
           return ListView(padding: const EdgeInsets.fromLTRB(20, 4, 20, 24), children: [
             if (d['restorePending'] == true)
-              const Padding(padding: EdgeInsets.only(bottom: 12), child: ErrorBanner('فيه ترجيع مستني: اقفل البرنامج على كمبيوتر السيرفر وافتحه تاني.')),
+              const Padding(padding: EdgeInsets.only(bottom: 12), child: ErrorBanner('هناك عملية استعادة معلّقة؛ أغلق البرنامج على حاسوب الخادم ثم أعد تشغيله.')),
             SectionCard(title: 'الحالة', icon: Icons.shield_rounded, children: [
               Text(last == null ? 'لم يتم إنشاء نسخة احتياطية بعد' : 'آخر نسخة: ${formatDateTime(last)} (${timeAgo(last)})', style: const TextStyle().semiBold),
               const SizedBox(height: 4),
-              const Text('البرنامج بيعمل نسخة لوحده كل يوم، وبيحتفظ بآخر 14 نسخة.'),
+              const Text('ينشئ البرنامج نسخة احتياطية تلقائياً كل يوم، ويحتفظ بأحدث 14 نسخة.'),
               if (err != null) ...[const SizedBox(height: 8), ErrorBanner(err)],
               const SizedBox(height: 12),
               BusyButton(
                 label: 'إنشاء نسخة احتياطية الآن',
                 icon: Icons.backup_rounded,
                 busy: _busy,
-                onPressed: () => _run(() => ref.read(sessionProvider).value!.api!.post('/api/backups'), 'اتعملت نسخة'),
+                onPressed: () => _run(() => ref.read(sessionProvider).value!.api!.post('/api/backups'), 'تم إنشاء النسخة الاحتياطية'),
               ),
             ]),
             const SizedBox(height: 12),
-            SectionCard(title: 'نسخة في مكان تاني', icon: Icons.folder_copy_rounded, children: [
-              const Text('إذا تعطل الكمبيوتر أو سُرق، فستفقد النسخ المحفوظة عليه. اختر مجلداً آخر لحفظ نسخة إضافية:\n'
+            SectionCard(title: 'نسخة احتياطية في موقع آخر', icon: Icons.folder_copy_rounded, children: [
+              const Text('إذا تعطل الحاسوب أو سُرق، فستفقد النسخ المحفوظة عليه. اختر مجلداً آخر لحفظ نسخة إضافية:\n'
                   '• فلاشة أو هارد خارجي\n'
-                  '• أو مجلد Google Drive على الكمبيوتر (إذا كان التطبيق مثبتاً) لحفظ نسخة عبر الإنترنت.'),
+                  '• أو مجلد Google Drive على الحاسوب (إذا كان التطبيق مثبتاً) لحفظ نسخة عبر الإنترنت.'),
               const SizedBox(height: 12),
               if (external != null) Text(external, textDirection: TextDirection.ltr, style: TextStyle(color: scheme.primary).semiBold),
               const SizedBox(height: 8),

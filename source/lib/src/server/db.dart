@@ -160,7 +160,7 @@ const _migrations = <String>[
   ''',
 
   // v2: العملاء، والأجهزة (الوصولات)، ومراحلها، والدفعات
-  // الفلوس كلها بالقروش (INTEGER) عشان نتجنب أخطاء الكسور.
+  // النقود كلها بالقروش (INTEGER) لتجنب أخطاء الكسور.
   '''
   CREATE TABLE customers (
     id          TEXT PRIMARY KEY,
@@ -271,7 +271,7 @@ const _migrations = <String>[
   ALTER TABLE tickets ADD COLUMN sync_dirty INTEGER NOT NULL DEFAULT 1;
   CREATE INDEX idx_tickets_sync ON tickets(sync_dirty);
   CREATE INDEX idx_tickets_pickup ON tickets(pickup_at);
-  -- أي تعديل على الجهاز بيعلّمه إنه محتاج يتبعت لصفحة التتبع تاني
+  -- أي تعديل على الجهاز بيعلّمه إنه محتاج يتبعت لصفحة التتبع مرة أخرى
   CREATE TRIGGER trg_tickets_dirty AFTER UPDATE ON tickets
   WHEN NEW.sync_dirty = 0 AND OLD.sync_dirty = 0
   BEGIN
@@ -435,7 +435,7 @@ const _migrations = <String>[
   );
   CREATE INDEX idx_supplier_payments_supplier ON supplier_payments(supplier_id);
 
-  -- كل جهاز لوحده (موبايل جديد أو مستعمل) بالـ IMEI بتاعه، من الشرا لحد البيع
+  -- كل جهاز لوحده (هاتف محمول جديد أو مستعمل) بالـ IMEI بتاعه، من الشرا لحد البيع
   CREATE TABLE units (
     id                  TEXT PRIMARY KEY,
     product_id          TEXT NOT NULL REFERENCES products(id),
@@ -533,5 +533,22 @@ const _migrations = <String>[
   // v8: صور الأصناف والهواتف في المخزون
   '''
   ALTER TABLE products ADD COLUMN image_file_id TEXT REFERENCES files(id);
+  ''',
+
+  // v9: توحيد أرقام الهواتف السعودية المخزنة سابقاً بصيغة دولية أو محلية مختصرة.
+  '''
+  UPDATE customers
+  SET phone_norm = CASE
+    WHEN length(phone_norm) = 14 AND substr(phone_norm, 1, 5) = '00966'
+      THEN '0' || substr(phone_norm, 6)
+    WHEN length(phone_norm) = 12 AND substr(phone_norm, 1, 3) = '966'
+      THEN '0' || substr(phone_norm, 4)
+    WHEN length(phone_norm) = 9 AND substr(phone_norm, 1, 1) = '5'
+      THEN '0' || phone_norm
+    ELSE phone_norm
+  END
+  WHERE (length(phone_norm) = 14 AND substr(phone_norm, 1, 5) = '00966')
+     OR (length(phone_norm) = 12 AND substr(phone_norm, 1, 3) = '966')
+     OR (length(phone_norm) = 9 AND substr(phone_norm, 1, 1) = '5');
   ''',
 ];

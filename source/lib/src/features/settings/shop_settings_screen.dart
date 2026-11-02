@@ -22,7 +22,7 @@ const paperLabels = {
   'a4': 'ورق A4',
 };
 
-/// بيانات المحل اللي بتظهر في الوصل والرسائل (لصاحب المحل بس).
+/// بيانات المحل اللي بتظهر في الإيصال والرسائل (لصاحب المحل بس).
 class ShopSettingsScreen extends ConsumerWidget {
   const ShopSettingsScreen({super.key});
 
@@ -30,7 +30,7 @@ class ShopSettingsScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final shop = ref.watch(shopProvider);
     return Scaffold(
-      appBar: AppBar(title: const Text('بيانات المحل والوصل')),
+      appBar: AppBar(title: const Text('بيانات المحل والإيصال')),
       body: shop.when(
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Padding(padding: const EdgeInsets.all(20), child: ErrorBanner(errorText(e)))),
@@ -114,7 +114,7 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
         const XTypeGroup(label: 'صور', extensions: ['png', 'jpg', 'jpeg', 'webp'], mimeTypes: ['image/*']),
       ],
     );
-    DiagLog.app?.write('INFO', file == null ? 'نافذة اختيار اللوجو اتقفلت من غير اختيار' : 'اتختار لوجو');
+    DiagLog.app?.write('INFO', file == null ? 'أُغلقت نافذة اختيار الشعار دون تحديد ملف' : 'تم اختيار الشعار');
     if (file == null) return;
     setState(() => _logoBusy = true);
     try {
@@ -131,7 +131,7 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
       if (png == null) throw Exception('هذا الملف ليس صورة');
       await ref.read(sessionProvider).value!.api!.put('/api/shop/logo', {'png': base64.encode(png)});
       ref.invalidate(shopProvider);
-      if (mounted) showMessage(context, 'اتحفظ اللوجو');
+      if (mounted) showMessage(context, 'تم حفظ الشعار');
     } catch (e) {
       if (mounted) showMessage(context, e is Exception ? e.toString().replaceFirst('Exception: ', '') : errorText(e), error: true);
     } finally {
@@ -182,7 +182,7 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('بيظهر فوق في الوصل. الأحسن صورة بخلفية بيضا أو شفافة.'),
+                                const Text('يظهر أعلى الإيصال. يُفضّل استخدام صورة بخلفية بيضاء أو شفافة.'),
                                 const SizedBox(height: 8),
                                 Wrap(spacing: 8, children: [
                                   FilledButton.tonalIcon(
@@ -209,13 +209,13 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
                       TextFormField(
                         controller: _name,
                         decoration: const InputDecoration(labelText: 'اسم المحل'),
-                        validator: (v) => (v ?? '').trim().isEmpty ? 'لازم تكتب اسم المحل' : null,
+                        validator: (v) => (v ?? '').trim().isEmpty ? 'يُرجى إدخال اسم المحل' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(
                         controller: _branch,
                         decoration: const InputDecoration(labelText: 'اسم الفرع'),
-                        validator: (v) => (v ?? '').trim().isEmpty ? 'لازم تكتب اسم الفرع' : null,
+                        validator: (v) => (v ?? '').trim().isEmpty ? 'يُرجى إدخال اسم الفرع' : null,
                       ),
                       const SizedBox(height: 12),
                       TextFormField(controller: _phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'رقم هاتف المحل')),
@@ -225,7 +225,7 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
                   ),
                   const SizedBox(height: 12),
                   SectionCard(
-                    title: 'الوصل',
+                    title: 'الإيصال',
                     icon: Icons.receipt_long_rounded,
                     children: [
                       Text('مقاس الورق', style: const TextStyle().semiBold),
@@ -239,7 +239,7 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
                         controller: _terms,
                         minLines: 3,
                         maxLines: 8,
-                        decoration: const InputDecoration(labelText: 'الشروط اللي بتتطبع تحت الوصل', alignLabelWithHint: true),
+                        decoration: const InputDecoration(labelText: 'الشروط التي تُطبع أسفل الإيصال', alignLabelWithHint: true),
                       ),
                     ],
                   ),
@@ -252,14 +252,14 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
                     children: [
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('الكاشير يقدر يعمل خصم ويغيّر السعر'),
-                        subtitle: const Text('لو اتقفلت، الخصم لصاحب المحل بس'),
+                        title: const Text('يُسمح لأمين الصندوق بتطبيق الخصومات وتعديل السعر'),
+                        subtitle: const Text('عند تعطيل هذا الخيار، تقتصر صلاحية الخصم على مالك المحل.'),
                         value: _cashierDiscount,
                         onChanged: (v) => setState(() => _cashierDiscount = v),
                       ),
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
-                        title: const Text('السماح بالبيع لو الكمية في البرنامج خلصت'),
+                        title: const Text('السماح بالبيع عند نفاد الكمية المسجلة في النظام'),
                         subtitle: const Text('مفيد إذا كانت هناك بضائع لم تُسجّل بعد'),
                         value: _negativeStock,
                         onChanged: (v) => setState(() => _negativeStock = v),
@@ -306,7 +306,7 @@ extension on _ShopFormState {
       title: 'مواعيد استلام العملاء',
       icon: Icons.event_available_rounded,
       children: [
-        const Text('العميل بيحجز معاد يستلم فيه جهازه من صفحة التتبع، في الأيام والساعات دي بس.'),
+        const Text('يمكن للعميل حجز موعد لاستلام جهازه عبر صفحة التتبع خلال الأيام والساعات المحددة فقط.'),
         const SizedBox(height: 12),
         Wrap(spacing: 6, runSpacing: 6, children: [
           for (var d = 0; d < 7; d++)

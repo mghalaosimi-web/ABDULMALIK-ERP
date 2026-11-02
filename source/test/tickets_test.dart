@@ -96,6 +96,12 @@ void main() {
     expect(customers['customers'][0]['ticketsCount'], 2);
   });
 
+  test('Saudi customer phone lookup accepts local and international formats', () async {
+    final ticket = await intake(phone: '+966 50 123 4567');
+    final lookup = await owner.get('/api/customers/lookup', query: {'phone': '0501234567'});
+    expect(lookup['customer']['id'], ticket['customerId']);
+  });
+
   test('search by number, phone, name, model', () async {
     await intake();
     for (final q in ['1001', '01001234567', 'أحمد', 'A55']) {
@@ -216,7 +222,10 @@ void main() {
     expect(SecretBox(List<int>.filled(32, 7)).open(sealed), isNull, reason: 'wrong key');
   });
 
-  test('phone normalization', () {
+  test('phone normalization supports Saudi numbers and legacy Egyptian records', () {
+    expect(normalizePhone('+966 50 123 4567'), '0501234567');
+    expect(normalizePhone('00966-50-123-4567'), '0501234567');
+    expect(normalizePhone('501234567'), '0501234567');
     expect(normalizePhone('+20 100 123 4567'), '01001234567');
     expect(normalizePhone('٠١٠٠١٢٣٤٥٦٧'), '01001234567');
     expect(normalizePhone('0020-100-123-4567'), '01001234567');

@@ -17,18 +17,18 @@ final reportProvider = FutureProvider.autoDispose.family<Map<String, dynamic>, (
 List<ReportRange> _presets() {
   final n = DateTime.now();
   final today = DateTime(n.year, n.month, n.day);
-  final weekStart = today.subtract(Duration(days: (today.weekday + 1) % 7)); // الأسبوع بيبدأ السبت
+  final weekStart = today.subtract(Duration(days: (today.weekday + 1) % 7)); // يبدأ الأسبوع يوم السبت
   return [
-    (from: today, to: today.add(const Duration(days: 1)), label: 'النهارده'),
-    (from: today.subtract(const Duration(days: 1)), to: today, label: 'امبارح'),
-    (from: weekStart, to: today.add(const Duration(days: 1)), label: 'الأسبوع ده'),
-    (from: DateTime(n.year, n.month), to: today.add(const Duration(days: 1)), label: 'الشهر ده'),
-    (from: DateTime(n.year, n.month - 1), to: DateTime(n.year, n.month), label: 'الشهر اللي فات'),
-    (from: DateTime(n.year), to: today.add(const Duration(days: 1)), label: 'السنة دي'),
+    (from: today, to: today.add(const Duration(days: 1)), label: 'اليوم'),
+    (from: today.subtract(const Duration(days: 1)), to: today, label: 'أمس'),
+    (from: weekStart, to: today.add(const Duration(days: 1)), label: 'هذا الأسبوع'),
+    (from: DateTime(n.year, n.month), to: today.add(const Duration(days: 1)), label: 'هذا الشهر'),
+    (from: DateTime(n.year, n.month - 1), to: DateTime(n.year, n.month), label: 'الشهر السابق'),
+    (from: DateTime(n.year), to: today.add(const Duration(days: 1)), label: 'هذا العام'),
   ];
 }
 
-/// التقارير (لصاحب المحل): الربح، والمبيعات، والصيانة، والفنيين، والمصروفات، والمخزون، والديون.
+/// التقارير (لصاحب المحل): الربح، والمبيعات، والصيانة، والفنيون، والمصروفات، والمخزون، والديون.
 class ReportsScreen extends ConsumerStatefulWidget {
   const ReportsScreen({super.key});
 
@@ -86,7 +86,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                 padding: const EdgeInsetsDirectional.only(end: 6),
                 child: ChoiceChip(label: Text(p.label), selected: _range.label == p.label, onSelected: (_) => setState(() => _range = p)),
               ),
-            ActionChip(avatar: const Icon(Icons.date_range_rounded, size: 18), label: const Text('فترة تانية'), onPressed: _pickCustom),
+            ActionChip(avatar: const Icon(Icons.date_range_rounded, size: 18), label: const Text('فترة مخصصة'), onPressed: _pickCustom),
           ]),
         ),
         Expanded(
@@ -152,19 +152,19 @@ class _ReportBody extends StatelessWidget {
               ),
             );
         return Wrap(spacing: 12, runSpacing: 12, children: [
-          tile('المبيعات', sales['revenueCents'] as int, '${sales['count']} فاتورة • ربح ${money(sales['profitCents'] as int)}'),
-          tile('الصيانة', repairs['revenueCents'] as int, '${repairs['delivered']} جهاز اتسلم • ربح ${money(repairs['profitCents'] as int)}'),
-          tile('عمولات المحافظ', services['commissionCents'] as int, '${(services['byWallet'] as List).fold<int>(0, (s, w) => s + (w['count'] as int))} عملية'),
-          tile('المصروفات', expenses['totalCents'] as int, '${(expenses['byCategory'] as List).length} بند'),
+          tile('المبيعات', sales['revenueCents'] as int, 'عدد الفواتير: ${sales['count']} • الربح ${money(sales['profitCents'] as int)}'),
+          tile('الصيانة', repairs['revenueCents'] as int, 'عدد الأجهزة المسلّمة: ${repairs['delivered']} • ربح ${money(repairs['profitCents'] as int)}'),
+          tile('عمولات المحافظ', services['commissionCents'] as int, 'عدد العمليات: ${(services['byWallet'] as List).fold<int>(0, (s, w) => s + (w['count'] as int))}'),
+          tile('المصروفات', expenses['totalCents'] as int, 'عدد البنود: ${(expenses['byCategory'] as List).length}'),
         ]);
       }),
       const SizedBox(height: 12),
-      SectionCard(title: 'الدخل يوم بيوم (مبيعات + صيانة)', icon: Icons.bar_chart_rounded, children: [
+      SectionCard(title: 'الإيرادات اليومية (المبيعات والصيانة)', icon: Icons.bar_chart_rounded, children: [
         _DailyBars(days: (r['daily'] as List).cast<Map<String, dynamic>>()),
       ]),
       const SizedBox(height: 12),
       _TableCard(
-        title: 'أكتر الأصناف مبيعاً',
+        title: 'أكثر الأصناف مبيعاً',
         icon: Icons.local_mall_rounded,
         headers: const ['الصنف', 'الكمية', 'المبيعات', 'الربح'],
         rows: [
@@ -175,9 +175,9 @@ class _ReportBody extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       _TableCard(
-        title: 'الفنيين',
+        title: 'الفنيون',
         icon: Icons.engineering_rounded,
-        headers: const ['الفني', 'أجهزة', 'ربح الصيانة', 'العمولة', 'مرتجع ضمان', 'متوسط الوقت'],
+        headers: const ['الفني', 'عدد الأجهزة', 'ربح الصيانة', 'العمولة', 'مرتجعات الضمان', 'متوسط الوقت'],
         rows: [
           for (final t in techs)
             [
@@ -189,22 +189,22 @@ class _ReportBody extends StatelessWidget {
               '${t['avgHours']} ساعة',
             ],
         ],
-        empty: 'لا توجد أجهزة تم تسليمها خلال هذه الفترة',
+        empty: 'لا توجد أجهزة سُلّمت خلال هذه الفترة',
       ),
       const SizedBox(height: 12),
       LayoutBuilder(builder: (context, c) {
         final two = c.maxWidth >= 800;
         final problems = _TableCard(
-          title: 'أكتر الأعطال',
+          title: 'الأعطال الأكثر تكراراً',
           icon: Icons.report_problem_rounded,
-          headers: const ['العطل', 'مرات'],
+          headers: const ['العطل', 'عدد مرات الحدوث'],
           rows: [for (final p in (repairs['topProblems'] as List).cast<Map<String, dynamic>>()) [p['name'] as String, '${p['count']}']],
           empty: '—',
         );
         final models = _TableCard(
           title: 'أكثر الطرازات دخولاً للصيانة',
           icon: Icons.phone_android_rounded,
-          headers: const ['الموديل', 'مرات'],
+          headers: const ['الطراز', 'عدد مرات الحدوث'],
           rows: [for (final p in (repairs['topModels'] as List).cast<Map<String, dynamic>>()) [p['name'] as String, '${p['count']}']],
           empty: '—',
         );
@@ -228,11 +228,11 @@ class _ReportBody extends StatelessWidget {
         rows: [for (final w in (services['byWallet'] as List).cast<Map<String, dynamic>>()) [w['name'] as String, '${w['count']}', money(w['commission'] as int)]],
         empty: 'لا توجد عمليات',
       ),
-      const SectionTitle('حالياً'),
+      const SectionTitle('الأرصدة الحالية'),
       _TableCard(
-        title: 'فلوس ليك برا (ديون العملاء): ${money(receivables['totalCents'] as int)}',
+        title: 'المبالغ المستحقة على العملاء: ${money(receivables['totalCents'] as int)}',
         icon: Icons.call_received_rounded,
-        headers: const ['العميل', 'رقم الهاتف', 'عليه'],
+        headers: const ['العميل', 'رقم الهاتف', 'الرصيد المستحق'],
         rows: [
           for (final c in (receivables['customers'] as List).cast<Map<String, dynamic>>())
             [c['name'] as String, c['phone'] as String? ?? '', money(c['balanceCents'] as int)],
@@ -241,7 +241,7 @@ class _ReportBody extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       _TableCard(
-        title: 'فلوس عليك للموردين: ${money(payables['totalCents'] as int)}',
+        title: 'المبالغ المستحقة للموردين: ${money(payables['totalCents'] as int)}',
         icon: Icons.call_made_rounded,
         headers: const ['المورد', 'المبلغ المستحق'],
         rows: [for (final s in (payables['suppliers'] as List).cast<Map<String, dynamic>>()) [s['name'] as String, money(s['balanceCents'] as int)]],
@@ -249,11 +249,11 @@ class _ReportBody extends StatelessWidget {
       ),
       const SizedBox(height: 12),
       _TableCard(
-        title: 'بضاعة واقفة (ما اتباعتش من 60 يوم) • قيمة المخزون كله ${money(stock['valueCents'] as int)}',
+        title: 'المخزون الراكد (أصناف لم تُبع خلال 60 يوماً) • إجمالي قيمة المخزون ${money(stock['valueCents'] as int)}',
         icon: Icons.inventory_rounded,
-        headers: const ['الصنف', 'الكمية', 'قيمتها'],
+        headers: const ['الصنف', 'الكمية', 'قيمة المخزون'],
         rows: [for (final d in (stock['deadStock'] as List).cast<Map<String, dynamic>>()) [d['name'] as String, '${d['qty']}', money(d['value'] as int)]],
-        empty: 'لا توجد بضائع راكدة 👍',
+        empty: 'لا توجد بضائع راكدة.',
       ),
     ]);
   }

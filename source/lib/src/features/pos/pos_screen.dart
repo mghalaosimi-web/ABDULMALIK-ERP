@@ -20,7 +20,7 @@ import '../receipts/print_service.dart';
 import 'cart.dart';
 import 'providers.dart';
 
-/// شاشة الكاشير: مسح باركود أو بحث ← السلة ← الدفع ← الفاتورة.
+/// شاشة أمين الصندوق: مسح باركود أو بحث ← السلة ← الدفع ← الفاتورة.
 class PosScreen extends ConsumerStatefulWidget {
   const PosScreen({super.key});
 
@@ -120,7 +120,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: const Text('الكاشير'),
+          title: const Text('أمين الصندوق'),
           actions: [
             if (!cart.isEmpty)
               TextButton.icon(
@@ -175,7 +175,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
             autofocus: true,
             textInputAction: TextInputAction.done,
             decoration: InputDecoration(
-              hintText: cameraScanSupported ? 'امسح الباركود أو اكتب اسم الصنف' : 'امسح الباركود أو اكتب اسم الصنف (F2)',
+              hintText: cameraScanSupported ? 'امسح الرمز الشريطي أو أدخل اسم الصنف' : 'امسح الرمز الشريطي أو أدخل اسم الصنف (F2)',
               prefixIcon: const Icon(Icons.qr_code_scanner_rounded),
               suffixIcon: cameraScanSupported
                   ? IconButton(tooltip: 'مسح بالكاميرا', icon: const Icon(Icons.photo_camera_rounded), onPressed: _scan)
@@ -310,7 +310,7 @@ class _CartPanel extends ConsumerWidget {
           const Divider(height: 1),
           Expanded(
             child: cart.isEmpty
-                ? Center(child: Text('الفاتورة فاضية', style: TextStyle(color: scheme.onSurfaceVariant)))
+                ? Center(child: Text('سلة المبيعات فارغة', style: TextStyle(color: scheme.onSurfaceVariant)))
                 : ListView.separated(
                     padding: const EdgeInsets.symmetric(vertical: 4),
                     itemCount: cart.lines.length,
@@ -402,7 +402,7 @@ class _CartPanel extends ConsumerWidget {
                     controlAffinity: ListTileControlAffinity.leading,
                     value: ref.watch(_autoPrintProvider),
                     onChanged: (v) => ref.read(_autoPrintProvider.notifier).set(v ?? true),
-                    title: const Text('اطبع الفاتورة بعد البيع على طول'),
+                    title: const Text('طباعة الفاتورة تلقائياً بعد إتمام البيع'),
                   );
                 }),
               ],
@@ -453,7 +453,7 @@ Future<int?> _askInt(BuildContext context, String title, int initial) async {
   return r;
 }
 
-/// الدفع: كاش (ويحسب الباقي للزبون) أو محفظة أو فيزا، أو جزء والباقي آجل على العميل.
+/// الدفع: نقداً (مع احتساب المبلغ المتبقي للعميل) أو محفظة أو فيزا، أو جزء والباقي آجل على العميل.
 class _PaymentDialog extends ConsumerStatefulWidget {
   const _PaymentDialog();
 
@@ -544,12 +544,12 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
                   value: _credit,
                   onChanged: (v) => setState(() => _credit = v ?? false),
                   title: const Text('آجل (سيدفع العميل جزءاً من المبلغ أو لن يدفع الآن)'),
-                  subtitle: Text(cart.customer == null ? 'لازم تختار العميل الأول' : 'على: ${cart.customer!.name}'),
+                  subtitle: Text(cart.customer == null ? 'يجب اختيار العميل أولاً.' : 'على: ${cart.customer!.name}'),
                 ),
                 if (_credit) ...[
                   MoneyField(controller: _creditPaid, label: 'المبلغ المدفوع الآن', onChanged: (_) => setState(() {})),
                   const SizedBox(height: 6),
-                  Text('هيتسجل على العميل: ${money((total - (parseMoney(_creditPaid.text) ?? 0)).clamp(0, total))}', style: const TextStyle().semiBold),
+                  Text('سيُسجّل على العميل: ${money((total - (parseMoney(_creditPaid.text) ?? 0)).clamp(0, total))}', style: const TextStyle().semiBold),
                 ],
                 if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],
               ],

@@ -76,7 +76,7 @@ class _MessagesFormState extends ConsumerState<_MessagesForm> {
         'device': 'Samsung Galaxy A55',
         'number': '1042',
         'pin': '4821',
-        'status': 'جاري الإصلاح',
+        'status': 'قيد الإصلاح',
         'due': 'غداً، 6:00 م',
         'total': '2,500 ر.س',
         'paid': '500 ر.س',
