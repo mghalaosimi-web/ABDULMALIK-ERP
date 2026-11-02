@@ -24,7 +24,7 @@ final _transfersProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref
   return apiOf(ref).get('/api/org/transfers');
 });
 
-/// الفروع: ربط فروع المحل، وملخص كل فرع، والمخزون في الفروع التانية، والتحويلات.
+/// الفروع: ربط فروع المحل، وعرض ملخص كل فرع، ومخزون الفروع الأخرى، والتحويلات.
 class BranchesScreen extends ConsumerWidget {
   const BranchesScreen({super.key});
 
@@ -104,7 +104,7 @@ class _NotLinkedState extends ConsumerState<_NotLinked> {
             ]),
             const SizedBox(height: 12),
             SectionCard(title: 'فرع تاني', icon: Icons.link_rounded, children: [
-              const Text('لو فيه مجموعة معمولة بالفعل: من الفرع الأول اضغط على "كود ربط فرع جديد"، واكتب الكود هنا.'),
+              const Text('إذا كانت هناك مجموعة فروع مُعدّة مسبقاً: من الفرع الأول اضغط على "رمز ربط فرع جديد"، ثم أدخل الرمز هنا.'),
               const SizedBox(height: 12),
               TextField(
                 controller: _code,
