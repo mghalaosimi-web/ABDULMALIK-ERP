@@ -13,7 +13,7 @@ val keyProperties = Properties().apply {
 }
 
 android {
-    namespace = "com.fixtrack.fixtrack"
+    namespace = "com.abdulmalik.erp"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -24,7 +24,7 @@ android {
 
     defaultConfig {
         // ماينفعش يتغير بعد ما التطبيق يتوزع، وإلا التحديثات مش هتتسطب فوق النسخة القديمة.
-        applicationId = "com.fixtrack.app"
+        applicationId = "com.abdulmalik.erp"
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
