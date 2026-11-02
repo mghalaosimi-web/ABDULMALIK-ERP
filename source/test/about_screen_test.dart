@@ -13,6 +13,9 @@ void main() {
     ));
 
     expect(find.text('عن المشروع والفريق'), findsOneWidget);
+    expect(find.text('M.GH.AL'), findsOneWidget);
+    expect(find.text('للبرمجيات والأنظمة والتطبيقات'), findsOneWidget);
+    expect(find.textContaining('شارة توثيق تعريفية للمشروع'), findsOneWidget);
     expect(find.text('فريق العمل والهيكل الأكاديمي والتقني للمشروع'), findsOneWidget);
     expect(find.text('أولاً: اللجنة الأكاديمية والاستشارية'), findsOneWidget);
     expect(find.text('ثانياً: فريق الهندسة والتطوير'), findsOneWidget);
@@ -28,5 +31,12 @@ void main() {
     expect(find.text('محمد غالب العصيمي'), findsOneWidget);
     expect(find.text('رمزي محمد الصرابي'), findsOneWidget);
     expect(find.text('عرفات الكاملي'), findsOneWidget);
+
+    // Biographies are collapsed by default and expand on demand.
+    expect(find.text('المسؤوليات والمهام'), findsNothing);
+    await tester.tap(find.text('الأستاذ الدكتور أحمد الناشري'));
+    await tester.pumpAndSettle();
+    expect(find.text('المسؤوليات والمهام'), findsOneWidget);
+    expect(find.text('المؤهلات والخبرات'), findsOneWidget);
   });
 }
