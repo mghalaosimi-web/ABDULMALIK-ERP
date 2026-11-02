@@ -529,4 +529,9 @@ const _migrations = <String>[
   -- الأجهزة اللي جاهزة من قبل التحديث: بنعتبر آخر تعديل هو وقت ما بقت جاهزة
   UPDATE tickets SET ready_at = updated_at WHERE status IN ('ready', 'cancelled', 'unrepairable');
   ''',
+
+  // v8: صور الأصناف والهواتف في المخزون
+  '''
+  ALTER TABLE products ADD COLUMN image_file_id TEXT REFERENCES files(id);
+  ''',
 ];
