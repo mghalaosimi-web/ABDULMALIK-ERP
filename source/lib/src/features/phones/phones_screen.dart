@@ -22,7 +22,7 @@ import '../../widgets/ticket_widgets.dart';
 import '../pos/providers.dart';
 import '../receipts/print_service.dart';
 
-/// الأجهزة المحمولة الجديدة والمستعملة اللي في المحل، كل جهاز بالـ IMEI بتاعه.
+/// الأجهزة المحمولة الجديدة والمستعملة في المحل، مع تسجيل رقم IMEI لكل جهاز.
 class PhonesScreen extends ConsumerStatefulWidget {
   const PhonesScreen({super.key});
 
@@ -61,7 +61,7 @@ class _PhonesScreenState extends ConsumerState<PhonesScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const BuyUsedScreen())),
         icon: const Icon(Icons.add_shopping_cart_rounded),
-        label: const Text('شرا موبايل مستعمل'),
+        label: const Text('شراء جهاز مستعمل'),
       ),
       body: Column(children: [
         Padding(
@@ -99,7 +99,7 @@ class _PhonesScreenState extends ConsumerState<PhonesScreen> {
             data: (list) => list.isEmpty
                 ? const EmptyState(
                     icon: Icons.phone_iphone_rounded,
-                    message: 'مفيش موبايلات هنا.\nالأجهزة المحمولة الجديدة بتدخل من "المشتريات"، والمستعملة من زرار "شرا موبايل مستعمل".',
+                    message: 'لا توجد أجهزة هنا.\nتُضاف الأجهزة الجديدة من شاشة "المشتريات"، أما الأجهزة المستعملة فتُسجّل من زر "شراء جهاز مستعمل".',
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
@@ -131,7 +131,7 @@ class _UnitTile extends StatelessWidget {
           child: Icon(Icons.phone_iphone_rounded, color: u.isUsed ? brandOrange : scheme.primary),
         ),
         title: Text(u.productName, style: const TextStyle().semiBold),
-        subtitle: Text(['IMEI ${u.imei}', if (u.details.isNotEmpty) u.details, if (showCost && u.costCents != null) 'شرا ${money(u.costCents!)}'].join(' • ')),
+        subtitle: Text(['IMEI ${u.imei}', if (u.details.isNotEmpty) u.details, if (showCost && u.costCents != null) 'شراء ${money(u.costCents!)}'].join(' • ')),
         trailing: Column(mainAxisAlignment: MainAxisAlignment.center, crossAxisAlignment: CrossAxisAlignment.end, children: [
           Text(money(u.priceCents), style: TextStyle(color: scheme.primary).bold),
           if (u.status == 'sold') Text('اتباع ${u.soldAt != null ? formatDay(u.soldAt!) : ''}', style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant)),
@@ -271,7 +271,7 @@ class _ImeiCheckDialogState extends ConsumerState<ImeiCheckDialog> {
               keyboardType: TextInputType.number,
               textDirection: TextDirection.ltr,
               decoration: InputDecoration(
-                hintText: 'اكتب الـ IMEI (اطلب *#06# على الموبايل)',
+                hintText: 'أدخل رقم IMEI (اطلب الرمز *#06# على الهاتف)',
                 suffixIcon: Row(mainAxisSize: MainAxisSize.min, children: [
                   if (cameraScanSupported)
                     IconButton(
@@ -311,9 +311,9 @@ class _ImeiCheckDialogState extends ConsumerState<ImeiCheckDialog> {
                       Text('${u.productName} • ${u.status == 'sold' ? 'اتباع' : 'في المحل'}', style: const TextStyle().bold),
                       if (u.details.isNotEmpty) Text(u.details),
                       Text(u.source == 'customer'
-                          ? 'اتشرا من: ${u.sellerName ?? ''} • ${u.sellerPhone ?? ''}'
+                          ? 'تم الشراء من: ${u.sellerName ?? ''} • ${u.sellerPhone ?? ''}'
                           : u.supplierName != null
-                              ? 'اتشرا من المورد: ${u.supplierName}'
+                              ? 'تم الشراء من المورد: ${u.supplierName}'
                               : 'اتضاف للمخزون'),
                       if (u.sellerNationalId != null) Text('الرقم القومي: ${u.sellerNationalId}', textDirection: TextDirection.rtl),
                       if (u.createdAt != null) Text('دخل المحل: ${formatDateTime(u.createdAt!)}'),
@@ -328,7 +328,7 @@ class _ImeiCheckDialogState extends ConsumerState<ImeiCheckDialog> {
                         TextButton.icon(
                           onPressed: () => printUsedPurchase(context, ref, u),
                           icon: const Icon(Icons.print_rounded),
-                          label: const Text('طباعة إيصال الشرا'),
+                          label: const Text('طباعة إيصال الشراء'),
                         ),
                     ]),
                   ),
@@ -379,7 +379,7 @@ Future<String?> captureAndUploadPhoto(BuildContext context, WidgetRef ref, Strin
   if (Platform.isAndroid || Platform.isIOS) {
     file = await ImagePicker().pickImage(source: ImageSource.camera, maxWidth: 1600, imageQuality: 80);
   } else {
-    // بنفتح على فولدر الصور اللي على الجهاز، مش آخر فولدر (لو كان موبايل متوصل أو فولدر شبكة، ويندوز ممكن يعلّق فيه)
+    // نفتح مجلد الصور على الجهاز بدلاً من آخر مجلد مستخدم؛ فقد يتسبب اختيار جهاز محمول متصل أو مجلد شبكة في توقف Windows عن الاستجابة.
     final pictures = '${Platform.environment['USERPROFILE'] ?? ''}\\Pictures';
     FreezeWatchdog.action('نافذة اختيار صورة من ويندوز');
     DiagLog.app?.write('INFO', 'فتح نافذة اختيار صورة');
@@ -393,7 +393,7 @@ Future<String?> captureAndUploadPhoto(BuildContext context, WidgetRef ref, Strin
   }
   if (file == null) return null;
   final raw = await file.readAsBytes();
-  // التصغير في Isolate لوحده: صورة موبايل 12 ميجابكسل بتاخد ثواني، والشاشة ماينفعش تقف
+  // تتم عملية التصغير في Isolate مستقل؛ فقد تستغرق معالجة صورة هاتف بدقة 12 ميجابكسل عدة ثوانٍ، ويجب ألا تتوقف الشاشة عن الاستجابة.
   final bytes = await Isolate.run(() {
     final decoded = img.decodeImage(raw);
     if (decoded == null) return null;
@@ -405,7 +405,7 @@ Future<String?> captureAndUploadPhoto(BuildContext context, WidgetRef ref, Strin
   return res['id'] as String;
 }
 
-/// شرا موبايل مستعمل من زبون: الجهاز والـ IMEI، وبيانات البائع وصورة بطاقته، والسعر.
+/// تسجيل شراء جهاز مستعمل من عميل: بيانات الجهاز ورقم IMEI، وبيانات البائع وصورة هويته، والسعر.
 class BuyUsedScreen extends ConsumerStatefulWidget {
   const BuyUsedScreen({super.key});
 
@@ -493,7 +493,7 @@ class _BuyUsedScreenState extends ConsumerState<BuyUsedScreen> {
         builder: (context) => AlertDialog(
           icon: const Icon(Icons.check_circle_rounded, color: Color(0xFF16A34A), size: 48),
           title: const Text('اتسجل الجهاز'),
-          content: Text('${unit.productName}\nIMEI ${unit.imei}\nادفع للبائع ${money(unit.costCents ?? 0)} من الخزنة.\nاطبع الإيصال وخلّي البائع يمضي عليه.'),
+          content: Text('${unit.productName}\nIMEI ${unit.imei}\nادفع للبائع مبلغ ${money(unit.costCents ?? 0)} من الصندوق.\nاطبع الإيصال واطلب من البائع التوقيع عليه.'),
           actions: [
             OutlinedButton.icon(onPressed: () => printUsedPurchase(context, ref, unit), icon: const Icon(Icons.print_rounded), label: const Text('طباعة الإيصال')),
             FilledButton(onPressed: () => Navigator.pop(context), child: const Text('تمام')),
@@ -614,7 +614,7 @@ class _BuyUsedScreenState extends ConsumerState<BuyUsedScreen> {
     ]);
 
     return Scaffold(
-      appBar: AppBar(title: const Text('شرا موبايل مستعمل')),
+      appBar: AppBar(title: const Text('شراء جهاز مستعمل')),
       body: Form(
         key: _form,
         child: ListView(padding: const EdgeInsets.fromLTRB(20, 4, 20, 24), children: [
@@ -629,7 +629,7 @@ class _BuyUsedScreenState extends ConsumerState<BuyUsedScreen> {
           const SizedBox(height: 16),
           Align(
             alignment: AlignmentDirectional.centerEnd,
-            child: SizedBox(width: wide ? 320 : double.infinity, child: BusyButton(label: 'تسجيل الشرا', icon: Icons.check_rounded, busy: _busy, onPressed: _save)),
+            child: SizedBox(width: wide ? 320 : double.infinity, child: BusyButton(label: 'تسجيل الشراء', icon: Icons.check_rounded, busy: _busy, onPressed: _save)),
           ),
         ]),
       ),
