@@ -15,8 +15,8 @@ import 'receipt_pdf.dart';
 
 enum PrintKind { receipt, sticker }
 
-/// بيطبع الوصل أو الستيكر. لو الجهاز ده ليه طابعة محفوظة بيطبع عليها على طول،
-/// وإلا بيفتح شاشة الطباعة بتاعة النظام.
+/// يطبع الإيصال أو الملصق. إذا كانت هناك طابعة مخصصة محفوظة لهذا الجهاز، فستتم الطباعة عليها مباشرة،
+/// وإلا فستُفتح شاشة الطباعة الخاصة بالنظام.
 Future<void> printTicket(BuildContext context, WidgetRef ref, String ticketId, PrintKind kind) async {
   try {
     final api = ref.read(sessionProvider).value!.api!;
@@ -46,7 +46,7 @@ Future<void> printTicket(BuildContext context, WidgetRef ref, String ticketId, P
   }
 }
 
-/// حفظ أو مشاركة الوصل كملف PDF (مثلاً عشان يتبعت للعميل على واتساب).
+/// حفظ الإيصال أو مشاركته كملف PDF (مثلاً لإرساله إلى العميل عبر واتساب).
 Future<void> shareReceipt(BuildContext context, WidgetRef ref, String ticketId) async {
   try {
     final api = ref.read(sessionProvider).value!.api!;
@@ -102,10 +102,10 @@ Future<void> _printBytes(BuildContext context, WidgetRef ref, Uint8List bytes, S
 /// اختيار طابعة الوصولات الافتراضية للجهاز ده.
 Future<void> pickReceiptPrinter(BuildContext context, WidgetRef ref) async {
   final config = ref.read(appConfigProvider);
-  final printer = await Printing.pickPrinter(context: context, title: 'اختار طابعة الوصولات');
+  final printer = await Printing.pickPrinter(context: context, title: 'اختر طابعة الإيصالات');
   if (printer == null) return;
   await config.setReceiptPrinter(printer.url, printer.name);
-  if (context.mounted) showMessage(context, 'الوصولات هتتطبع على ${printer.name}');
+  if (context.mounted) showMessage(context, 'ستتم طباعة الإيصالات على ${printer.name}');
 }
 
 Future<void> printUsedPurchase(BuildContext context, WidgetRef ref, PhoneUnit unit) async {
