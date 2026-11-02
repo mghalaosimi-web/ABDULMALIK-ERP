@@ -33,6 +33,8 @@ void main() {
     expect(find.text('عرفات الكاملي'), findsOneWidget);
 
     // Biographies are collapsed by default and expand on demand.
+    await tester.ensureVisible(find.text('الأستاذ الدكتور أحمد الناشري'));
+    await tester.pumpAndSettle();
     await tester.tap(find.text('الأستاذ الدكتور أحمد الناشري'));
     await tester.pumpAndSettle();
     expect(find.text('المسؤوليات والمهام'), findsOneWidget);
