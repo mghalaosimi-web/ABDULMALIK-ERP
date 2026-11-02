@@ -1,7 +1,7 @@
 name: Windows build and installer
 on:
   push:
-    branches: [main, abdulmalik/development, feature/accessories-module]
+    branches: [main, abdulmalik/development, feature/accessories-module, maintenance/independent-branding-audit]
     paths:
       - 'source/**'
       - '.github/workflows/windows-release.yml'
