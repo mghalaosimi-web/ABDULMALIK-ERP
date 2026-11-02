@@ -93,7 +93,7 @@ class _LogsScreenState extends State<LogsScreen> {
       body: _loading
           ? const Center(child: CircularProgressIndicator())
           : _files.isEmpty
-              ? const Center(child: Text('مفيش مشاكل متسجلة على الجهاز ده ✓'))
+              ? const Center(child: Text('لا توجد مشكلات مسجلة على هذا الجهاز ✓'))
               : Column(children: [
                   Padding(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
@@ -105,7 +105,7 @@ class _LogsScreenState extends State<LogsScreen> {
                   ),
                   const Padding(
                     padding: EdgeInsets.fromLTRB(16, 0, 16, 8),
-                    child: Text('لو البرنامج علّق، دوس "ابعته" وابعت الملف لصاحب البرنامج عشان يعرف السبب بالظبط.'),
+                    child: Text('إذا توقف البرنامج عن الاستجابة، اضغط على "إرسال" وأرسل الملف إلى مطوّر البرنامج لتحديد السبب بدقة.'),
                   ),
                   Expanded(
                     child: Container(
