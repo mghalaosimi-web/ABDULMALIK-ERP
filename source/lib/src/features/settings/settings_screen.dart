@@ -21,6 +21,7 @@ import 'backup_screen.dart';
 import 'logs_screen.dart';
 import 'message_settings_screen.dart';
 import 'shop_settings_screen.dart';
+import '../home/about_screen.dart';
 
 final _localIpsProvider = FutureProvider<List<String>>((ref) => localIpAddresses());
 
@@ -169,6 +170,21 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
           ],
+          SectionTitle(ar ? 'معلومات المشروع' : 'Project information'),
+          Card(
+            child: ListTile(
+              leading: const Icon(Icons.groups_rounded),
+              title: Text(ar ? 'عن المشروع والفريق' : 'About the project and team'),
+              subtitle: Text(ar
+                  ? 'نبذة المشروع، اللجنة الأكاديمية والاستشارية، فريق التطوير والهيكل التنظيمي'
+                  : 'Project overview, academic and advisory board, development team and organization'),
+              trailing: const Icon(Icons.chevron_left_rounded),
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute<void>(builder: (_) => const AboutScreen()),
+              ),
+            ),
+          ),
           SectionTitle(ar ? 'التواصل وتطوير النظام' : 'Support and product development'),
           Card(
             child: Column(children: [
