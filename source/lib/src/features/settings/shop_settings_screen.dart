@@ -104,7 +104,7 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
   }
 
   Future<void> _pickLogo() async {
-    // بنفتح على فولدر الصور اللي على الجهاز، مش آخر فولدر (لو كان موبايل متوصل أو فولدر شبكة، ويندوز ممكن يعلّق فيه)
+    // نفتح مجلد الصور على الجهاز بدلاً من آخر مجلد مستخدم؛ فقد يتسبب اختيار جهاز محمول متصل أو مجلد شبكة في توقف Windows عن الاستجابة.
     final pictures = '${Platform.environment['USERPROFILE'] ?? ''}\\Pictures';
     FreezeWatchdog.action('نافذة اختيار اللوجو من ويندوز');
     DiagLog.app?.write('INFO', 'فتح نافذة اختيار اللوجو');
@@ -119,7 +119,7 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
     setState(() => _logoBusy = true);
     try {
       final raw = await file.readAsBytes();
-      // بنصغّر اللوجو (في Isolate لوحده) عشان الوصل يطبع بسرعة والصورة ماتتقلش على الشبكة
+      // نُصغّر الشعار في Isolate مستقل حتى تتم طباعة الإيصال بسرعة ولا يصبح ملف الصورة كبيراً عند نقله عبر الشبكة.
       final png = await Isolate.run(() {
         final decoded = img.decodeImage(raw);
         if (decoded == null) return null;
@@ -128,7 +128,7 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
             : decoded;
         return img.encodePng(resized);
       });
-      if (png == null) throw Exception('الملف ده مش صورة');
+      if (png == null) throw Exception('هذا الملف ليس صورة');
       await ref.read(sessionProvider).value!.api!.put('/api/shop/logo', {'png': base64.encode(png)});
       ref.invalidate(shopProvider);
       if (mounted) showMessage(context, 'اتحفظ اللوجو');
@@ -190,7 +190,7 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
                                     icon: _logoBusy
                                         ? const SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))
                                         : const Icon(Icons.upload_rounded),
-                                    label: Text(logo == null ? 'اختار صورة' : 'تغيير'),
+                                    label: Text(logo == null ? 'اختر صورة' : 'تغيير'),
                                   ),
                                   if (logo != null) TextButton(onPressed: _removeLogo, child: const Text('مسح')),
                                 ]),
@@ -218,7 +218,7 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
                         validator: (v) => (v ?? '').trim().isEmpty ? 'لازم تكتب اسم الفرع' : null,
                       ),
                       const SizedBox(height: 12),
-                      TextFormField(controller: _phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'تليفون المحل')),
+                      TextFormField(controller: _phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'رقم هاتف المحل')),
                       const SizedBox(height: 12),
                       TextFormField(controller: _address, decoration: const InputDecoration(labelText: 'العنوان')),
                     ],
@@ -260,7 +260,7 @@ class _ShopFormState extends ConsumerState<_ShopForm> {
                       SwitchListTile(
                         contentPadding: EdgeInsets.zero,
                         title: const Text('السماح بالبيع لو الكمية في البرنامج خلصت'),
-                        subtitle: const Text('مفيد لو فيه بضاعة لسه ما اتسجلتش'),
+                        subtitle: const Text('مفيد إذا كانت هناك بضائع لم تُسجّل بعد'),
                         value: _negativeStock,
                         onChanged: (v) => setState(() => _negativeStock = v),
                       ),
