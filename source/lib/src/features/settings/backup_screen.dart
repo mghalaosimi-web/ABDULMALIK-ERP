@@ -12,7 +12,7 @@ import '../tickets/providers.dart';
 
 final _backupsProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref) => apiOf(ref).get('/api/backups'));
 
-/// النسخ الاحتياطي: بيتعمل لوحده كل يوم، وتقدر تعمله يدوي أو ترجّع نسخة قديمة.
+/// النسخ الاحتياطي: يُنشأ تلقائياً كل يوم، ويمكنك إنشاء نسخة يدوياً أو استعادة نسخة سابقة.
 class BackupScreen extends ConsumerStatefulWidget {
   const BackupScreen({super.key});
 
@@ -68,7 +68,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
       builder: (context) => AlertDialog(
         icon: const Icon(Icons.warning_amber_rounded, color: brandOrange, size: 40),
         title: const Text('ترجيع نسخة قديمة؟'),
-        content: Text('كل البيانات هترجع زي ما كانت وقت النسخة ($name)، وأي حاجة اتسجلت بعدها هتروح.\n'
+        content: Text('ستعود جميع البيانات إلى حالتها وقت إنشاء النسخة ($name)، وستُحذف أي بيانات أُضيفت بعدها.\n'
             'البرنامج هيحتفظ بنسخة من البيانات الحالية للاحتياط.'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
@@ -79,7 +79,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     if (ok != true) return;
     await _run(
       () => ref.read(sessionProvider).value!.api!.post('/api/backups/restore', {'name': name}),
-      'اقفل البرنامج على كمبيوتر السيرفر وافتحه تاني عشان الترجيع يتم',
+      'أغلق البرنامج على كمبيوتر الخادم ثم افتحه مجدداً لإتمام الاستعادة',
     );
   }
 
@@ -101,13 +101,13 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
             if (d['restorePending'] == true)
               const Padding(padding: EdgeInsets.only(bottom: 12), child: ErrorBanner('فيه ترجيع مستني: اقفل البرنامج على كمبيوتر السيرفر وافتحه تاني.')),
             SectionCard(title: 'الحالة', icon: Icons.shield_rounded, children: [
-              Text(last == null ? 'لسه ما اتعملش نسخة' : 'آخر نسخة: ${formatDateTime(last)} (${timeAgo(last)})', style: const TextStyle().semiBold),
+              Text(last == null ? 'لم يتم إنشاء نسخة احتياطية بعد' : 'آخر نسخة: ${formatDateTime(last)} (${timeAgo(last)})', style: const TextStyle().semiBold),
               const SizedBox(height: 4),
               const Text('البرنامج بيعمل نسخة لوحده كل يوم، وبيحتفظ بآخر 14 نسخة.'),
               if (err != null) ...[const SizedBox(height: 8), ErrorBanner(err)],
               const SizedBox(height: 12),
               BusyButton(
-                label: 'اعمل نسخة دلوقتي',
+                label: 'إنشاء نسخة احتياطية الآن',
                 icon: Icons.backup_rounded,
                 busy: _busy,
                 onPressed: () => _run(() => ref.read(sessionProvider).value!.api!.post('/api/backups'), 'اتعملت نسخة'),
@@ -115,9 +115,9 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
             ]),
             const SizedBox(height: 12),
             SectionCard(title: 'نسخة في مكان تاني', icon: Icons.folder_copy_rounded, children: [
-              const Text('لو الكمبيوتر باظ أو اتسرق، النسخ اللي عليه هتضيع معاه. اختار فولدر تاني يتحفظ فيه نسخة كمان:\n'
+              const Text('إذا تعطل الكمبيوتر أو سُرق، فستفقد النسخ المحفوظة عليه. اختر مجلداً آخر لحفظ نسخة إضافية:\n'
                   '• فلاشة أو هارد خارجي\n'
-                  '• أو فولدر Google Drive على الكمبيوتر (لو مسطب Google Drive) عشان النسخة تبقى على النت ببلاش'),
+                  '• أو مجلد Google Drive على الكمبيوتر (إذا كان التطبيق مثبتاً) لحفظ نسخة عبر الإنترنت.'),
               const SizedBox(height: 12),
               if (external != null) Text(external, textDirection: TextDirection.ltr, style: TextStyle(color: scheme.primary).semiBold),
               const SizedBox(height: 8),
@@ -145,7 +145,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                   subtitle: Text('${((b['size'] as int) / 1024 / 1024).toStringAsFixed(1)} ميجا'),
                   trailing: TextButton(onPressed: _busy ? null : () => _restore(b['name'] as String), child: const Text('ترجيع')),
                 ),
-              if (backups.isEmpty) const Text('مفيش نسخ لسه'),
+              if (backups.isEmpty) const Text('لا توجد نسخ احتياطية حتى الآن'),
             ]),
           ]);
         },
