@@ -90,7 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               obscureText: !_showPassword,
               autofillHints: const [AutofillHints.password],
               decoration: InputDecoration(
-                labelText: ar ? 'كلمة السر' : 'Password',
+                labelText: ar ? 'كلمة المرور' : 'Password',
                 prefixIcon: const Icon(Icons.lock_rounded),
                 suffixIcon: IconButton(
                   icon: Icon(_showPassword ? Icons.visibility_off_rounded : Icons.visibility_rounded),
