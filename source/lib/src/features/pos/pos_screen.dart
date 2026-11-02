@@ -163,7 +163,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
   }
 
   Widget _productsPanel() {
-    final products = ref.watch(productsProvider((q: _query, category: _category, low: false)));
+    final products = ref.watch(productsProvider((q: _query, category: _category, low: false, section: 'all')));
     final categories = ref.watch(categoriesProvider).value ?? const <String>[];
     return Column(
       children: [
