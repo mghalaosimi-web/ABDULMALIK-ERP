@@ -22,6 +22,8 @@ void main() {
     expect(find.text('ثالثاً: الهيكل التنظيمي للمشروع'), findsOneWidget);
     expect(find.text('رابعاً: منهجية تطوير المشروع'), findsOneWidget);
     expect(find.text('رؤية المشروع'), findsOneWidget);
+    expect(find.textContaining('تنويه مهني'), findsNothing);
+    expect(find.textContaining('Professional note'), findsNothing);
 
     expect(find.text('الأستاذ الدكتور أحمد الناشري'), findsOneWidget);
     expect(find.text('الأستاذ الدكتور عبد الرزاق الأهدل'), findsOneWidget);
