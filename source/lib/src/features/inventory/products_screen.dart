@@ -514,7 +514,7 @@ class _PhoneTemplatePickerState extends State<_PhoneTemplatePicker> {
               trailing: _customTemplates.contains(items[i]) ? const Icon(Icons.bookmark_added_outlined, size: 18) : null,
               onTap: () => Navigator.pop(context, items[i])),
           )),
-        Text('\${items.length} طرازاً في القائمة', textAlign: TextAlign.end, style: Theme.of(context).textTheme.bodySmall),
+        Text('${items.length} طرازاً في القائمة', textAlign: TextAlign.end, style: Theme.of(context).textTheme.bodySmall),
       ])),
       actions: [
         TextButton.icon(onPressed: _addCustomTemplate, icon: const Icon(Icons.add), label: const Text('إضافة طراز جديد')),
@@ -535,8 +535,8 @@ class _ProductImageThumbnail extends ConsumerWidget {
     return ClipRRect(
       borderRadius: BorderRadius.circular(10),
       child: Image.network(
-        '\${api.baseUrl}/api/files/$fileId', width: size, height: size, fit: BoxFit.cover,
-        headers: {'authorization': 'Bearer \${api.token}'},
+        '${api.baseUrl}/api/files/$fileId', width: size, height: size, fit: BoxFit.cover,
+        headers: {'authorization': 'Bearer ${api.token}'},
         errorBuilder: (_, _, _) => Container(width: size, height: size,
           color: Theme.of(context).colorScheme.surfaceContainerHighest,
           child: const Icon(Icons.broken_image_outlined)),
@@ -746,7 +746,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                         try {
                           final id = await captureAndUploadPhoto(context, ref, 'product');
                           if (id != null && mounted) setState(() { _imageFileId = id; _imageChanged = true; });
-                        } catch (e) { if (mounted) showMessage(context, errorText(e)); }
+                        } catch (e) { if (context.mounted) showMessage(context, errorText(e)); }
                       },
                       icon: const Icon(Icons.add_a_photo_outlined),
                       label: Text(_imageFileId == null ? 'إضافة صورة' : 'تغيير الصورة'),
