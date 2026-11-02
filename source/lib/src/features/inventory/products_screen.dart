@@ -171,7 +171,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
                       itemCount: r.items.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 6),
-                      itemBuilder: (context, i) => _ProductRow(product: r.items[i], showCost: user.isOwner),
+                      itemBuilder: (context, i) => _ProductRow(product: r.items[i], showCost: user.isOwner, accessories: widget.accessories),
                     ),
             ),
           ),
@@ -182,9 +182,10 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 }
 
 class _ProductRow extends StatelessWidget {
-  const _ProductRow({required this.product, required this.showCost});
+  const _ProductRow({required this.product, required this.showCost, required this.accessories});
   final Product product;
   final bool showCost;
+  final bool accessories;
 
   @override
   Widget build(BuildContext context) {
@@ -217,7 +218,7 @@ class _ProductRow extends StatelessWidget {
         ),
         onTap: () => showDialog<void>(
           context: context,
-          builder: (_) => ProductDialog(product: p),
+          builder: (_) => ProductDialog(product: p, accessories: accessories),
         ),
       ),
     );
