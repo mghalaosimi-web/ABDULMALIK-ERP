@@ -164,7 +164,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                   ? EmptyState(
                       icon: Icons.inventory_2_outlined,
                       message: _query.isEmpty && _category == null && !_lowOnly
-                          ? 'لسه مفيش أصناف.\nضيف صنف جديد، أو استورد الأصناف من ملف Excel من برنامجك القديم.'
+                          ? (widget.accessories ? 'لسه مفيش أكسسوارات.\nابدأ بإضافة أول أكسسوار وتصنيفه.' : 'لسه مفيش أصناف.\nضيف صنف جديد، أو استورد الأصناف من ملف Excel من برنامجك القديم.')
                           : 'مفيش أصناف هنا',
                     )
                   : ListView.separated(
@@ -269,6 +269,10 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
 
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
+    if (widget.accessories && _category.text.trim().isEmpty) {
+      setState(() => _error = 'اختر تصنيف الأكسسوار أولاً');
+      return;
+    }
     final isOwner = ref.read(sessionProvider).value!.user!.isOwner;
     setState(() {
       _busy = true;
