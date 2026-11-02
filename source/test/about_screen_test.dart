@@ -6,6 +6,7 @@ void main() {
   testWidgets('about screen presents supervision and development contributors in Arabic', (tester) async {
     await tester.pumpWidget(const MaterialApp(
       locale: Locale('ar'),
+      supportedLocales: [Locale('ar')],
       home: AboutScreen(),
     ));
 
