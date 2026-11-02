@@ -25,12 +25,12 @@ class PurchasesScreen extends ConsumerWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('المشتريات'),
-          bottom: const TabBar(tabs: [Tab(text: 'فواتير الشرا'), Tab(text: 'الموردين')]),
+          bottom: const TabBar(tabs: [Tab(text: 'فواتير الشراء'), Tab(text: 'الموردين')]),
         ),
         floatingActionButton: FloatingActionButton.extended(
           onPressed: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const NewPurchaseScreen())),
           icon: const Icon(Icons.add_rounded),
-          label: const Text('فاتورة شرا'),
+          label: const Text('فاتورة شراء'),
         ),
         body: const TabBarView(children: [_PurchasesList(), _SuppliersList()]),
       ),
@@ -304,7 +304,7 @@ class _NewPurchaseScreenState extends ConsumerState<NewPurchaseScreen> {
       ref.invalidate(productsProvider);
       if (!mounted) return;
       Navigator.pop(context);
-      showMessage(context, 'اتسجلت فاتورة الشرا، والبضاعة دخلت المخزون');
+      showMessage(context, 'تم تسجيل فاتورة الشراء وإضافة البضاعة إلى المخزون');
     } catch (e) {
       if (mounted) setState(() => _error = errorText(e));
     } finally {
@@ -317,7 +317,7 @@ class _NewPurchaseScreenState extends ConsumerState<NewPurchaseScreen> {
     final suppliers = ref.watch(suppliersProvider).value ?? const <Supplier>[];
     final text = Theme.of(context).textTheme;
     return Scaffold(
-      appBar: AppBar(title: const Text('فاتورة شرا جديدة')),
+      appBar: AppBar(title: const Text('فاتورة شراء جديدة')),
       body: ListView(padding: const EdgeInsets.fromLTRB(20, 4, 20, 24), children: [
         SectionCard(title: 'المورد', icon: Icons.local_shipping_rounded, children: [
           Row(children: [
@@ -326,7 +326,7 @@ class _NewPurchaseScreenState extends ConsumerState<NewPurchaseScreen> {
                 initialValue: _supplier?.id,
                 decoration: const InputDecoration(labelText: 'اختر المورد'),
                 items: [
-                  const DropdownMenuItem(value: null, child: Text('من غير مورد (شرا كاش)')),
+                  const DropdownMenuItem(value: null, child: Text('بدون مورد (شراء نقدي)')),
                   for (final s in suppliers) DropdownMenuItem(value: s.id, child: Text(s.name)),
                 ],
                 onChanged: (v) => setState(() => _supplier = suppliers.where((s) => s.id == v).firstOrNull),
@@ -400,7 +400,7 @@ class _NewPurchaseScreenState extends ConsumerState<NewPurchaseScreen> {
         ]),
         if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],
         const SizedBox(height: 16),
-        BusyButton(label: 'حفظ فاتورة الشرا', icon: Icons.check_rounded, busy: _busy, onPressed: _lines.isEmpty ? null : _save),
+        BusyButton(label: 'حفظ فاتورة الشراء', icon: Icons.check_rounded, busy: _busy, onPressed: _lines.isEmpty ? null : _save),
       ]),
     );
   }
@@ -469,7 +469,7 @@ class _LineEditorState extends State<_LineEditor> {
             Expanded(
               child: MoneyField(
                 controller: _cost,
-                label: 'سعر الشرا للقطعة',
+                label: 'سعر شراء القطعة',
                 onChanged: (v) {
                   l.cost = parseMoney(v) ?? 0;
                   widget.onChanged();
