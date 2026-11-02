@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:isolate';
 
-/// سجل المشاكل: ملف نصي صغير في فولدر البرنامج (logs). لما يعدّي 1 ميجا بيتنقل لنسخة قديمة (.1).
-/// من غير Flutter عشان السيرفر (اللي في Isolate لوحده) يستخدمه كمان.
+/// سجل المشكلات: ملف نصي صغير في مجلد البرنامج (logs). عند تجاوز حجمه 1 ميجابايت، يُنقل إلى ملف النسخة السابقة (.1).
+/// لا يعتمد على Flutter، ليتمكن الخادم (الذي يعمل في Isolate مستقل) من استخدامه أيضاً.
 class DiagLog {
   DiagLog(this.path);
   final String path;
@@ -41,13 +41,13 @@ class DiagLog {
 }
 
 /// مراقب التعليق: Isolate صغير شغال لوحده بيستنى "نبضة" من الشاشة كل ثانية.
-/// لو الشاشة وقفت 4 ثواني أو أكتر بيكتب في السجل إمتى وقد إيه وآخر حاجة اتعملت قبلها.
+/// إذا توقفت الشاشة لمدة 4 ثوانٍ أو أكثر، يُسجّل وقت التوقف ومدته وآخر إجراء نُفّذ قبله.
 class FreezeWatchdog {
   static SendPort? _port;
   static String _last = 'فتح البرنامج';
   static Timer? _beat;
 
-  /// آخر حاجة المستخدم عملها (شاشة اتفتحت، أو طلب للسيرفر).
+  /// آخر إجراء نفّذه المستخدم (مثل فتح شاشة أو إرسال طلب إلى الخادم).
   static void action(String what) => _last = what;
 
   static Future<void> start(String logPath) async {
@@ -58,7 +58,7 @@ class FreezeWatchdog {
     _beat = Timer.periodic(const Duration(seconds: 1), (_) => _port?.send(_last));
   }
 
-  /// البرنامج اتصغّر أو الموبايل قفل الشاشة: مش تعليق.
+  /// تصغير البرنامج أو إغلاق شاشة الهاتف لا يُعدّ توقفاً عن الاستجابة.
   static void paused(bool value) => _port?.send(value ? '\u0000pause' : '\u0000resume');
 
   static void stop() {
@@ -89,7 +89,7 @@ void _watch(List<Object> args) {
       return;
     }
     if (frozenSince != null) {
-      log.write('FREEZE', 'الشاشة رجعت تشتغل بعد ${now.difference(frozenSince!).inSeconds} ثانية تعليق. آخر حاجة قبل التعليق: $lastAction');
+      log.write('FREEZE', 'عادت الشاشة إلى العمل بعد توقف دام ${now.difference(frozenSince!).inSeconds} ثانية. آخر إجراء قبل التوقف: $lastAction');
       frozenSince = null;
     }
     lastBeat = now;
@@ -101,7 +101,7 @@ void _watch(List<Object> args) {
     final gap = DateTime.now().difference(lastBeat);
     if (gap.inSeconds >= 4) {
       frozenSince = lastBeat;
-      log.write('FREEZE', 'الشاشة واقفة من ${gap.inSeconds} ثواني. آخر حاجة: $lastAction');
+      log.write('FREEZE', 'الشاشة متوقفة عن الاستجابة منذ ${gap.inSeconds} ثانية. آخر إجراء: $lastAction');
     }
   });
 }
