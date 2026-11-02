@@ -66,7 +66,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
           setState(() => _query = '');
         } else if (list.isEmpty && mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-            content: Text('مفيش صنف بالباركود ده: $v'),
+            content: Text('لا يوجد صنف بهذا الرمز الشريطي: $v'),
             action: SnackBarAction(label: 'إضافة صنف', onPressed: () => addProductWithBarcode(context, v)),
           ));
         }
@@ -83,7 +83,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
       if (unit == null) return;
     }
     _cart.add(p, unit: unit);
-    if (p.outOfStock && mounted) showMessage(context, 'تنبيه: "${p.name}" مفيش منه في المخزون حسب البرنامج');
+    if (p.outOfStock && mounted) showMessage(context, 'تنبيه: "${p.name}" لا تتوفر منه كمية في المخزون');
   }
 
   Future<void> _scan() async {
@@ -215,7 +215,7 @@ class _PosScreenState extends ConsumerState<PosScreen> {
             error: (e, _) => Center(child: Padding(padding: const EdgeInsets.all(20), child: ErrorBanner(errorText(e)))),
             data: (r) => r.items.isEmpty
                 ? Center(
-                    child: Text(_query.isEmpty ? 'لسه مفيش أصناف. ضيفها من شاشة "المخزون".' : 'مفيش صنف بالاسم ده',
+                    child: Text(_query.isEmpty ? 'لا توجد أصناف حتى الآن. أضفها من شاشة "المخزون".' : 'لا يوجد صنف بهذا الاسم',
                         style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
                   )
                 : GridView.builder(
@@ -298,7 +298,7 @@ class _CartPanel extends ConsumerWidget {
           ListTile(
             leading: const Icon(Icons.person_outline_rounded),
             title: Text(cart.customer?.name ?? 'عميل نقدي'),
-            subtitle: cart.customer != null ? Text(cart.customer!.phone) : const Text('اختار عميل للبيع الآجل أو عشان يتسجل عليه'),
+            subtitle: cart.customer != null ? Text(cart.customer!.phone) : const Text('اختر عميلاً للبيع الآجل أو لتسجيل العملية على حسابه'),
             trailing: cart.customer != null
                 ? IconButton(icon: const Icon(Icons.close_rounded), onPressed: () => ctrl.setCustomer(null))
                 : const Icon(Icons.chevron_left_rounded),
@@ -423,7 +423,7 @@ Future<int?> _askMoney(BuildContext context, String title, int initial) async {
       content: MoneyField(controller: c, label: 'المبلغ', autofocus: true),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
-        FilledButton(onPressed: () => Navigator.pop(context, parseMoney(c.text)), child: const Text('تمام')),
+        FilledButton(onPressed: () => Navigator.pop(context, parseMoney(c.text)), child: const Text('موافق')),
       ],
     ),
   );
@@ -445,7 +445,7 @@ Future<int?> _askInt(BuildContext context, String title, int initial) async {
       ),
       actions: [
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
-        FilledButton(onPressed: () => Navigator.pop(context, int.tryParse(latinDigits(c.text))), child: const Text('تمام')),
+        FilledButton(onPressed: () => Navigator.pop(context, int.tryParse(latinDigits(c.text))), child: const Text('موافق')),
       ],
     ),
   );
@@ -481,7 +481,7 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
     final total = cart.totalCents;
     final paid = _credit ? (parseMoney(_creditPaid.text) ?? 0).clamp(0, total) : total;
     if (_credit && cart.customer == null) {
-      setState(() => _error = 'البيع الآجل لازم يكون على عميل. اقفل واختار العميل من فوق الفاتورة');
+      setState(() => _error = 'يجب ربط البيع الآجل بعميل. أغلق النافذة واختر العميل من أعلى الفاتورة.');
       return;
     }
     setState(() {
@@ -543,11 +543,11 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
                   controlAffinity: ListTileControlAffinity.leading,
                   value: _credit,
                   onChanged: (v) => setState(() => _credit = v ?? false),
-                  title: const Text('آجل (العميل هيدفع جزء أو مش هيدفع دلوقتي)'),
+                  title: const Text('آجل (سيدفع العميل جزءاً من المبلغ أو لن يدفع الآن)'),
                   subtitle: Text(cart.customer == null ? 'لازم تختار العميل الأول' : 'على: ${cart.customer!.name}'),
                 ),
                 if (_credit) ...[
-                  MoneyField(controller: _creditPaid, label: 'المدفوع دلوقتي', onChanged: (_) => setState(() {})),
+                  MoneyField(controller: _creditPaid, label: 'المبلغ المدفوع الآن', onChanged: (_) => setState(() {})),
                   const SizedBox(height: 6),
                   Text('هيتسجل على العميل: ${money((total - (parseMoney(_creditPaid.text) ?? 0)).clamp(0, total))}', style: const TextStyle().semiBold),
                 ],
