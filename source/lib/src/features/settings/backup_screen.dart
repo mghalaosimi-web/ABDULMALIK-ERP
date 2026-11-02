@@ -40,13 +40,13 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     final isServer = ref.read(appConfigProvider).mode == AppMode.server;
     String? path;
     if (isServer) {
-      path = await getDirectoryPath(confirmButtonText: 'اختيار الفولدر');
+      path = await getDirectoryPath(confirmButtonText: 'اختيار المجلد');
     } else {
       final c = TextEditingController(text: current);
       path = await showDialog<String>(
         context: context,
         builder: (context) => AlertDialog(
-          title: const Text('فولدر النسخ على كمبيوتر السيرفر'),
+          title: const Text('مجلد النسخ الاحتياطية على كمبيوتر الخادم'),
           content: TextField(controller: c, textDirection: TextDirection.ltr, decoration: const InputDecoration(hintText: r'D:\Backups')),
           actions: [
             TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
@@ -58,7 +58,7 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
     if (path == null || !mounted) return;
     await _run(
       () => ref.read(sessionProvider).value!.api!.patch('/api/backups/settings', {'backupDir': path}),
-      'هيتعمل نسخة في الفولدر ده كل يوم',
+      'سيتم إنشاء نسخة احتياطية في هذا المجلد يومياً',
     );
   }
 
@@ -125,11 +125,11 @@ class _BackupScreenState extends ConsumerState<BackupScreen> {
                 OutlinedButton.icon(
                   onPressed: _busy ? null : () => _chooseFolder(external),
                   icon: const Icon(Icons.folder_open_rounded),
-                  label: Text(external == null ? 'اختيار فولدر' : 'تغيير'),
+                  label: Text(external == null ? 'اختيار مجلد' : 'تغيير'),
                 ),
                 if (external != null)
                   TextButton(
-                    onPressed: _busy ? null : () => _run(() => ref.read(sessionProvider).value!.api!.patch('/api/backups/settings', {'backupDir': null}), 'اتلغى الفولدر التاني'),
+                    onPressed: _busy ? null : () => _run(() => ref.read(sessionProvider).value!.api!.patch('/api/backups/settings', {'backupDir': null}), 'تم إلغاء المجلد الإضافي'),
                     child: const Text('إلغاء'),
                   ),
               ]),
