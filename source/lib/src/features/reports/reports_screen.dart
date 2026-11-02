@@ -202,7 +202,7 @@ class _ReportBody extends StatelessWidget {
           empty: '—',
         );
         final models = _TableCard(
-          title: 'أكتر الموديلات في الصيانة',
+          title: 'أكثر الطرازات دخولاً للصيانة',
           icon: Icons.phone_android_rounded,
           headers: const ['الموديل', 'مرات'],
           rows: [for (final p in (repairs['topModels'] as List).cast<Map<String, dynamic>>()) [p['name'] as String, '${p['count']}']],
@@ -243,7 +243,7 @@ class _ReportBody extends StatelessWidget {
       _TableCard(
         title: 'فلوس عليك للموردين: ${money(payables['totalCents'] as int)}',
         icon: Icons.call_made_rounded,
-        headers: const ['المورد', 'ليه'],
+        headers: const ['المورد', 'المبلغ المستحق'],
         rows: [for (final s in (payables['suppliers'] as List).cast<Map<String, dynamic>>()) [s['name'] as String, money(s['balanceCents'] as int)]],
         empty: 'لا توجد مبالغ مستحقة للموردين',
       ),
