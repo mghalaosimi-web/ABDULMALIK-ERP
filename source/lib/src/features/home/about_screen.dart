@@ -111,6 +111,8 @@ class AboutScreen extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            const _CompanyProfileCard(),
+            const SizedBox(height: 14),
             Card(
               clipBehavior: Clip.antiAlias,
               child: Container(
@@ -228,31 +230,121 @@ class _ProfileCard extends StatelessWidget {
     final theme = Theme.of(context);
     final ar = Localizations.localeOf(context).languageCode == 'ar';
     return Card(
-      margin: const EdgeInsets.only(bottom: 10),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-          Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            CircleAvatar(
-              radius: 25,
-              backgroundColor: theme.colorScheme.secondaryContainer,
-              child: Icon(Icons.person_outline_rounded,
-                  color: theme.colorScheme.onSecondaryContainer, size: 27),
+      margin: const EdgeInsets.only(bottom: 9),
+      clipBehavior: Clip.antiAlias,
+      child: ExpansionTile(
+        tilePadding: const EdgeInsetsDirectional.fromSTEB(16, 8, 16, 8),
+        childrenPadding: const EdgeInsetsDirectional.fromSTEB(16, 0, 16, 16),
+        leading: CircleAvatar(
+          radius: 23,
+          backgroundColor: theme.colorScheme.secondaryContainer,
+          child: Icon(Icons.person_outline_rounded,
+              color: theme.colorScheme.onSecondaryContainer, size: 25),
+        ),
+        title: Text(profile.name,
+            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
+        subtitle: Padding(
+          padding: const EdgeInsets.only(top: 4),
+          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            if (profile.subtitle != null)
+              Text(profile.subtitle!, textDirection: TextDirection.ltr,
+                  style: theme.textTheme.bodySmall),
+            Text(profile.title,
+                style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary)),
+          ]),
+        ),
+        children: [
+          const Divider(height: 12),
+          _ListBlock(title: ar ? 'المسؤوليات والمهام' : 'Responsibilities', items: profile.duties),
+          const SizedBox(height: 10),
+          _ListBlock(title: ar ? 'المؤهلات والخبرات' : 'Qualifications & Experience', items: profile.credentials),
+        ],
+      ),
+    );
+  }
+}
+
+class _CompanyProfileCard extends StatelessWidget {
+  const _CompanyProfileCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final ar = Localizations.localeOf(context).languageCode == 'ar';
+    final cs = theme.colorScheme;
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: Container(
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: AlignmentDirectional.topStart,
+            end: AlignmentDirectional.bottomEnd,
+            colors: [cs.primaryContainer, cs.surface],
+          ),
+        ),
+        child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+          Row(children: [
+            Container(
+              width: 58,
+              height: 58,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: cs.primary,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Text('M', style: theme.textTheme.headlineMedium?.copyWith(
+                color: cs.onPrimary, fontWeight: FontWeight.w900)),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: 13),
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              Text(profile.name, style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold)),
-              if (profile.subtitle != null)
-                Text(profile.subtitle!, textDirection: TextDirection.ltr,
-                    style: theme.textTheme.bodySmall),
-              const SizedBox(height: 4),
-              Text(profile.title, style: theme.textTheme.labelLarge?.copyWith(color: theme.colorScheme.primary)),
+              Text('M.GH.AL', textDirection: TextDirection.ltr,
+                style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900, letterSpacing: 1.4)),
+              Text(ar ? 'للبرمجيات والأنظمة والتطبيقات' : 'Software, Systems & Applications',
+                style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
             ])),
           ]),
-          const SizedBox(height: 12),
-          _ListBlock(title: ar ? 'المسؤوليات والمهام' : 'Responsibilities', items: profile.duties),
+          const SizedBox(height: 15),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+            decoration: BoxDecoration(
+              color: cs.surface.withValues(alpha: 0.78),
+              border: Border.all(color: cs.primary.withValues(alpha: 0.45)),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Icon(Icons.verified_rounded, color: cs.primary, size: 20),
+              const SizedBox(width: 7),
+              Flexible(child: Text(
+                ar ? 'شارة توثيق تعريفية للمشروع ضمن أعمال M.GH.AL' : 'Project identity mark — an M.GH.AL portfolio project',
+                style: theme.textTheme.labelMedium?.copyWith(fontWeight: FontWeight.bold))),
+            ]),
+          ),
+          const SizedBox(height: 14),
+          Text(ar
+              ? 'M.GH.AL للبرمجيات والأنظمة والتطبيقات جهة تقنية متخصصة في تصميم وتطوير الحلول الرقمية، وبناء الأنظمة الإدارية والتشغيلية، وتطوير تطبيقات الأعمال، وأتمتة الإجراءات وسير العمل. ترتكز أعمالها على تحويل احتياجات المؤسسات والمنشآت إلى منتجات تقنية عملية تجمع بين هندسة البرمجيات، وتنظيم البيانات، وتجربة المستخدم، والتكامل بين الأنظمة.'
+              : 'M.GH.AL Software, Systems & Applications is a technology brand focused on designing and developing digital solutions, business and operational systems, business applications, and workflow automation. Its approach turns organizational needs into practical technology products through software engineering, structured data, user experience, and system integration.',
+            style: theme.textTheme.bodyMedium),
+          const SizedBox(height: 10),
+          Text(ar ? 'مجالات العمل' : 'Areas of Practice',
+            style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
           const SizedBox(height: 8),
-          _ListBlock(title: ar ? 'المؤهلات والخبرات' : 'Qualifications & Experience', items: profile.credentials),
+          Wrap(spacing: 7, runSpacing: 7, children: [
+            for (final label in (ar
+              ? ['البرمجيات المخصصة', 'أنظمة ERP والإدارة', 'تطبيقات الويب والهواتف', 'أتمتة الأعمال والإجراءات', 'قواعد البيانات والتكامل', 'لوحات المعلومات والتقارير', 'التحول الرقمي', 'الصيانة والدعم التقني']
+              : ['Custom Software', 'ERP & Management Systems', 'Web & Mobile Apps', 'Business Process Automation', 'Databases & Integration', 'Dashboards & Reporting', 'Digital Transformation', 'Technical Support']))
+              Chip(label: Text(label), visualDensity: VisualDensity.compact),
+          ]),
+          const SizedBox(height: 10),
+          Text(ar
+              ? 'الرؤية: بناء حلول موثوقة وقابلة للتوسع تساعد الأفراد والمنشآت على إدارة أعمالهم بكفاءة، وتقليل العمل اليدوي، وتحسين جودة القرار والتشغيل.'
+              : 'Vision: Build reliable, scalable solutions that help people and organizations manage operations efficiently, reduce manual work, and improve decision-making.',
+            style: theme.textTheme.bodyMedium),
+          const SizedBox(height: 8),
+          Text(ar
+              ? 'تنويه: هذه شارة هوية وتعريف بالمشروع ضمن ملف أعمال العلامة M.GH.AL، وليست شهادة اعتماد حكومية أو تصديقاً من جهة خارجية.'
+              : 'Notice: This is a brand identity and portfolio mark for M.GH.AL, not a government accreditation or third-party certification.',
+            style: theme.textTheme.bodySmall?.copyWith(color: cs.onSurfaceVariant)),
         ]),
       ),
     );
