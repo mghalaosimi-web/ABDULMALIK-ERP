@@ -14,7 +14,7 @@ Future<bool> openWhatsApp(String internationalNumber, String text) async {
   return launchUrl(uri, mode: LaunchMode.externalApplication);
 }
 
-/// شاشة إرسال رسالة للعميل: الرسالة جاية من القالب وتقدر تعدّلها قبل ما تبعت.
+/// شاشة إرسال رسالة إلى العميل؛ تُنشأ الرسالة من القالب ويمكن تعديلها قبل الإرسال.
 Future<void> showMessageDialog(BuildContext context, String ticketId, MessageEvent event) =>
     showDialog<void>(context: context, builder: (_) => _MessageDialog(ticketId: ticketId, initialEvent: event));
 
@@ -78,7 +78,7 @@ class _MessageDialogState extends ConsumerState<_MessageDialog> {
     try {
       if (channel == 'whatsapp') {
         final ok = await openWhatsApp(_whatsapp!, _body.text.trim());
-        if (!ok) throw Exception('مش قادر أفتح واتساب على الجهاز ده');
+        if (!ok) throw Exception('تعذّر فتح واتساب على هذا الجهاز');
       }
       await ref.read(sessionProvider).value!.api!.post('/api/tickets/${widget.ticketId}/messages', {
         'channel': channel,
@@ -90,7 +90,7 @@ class _MessageDialogState extends ConsumerState<_MessageDialog> {
       Navigator.pop(context);
       showMessage(
         context,
-        channel == 'sms' ? 'الرسالة اتحطت في طابور الـ SMS، وموبايل المحل هيبعتها' : 'اتفتح واتساب، دوس إرسال هناك',
+        channel == 'sms' ? 'أُضيفت الرسالة إلى قائمة انتظار الرسائل النصية، وسيرسلها هاتف المحل.' : 'فُتح واتساب؛ اضغط على زر الإرسال هناك.',
       );
     } catch (e) {
       if (mounted) setState(() => _error = e is Exception ? e.toString().replaceFirst('Exception: ', '') : errorText(e));
@@ -130,13 +130,13 @@ class _MessageDialogState extends ConsumerState<_MessageDialog> {
                 maxLines: 12,
                 decoration: InputDecoration(
                   labelText: 'نص الرسالة',
-                  helperText: _phone == null ? null : 'هتتبعت على: $_phone',
+                  helperText: _phone == null ? null : 'سيتم إرسالها إلى: $_phone',
                 ),
               ),
             if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],
             const SizedBox(height: 8),
             Text(
-              'SMS بيتبعت أوتوماتيك من موبايل المحل اللي متفعّل عليه "بوابة SMS" في الإعدادات.',
+              'تُرسل الرسائل النصية تلقائياً من هاتف المحل الذي فُعّلت عليه "بوابة SMS" في الإعدادات.',
               style: TextStyle(fontSize: 12, color: scheme.onSurfaceVariant),
             ),
           ],

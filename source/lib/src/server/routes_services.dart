@@ -64,7 +64,7 @@ extension _ServiceRoutes on FixTrackServer {
   Future<Object?> _updateWallet(Request req, AuthUser u) async {
     final id = req.params['id']!;
     final w = db.selectOne('SELECT * FROM wallets WHERE id = ?', [id]);
-    if (w == null) throw ApiError(404, 'المحفظة دي مش موجودة');
+    if (w == null) throw ApiError(404, 'هذه المحفظة غير موجودة');
     final body = await _body(req);
     db.execute('UPDATE wallets SET name = ?, phone = ?, active = ? WHERE id = ?', [
       body.containsKey('name') ? _requiredText(body, 'name', 'اسم المحفظة') : w['name'],
@@ -102,10 +102,10 @@ extension _ServiceRoutes on FixTrackServer {
     await _requireLicense();
     final id = req.params['id']!;
     final w = db.selectOne('SELECT * FROM wallets WHERE id = ? AND active = 1', [id]);
-    if (w == null) throw ApiError(404, 'المحفظة دي مش موجودة');
+    if (w == null) throw ApiError(404, 'هذه المحفظة غير موجودة');
     final body = await _body(req);
     final type = body['type'];
-    if (!walletTxnTypes.contains(type)) throw ApiError(400, 'نوع العملية مش صحيح');
+    if (!walletTxnTypes.contains(type)) throw ApiError(400, 'نوع العملية غير صحيح');
     if (type == 'adjust' && !u.isOwner) throw ApiError(403, 'تسوية الرصيد لصاحب المحل بس');
     final amount = type == 'adjust' ? (body['amountCents'] as int? ?? 0) : _cents(body['amountCents'], 'المبلغ');
     if (amount == 0 || (type != 'adjust' && amount < 0)) throw ApiError(400, 'اكتب المبلغ');
@@ -135,7 +135,7 @@ extension _ServiceRoutes on FixTrackServer {
       _ => 0,
     };
     final after = (w['balance_cents'] as int) + walletChange;
-    if (after < 0) throw ApiError(400, 'رصيد المحفظة مش كفاية (${_money(w['balance_cents'] as int)})');
+    if (after < 0) throw ApiError(400, 'رصيد المحفظة غير كافٍ (${_money(w['balance_cents'] as int)})');
     db.execute('UPDATE wallets SET balance_cents = ? WHERE id = ?', [after, walletId]);
     final txnId = _uuid.v4();
     db.execute(

@@ -57,7 +57,7 @@ class AuditScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator()),
         error: (e, _) => Center(child: Padding(padding: const EdgeInsets.all(20), child: ErrorBanner(errorText(e)))),
         data: (list) => list.isEmpty
-            ? const Center(child: Text('مفيش نشاط لسه'))
+            ? const Center(child: Text('لا يوجد نشاط حتى الآن'))
             : ListView.separated(
                 padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
                 itemCount: list.length,

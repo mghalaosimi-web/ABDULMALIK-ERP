@@ -70,6 +70,13 @@ List<_Destination> _destinations(bool ar) => [
     roles: _staff,
   ),
   _Destination(
+    ar ? 'الأكسسوارات' : 'Accessories',
+    Icons.headphones_outlined,
+    Icons.headphones_rounded,
+    () => const ProductsScreen(accessories: true),
+    roles: _staff,
+  ),
+  _Destination(
     ar ? 'الفواتير' : 'Invoices',
     Icons.receipt_long_outlined,
     Icons.receipt_long_rounded,

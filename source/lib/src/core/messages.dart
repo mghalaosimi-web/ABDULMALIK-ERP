@@ -1,4 +1,4 @@
-/// قوالب الرسائل وقواعد إرسالها. من غير Flutter عشان السيرفر يستخدمه.
+/// قوالب الرسائل وقواعد إرسالها، دون الاعتماد على Flutter؛ ليتمكن الخادم من استخدامها.
 library;
 
 import 'ticket_status.dart';
@@ -18,10 +18,10 @@ enum MessageEvent {
 
   static MessageEvent parse(String? v) => values.firstWhere((e) => e.name == v, orElse: () => custom);
 
-  /// الأحداث اللي ليها قاعدة إرسال أوتوماتيك (كل حاجة ما عدا الرسالة الحرة).
+  /// الأحداث التي لها قاعدة إرسال تلقائية (جميع الأحداث باستثناء الرسالة الحرة).
   static List<MessageEvent> get automatic => values.where((e) => e != custom).toList();
 
-  /// الحدث اللي بيحصل لما الجهاز يدخل المرحلة دي (لو فيه).
+  /// الحدث الذي يقع عند انتقال الجهاز إلى هذه المرحلة، إن وُجد.
   static MessageEvent? forStatus(TicketStatus s) => switch (s) {
         TicketStatus.ready => ready,
         TicketStatus.waitingParts => waitingParts,
@@ -57,31 +57,31 @@ const defaultTemplates = {
   'received': 'أهلاً {customer} 👋\n'
       'استلمنا جهازك {device} في {shop}.\n'
       'رقم الوصل: {number}\n'
-      'كود الاستلام: {pin} (هتحتاجه وإنت بتستلم)\n'
+      'كود الاستلام: {pin} (ستحتاج إليه عند استلام الجهاز)\n'
       'الموعد المتوقع: {due}\n'
       'تابع حالة جهازك من هنا: {link}\n'
       'للاستفسار: {shop_phone}',
   'ready': 'أهلاً {customer}، جهازك {device} جاهز للاستلام ✅\n'
       'المبلغ المتبقي: {remaining}\n'
-      'متنساش كود الاستلام: {pin}\n'
+      'لا تنسَ رمز الاستلام: {pin}\n'
       '{shop} - {shop_phone}',
-  'waitingParts': 'أهلاً {customer}، جهازك {device} مستني قطعة غيار.\n'
+  'waitingParts': 'أهلاً {customer}، جهازك {device} في انتظار قطعة غيار.\n'
       'الموعد المتوقع الجديد: {due}\n'
-      'آسفين على التأخير 🙏\n'
+      'نعتذر عن التأخير 🙏\n'
       '{shop}',
   'approval': 'أهلاً {customer}، الفني لقى في جهازك {device}:\n'
       '{approval_note}\n'
       'التكلفة الجديدة: {approval_total}\n'
-      'وافق أو ارفض من هنا: {link}\n'
+      'يمكنك الموافقة أو الرفض من هنا: {link}\n'
       'أو رد علينا على {shop_phone}',
-  'dueChanged': 'أهلاً {customer}، الموعد المتوقع لجهازك {device} بقى {due}.\n'
+  'dueChanged': 'أهلاً {customer}، الموعد المتوقع لجهازك {device} أصبح {due}.\n'
       'تابع حالة جهازك من هنا: {link}\n'
       '{shop}',
   'delivered': 'شكراً لتعاملك مع {shop} 🙏\n'
-      'اتسلم جهازك {device}. لو فيه أي مشكلة كلمنا على {shop_phone}.',
+      'تم تسليم جهازك {device}. إذا واجهت أي مشكلة، يُرجى التواصل معنا على {shop_phone}.',
   'reminder': 'أهلاً {customer}، جهازك {device} جاهز من {days} يوم ومستنيك ✅\n'
       'المبلغ المتبقي: {remaining}\n'
-      'متنساش كود الاستلام: {pin}\n'
+      'لا تنسَ رمز الاستلام: {pin}\n'
       '{shop} - {shop_phone}',
   'custom': 'أهلاً {customer}،\n\n{shop}',
 };
@@ -101,13 +101,13 @@ const templateVariables = {
   'approval_note': 'سبب التكلفة الزيادة',
   'pickup': 'معاد الاستلام المحجوز',
   'days': 'عدد الأيام من ساعة ما بقى جاهز',
-  'link': 'لينك متابعة الجهاز',
+  'link': 'رابط متابعة الجهاز',
   'shop': 'اسم المحل',
-  'shop_phone': 'تليفون المحل',
+  'shop_phone': 'هاتف المحل',
 };
 
-/// بيملا القالب بالقيم. أي سطر فيه متغير قيمته فاضية بيتشال كله
-/// (مثلاً لو مفيش لينك تتبع، سطر "تابع حالة جهازك" مش هيظهر).
+/// يملأ القالب بالقيم. يُحذف أي سطر يحتوي على متغير لا تتوفر له قيمة
+/// (مثلاً إذا لم يتوفر رابط للتتبع، سطر "تابع حالة جهازك" فلن يظهر).
 String renderTemplate(String template, Map<String, String?> values) {
   final lines = <String>[];
   final pattern = RegExp(r'\{([a-z_]+)\}');

@@ -164,7 +164,7 @@ Future<Uint8List> buildReceiptPdf(
       pw.Text(latinDigits(formatDateTime(t.createdAt)), style: st(8)),
       divider(),
       row('العميل', t.customerName, bold: true),
-      row('التليفون', t.customerPhone),
+      row('رقم الهاتف', t.customerPhone),
       divider(),
       row(
         'الجهاز',
@@ -216,7 +216,7 @@ Future<Uint8List> buildReceiptPdf(
                 style: st(20, bold: true).copyWith(letterSpacing: 4),
                 textDirection: pw.TextDirection.ltr,
               ),
-              pw.Text('هتحتاجه وإنت بتستلم الجهاز', style: st(7)),
+              pw.Text('ستحتاج إليه عند استلام الجهاز', style: st(7)),
             ],
           ),
         ),
@@ -236,7 +236,7 @@ Future<Uint8List> buildReceiptPdf(
         pw.SizedBox(height: 2),
         pw.Center(
           child: pw.Text(
-            'امسح الكود بكاميرا الموبايل وتابع حالة جهازك',
+            'امسح الرمز بكاميرا الهاتف لمتابعة حالة جهازك',
             style: st(8, bold: true),
             textAlign: pw.TextAlign.center,
           ),
@@ -515,7 +515,7 @@ Future<Uint8List> buildSalePdf(
   return doc.save();
 }
 
-/// ستيكرات باركود للأصناف: ستيكر 50×30 مم لكل صنف (طابعة ليبل) أو ورقة A4 عليها كذا ستيكر.
+/// ملصقات باركود للأصناف: ملصق بمقاس 50×30 مم لكل صنف (لطابعة الملصقات)، أو ورقة A4 تحتوي على عدة ملصقات.
 Future<Uint8List> buildBarcodeLabelsPdf(
   List<({Product product, int copies})> items,
   ShopProfile shop, {
@@ -594,10 +594,10 @@ Future<Uint8List> buildBarcodeLabelsPdf(
   return doc.save();
 }
 
-/// إيصال شرا موبايل مستعمل من زبون: البائع بيمضي عليه إن الجهاز ملكه.
+/// إيصال شراء جهاز مستعمل من عميل: يوقّع البائع لإقرار ملكيته للجهاز.
 Future<Uint8List> buildUsedPurchasePdf(PhoneUnit u, ShopProfile shop) async {
   final theme = await _loadTheme();
-  final doc = pw.Document(theme: theme, title: 'إيصال شرا ${u.imei}');
+  final doc = pw.Document(theme: theme, title: 'إيصال شراء ${u.imei}');
   pw.TextStyle st(double v, {bool bold = false}) => pw.TextStyle(
     fontSize: v,
     fontWeight: bold ? pw.FontWeight.bold : pw.FontWeight.normal,
@@ -635,7 +635,7 @@ Future<Uint8List> buildUsedPurchasePdf(PhoneUnit u, ShopProfile shop) async {
         ),
       divider(),
       pw.Center(
-        child: pw.Text('إيصال شرا جهاز مستعمل', style: st(12, bold: true)),
+        child: pw.Text('إيصال شراء جهاز مستعمل', style: st(12, bold: true)),
       ),
       pw.Center(
         child: pw.Text(
@@ -652,7 +652,7 @@ Future<Uint8List> buildUsedPurchasePdf(PhoneUnit u, ShopProfile shop) async {
       divider(),
       row('البائع', u.sellerName ?? ''),
       row('الرقم القومي', u.sellerNationalId ?? ''),
-      row('التليفون', u.sellerPhone ?? ''),
+      row('رقم الهاتف', u.sellerPhone ?? ''),
       row('المبلغ', money(u.costCents ?? 0)),
       divider(),
       pw.Text(

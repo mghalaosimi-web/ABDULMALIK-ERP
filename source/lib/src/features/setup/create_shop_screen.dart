@@ -60,7 +60,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
     }
   }
 
-  String? _required(String? v, String label) => (v == null || v.trim().isEmpty) ? (ref.read(localeProvider).languageCode == 'ar' ? 'لازم تكتب $label' : 'Please enter $label') : null;
+  String? _required(String? v, String label) => (v == null || v.trim().isEmpty) ? (ref.read(localeProvider).languageCode == 'ar' ? 'يرجى إدخال $label' : 'Please enter $label') : null;
 
   @override
   Widget build(BuildContext context) {
@@ -115,7 +115,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
             TextFormField(
               controller: _shopPhone,
               keyboardType: TextInputType.phone,
-              decoration: InputDecoration(labelText: ar ? 'رقم تليفون المحل' : 'Shop phone', prefixIcon: Icon(Icons.call_rounded)),
+              decoration: InputDecoration(labelText: ar ? 'رقم هاتف المحل' : 'Shop phone', prefixIcon: Icon(Icons.call_rounded)),
             ),
             const SizedBox(height: 12),
             TextFormField(
@@ -131,7 +131,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
             SectionTitle(ar ? 'حساب صاحب المحل' : 'Shop owner account'),
             TextFormField(
               controller: _ownerName,
-              decoration: InputDecoration(labelText: ar ? 'اسمك *' : 'Your name *', prefixIcon: Icon(Icons.person_rounded)),
+              decoration: InputDecoration(labelText: ar ? 'اسم صاحب المحل *' : 'Your name *', prefixIcon: Icon(Icons.person_rounded)),
               validator: (v) => _required(v, ar ? 'اسمك' : 'your name'),
             ),
             const SizedBox(height: 12),
@@ -146,7 +146,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
                 ),
                 validator: (v) => RegExp(r'^[a-zA-Z0-9_.]{3,30}$').hasMatch(v?.trim() ?? '')
                     ? null
-                     : (ar ? 'من 3 لـ 30 حرف إنجليزي أو أرقام' : 'Use 3–30 English letters, numbers or underscores'),
+                     : (ar ? 'من 3 إلى 30 حرفاً إنجليزياً أو رقماً أو شرطة سفلية' : 'Use 3–30 English letters, numbers or underscores'),
               ),
             ),
             const SizedBox(height: 12),
@@ -168,7 +168,7 @@ class _CreateShopScreenState extends ConsumerState<CreateShopScreen> {
               controller: _confirm,
               obscureText: !_showPassword,
               decoration: InputDecoration(labelText: ar ? 'تأكيد كلمة السر *' : 'Confirm password *', prefixIcon: Icon(Icons.lock_outline_rounded)),
-              validator: (v) => v != _password.text ? (ar ? 'كلمة السر مش زي اللي فوق' : 'Passwords do not match') : null,
+              validator: (v) => v != _password.text ? (ar ? 'كلمتا المرور غير متطابقتين' : 'Passwords do not match') : null,
               onFieldSubmitted: (_) => _submit(),
             ),
             if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],

@@ -1,10 +1,13 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../core/format.dart';
 import '../../core/pos_models.dart';
+import '../../core/product_sections.dart';
 import '../../core/session.dart';
 import '../../core/theme.dart';
 import '../../widgets/barcode_scan.dart';
@@ -17,8 +20,37 @@ import '../receipts/print_service.dart';
 import '../phones/phones_screen.dart';
 import 'import_screen.dart';
 
+
+const _productTemplates = <({String label, String category, int cost, int price, bool serialized, int warranty})>[
+  (label: 'هاتف ذكي', category: 'أجهزة محمولة', cost: 52000, price: 69900, serialized: true, warranty: 12),
+  (label: 'هاتف اقتصادي', category: 'أجهزة محمولة', cost: 35000, price: 46500, serialized: true, warranty: 12),
+  (label: 'شاحن سريع 25 واط', category: 'شواحن', cost: 5500, price: 9900, serialized: false, warranty: 3),
+  (label: 'سماعة لاسلكية', category: 'سماعات', cost: 8500, price: 15400, serialized: false, warranty: 3),
+  (label: 'كابل USB-C', category: 'كابلات', cost: 1200, price: 2500, serialized: false, warranty: 0),
+  (label: 'غطاء هاتف', category: 'أغطية وحافظات', cost: 2500, price: 5900, serialized: false, warranty: 0),
+  (label: 'واقي شاشة زجاجي', category: 'حماية الشاشة', cost: 1500, price: 4500, serialized: false, warranty: 0),
+  (label: 'بطارية هاتف', category: 'بطاريات وقطع', cost: 4500, price: 9500, serialized: false, warranty: 1),
+  (label: 'باور بانك 10000mAh', category: 'الأكسسوارات::أخرى', cost: 10500, price: 16000, serialized: false, warranty: 6),
+  (label: 'قطعة غيار شاشة', category: 'قطع غيار', cost: 9000, price: 14500, serialized: false, warranty: 1),
+];
+const _demoProducts = <({String name, String category, int cost, int price, int qty, bool serialized, int warranty})>[
+  (name: 'عينة تجريبية — Samsung Galaxy A17 4G 128GB', category: 'أجهزة محمولة', cost: 56000, price: 69900, qty: 0, serialized: true, warranty: 12),
+  (name: 'عينة تجريبية — Samsung Galaxy A07 64GB', category: 'أجهزة محمولة', cost: 37000, price: 46500, qty: 0, serialized: true, warranty: 12),
+  (name: 'عينة تجريبية — شاحن Samsung USB-C 25W', category: 'الأكسسوارات::شواحن', cost: 5500, price: 9900, qty: 3, serialized: false, warranty: 3),
+  (name: 'عينة تجريبية — سماعة Galaxy Buds Core', category: 'الأكسسوارات::سماعات', cost: 9000, price: 15400, qty: 2, serialized: false, warranty: 3),
+  (name: 'عينة تجريبية — سماعة سلكية USB-C', category: 'الأكسسوارات::سماعات', cost: 1800, price: 3100, qty: 4, serialized: false, warranty: 1),
+  (name: 'عينة تجريبية — كابل USB-C سريع 1 متر', category: 'الأكسسوارات::كابلات', cost: 1200, price: 2500, qty: 5, serialized: false, warranty: 0),
+  (name: 'عينة تجريبية — غطاء حماية شفاف', category: 'الأكسسوارات::أغطية وحافظات', cost: 2500, price: 5900, qty: 4, serialized: false, warranty: 0),
+  (name: 'عينة تجريبية — واقي شاشة زجاجي', category: 'الأكسسوارات::حماية الشاشة', cost: 1500, price: 4500, qty: 6, serialized: false, warranty: 0),
+  (name: 'عينة تجريبية — باور بانك 10000mAh', category: 'الأكسسوارات::أخرى', cost: 10500, price: 16000, qty: 2, serialized: false, warranty: 6),
+  (name: 'عينة تجريبية — بطارية هاتف', category: 'الأكسسوارات::بطاريات وقطع', cost: 4500, price: 9500, qty: 2, serialized: false, warranty: 1),
+  (name: 'عينة تجريبية — شاشة بديلة لهاتف', category: 'قطع غيار', cost: 9000, price: 14500, qty: 1, serialized: false, warranty: 1),
+  (name: 'عينة تجريبية — خدمة تركيب واقي شاشة', category: 'خدمات', cost: 0, price: 2500, qty: 0, serialized: false, warranty: 0),
+];
 class ProductsScreen extends ConsumerStatefulWidget {
-  const ProductsScreen({super.key});
+  const ProductsScreen({super.key, this.accessories = false});
+
+  final bool accessories;
 
   @override
   ConsumerState<ProductsScreen> createState() => _ProductsScreenState();
@@ -38,19 +70,68 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     super.dispose();
   }
 
+  Future<void> _addDemoProducts() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('إضافة منتجات تجريبية'),
+        content: const Text('ستُضاف عينة من الهواتف والسماعات والشواحن والكابلات والحماية وقطع الغيار والخدمات، مع أسعار وكميات افتراضية. ستظهر باسم «عينة تجريبية»، ويمكنك تعديلها أو إيقافها لاحقاً.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('إضافة العينات')),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    var added = 0;
+    final api = ref.read(sessionProvider).value!.api!;
+    try {
+      final existing = await api.get('/api/products', query: {'q': 'عينة تجريبية', 'limit': '500'});
+      final existingNames = ((existing['products'] as List?) ?? const [])
+          .map((item) => (item as Map)['name'] as String)
+          .toSet();
+      for (final item in _demoProducts) {
+        if (existingNames.contains(item.name)) continue;
+        await api.post('/api/products', {
+          'name': item.name, 'category': item.category, 'costCents': item.cost,
+          'priceCents': item.price, 'qty': item.qty, 'lowStock': 1,
+          'trackStock': true, 'serialized': item.serialized, 'warrantyMonths': item.warranty,
+          'notes': 'بيانات تجريبية — يمكن تعديلها أو إيقاف الصنف.',
+        });
+        added++;
+      }
+      ref.invalidate(productsProvider);
+      ref.invalidate(categoriesProvider);
+      if (mounted) showMessage(context, 'تمت إضافة $added منتج تجريبي. يمكنك البحث عن «عينة تجريبية» لإدارتها.');
+    } catch (e) {
+      ref.invalidate(productsProvider);
+      if (mounted) showMessage(context, 'تمت إضافة $added من ${_demoProducts.length}؛ تعذرت متابعة البقية: ${errorText(e)}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(sessionProvider).value!.user!;
-    final data = ref.watch(productsProvider((q: _query, category: _category, low: _lowOnly)));
-    final categories = ref.watch(categoriesProvider).value ?? const <String>[];
+    final data = ref.watch(productsProvider((q: _query, category: _category, low: _lowOnly, section: widget.accessories ? 'accessories' : 'general')));
+    final allCategories = ref.watch(categoriesProvider).value ?? const <String>[];
+    final categories = allCategories
+        .where((c) => widget.accessories ? isAccessoriesCategory(c) : !isAccessoriesCategory(c))
+        .map((c) => widget.accessories ? visibleProductCategory(c) : c)
+        .toList();
     final scheme = Theme.of(context).colorScheme;
     final r = data.value;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('المخزون'),
+        title: Text(widget.accessories ? 'الأكسسوارات' : 'المخزون'),
         actions: [
-          if (user.isOwner)
+          if (user.isOwner && !widget.accessories)
+            TextButton.icon(
+              onPressed: _addDemoProducts,
+              icon: const Icon(Icons.auto_awesome_rounded),
+              label: const Text('إضافة عينات تجريبية'),
+            ),
+          if (user.isOwner && !widget.accessories)
             TextButton.icon(
               onPressed: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const ImportScreen())),
               icon: const Icon(Icons.upload_file_rounded),
@@ -70,9 +151,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
         ],
       ),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showDialog<void>(context: context, builder: (_) => const ProductDialog()),
+        onPressed: () => showDialog<void>(context: context, builder: (_) => ProductDialog(accessories: widget.accessories)),
         icon: const Icon(Icons.add_rounded),
-        label: const Text('صنف جديد'),
+        label: Text(widget.accessories ? 'إضافة ملحق' : 'صنف جديد'),
       ),
       body: Column(
         children: [
@@ -87,9 +168,9 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                   if (r.lowCount > 0)
                     InkWell(
                       onTap: () => setState(() => _lowOnly = !_lowOnly),
-                      child: Text('${r.lowCount} قرّب يخلص', style: TextStyle(color: scheme.error).semiBold),
+                      child: Text('${r.lowCount} أوشك على النفاد', style: TextStyle(color: scheme.error).semiBold),
                     ),
-                  if (r.stockValueCents != null) Text('قيمة البضاعة (بسعر الشرا): ${money(r.stockValueCents!)}'),
+                  if (r.stockValueCents != null) Text('قيمة البضاعة (بسعر الشراء): ${money(r.stockValueCents!)}'),
                 ],
               ),
             ),
@@ -98,7 +179,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             child: TextField(
               controller: _search,
               decoration: InputDecoration(
-                hintText: 'دوّر بالاسم أو الباركود',
+                hintText: 'ابحث بالاسم أو الرمز الشريطي',
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: cameraScanSupported
                     ? IconButton(
@@ -127,7 +208,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 6),
-                  child: FilterChip(label: const Text('قرّب يخلص'), selected: _lowOnly, onSelected: (v) => setState(() => _lowOnly = v)),
+                  child: FilterChip(label: const Text('أوشك على النفاد'), selected: _lowOnly, onSelected: (v) => setState(() => _lowOnly = v)),
                 ),
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 6),
@@ -140,7 +221,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 for (final c in categories)
                   Padding(
                     padding: const EdgeInsetsDirectional.only(end: 6),
-                    child: ChoiceChip(label: Text(c), selected: _category == c, onSelected: (_) => setState(() => _category = c)),
+                    child: ChoiceChip(label: Text(c), selected: (widget.accessories ? visibleProductCategory(_category) : _category) == c, onSelected: (_) => setState(() => _category = widget.accessories ? storedAccessoriesCategory(c) : c)),
                   ),
               ],
             ),
@@ -157,14 +238,14 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                   ? EmptyState(
                       icon: Icons.inventory_2_outlined,
                       message: _query.isEmpty && _category == null && !_lowOnly
-                          ? 'لسه مفيش أصناف.\nضيف صنف جديد، أو استورد الأصناف من ملف Excel من برنامجك القديم.'
-                          : 'مفيش أصناف هنا',
+                          ? (widget.accessories ? 'لا توجد أكسسوارات حتى الآن.\nابدأ بإضافة أول ملحق وتحديد تصنيفه.' : 'لا توجد أصناف حتى الآن.\nأضف صنفاً جديداً، أو استورد الأصناف من ملف Excel من برنامجك السابق.')
+                          : 'لا توجد أصناف هنا',
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
                       itemCount: r.items.length,
                       separatorBuilder: (_, _) => const SizedBox(height: 6),
-                      itemBuilder: (context, i) => _ProductRow(product: r.items[i], showCost: user.isOwner),
+                      itemBuilder: (context, i) => _ProductRow(product: r.items[i], showCost: user.isOwner, accessories: widget.accessories),
                     ),
             ),
           ),
@@ -175,9 +256,10 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 }
 
 class _ProductRow extends StatelessWidget {
-  const _ProductRow({required this.product, required this.showCost});
+  const _ProductRow({required this.product, required this.showCost, required this.accessories});
   final Product product;
   final bool showCost;
+  final bool accessories;
 
   @override
   Widget build(BuildContext context) {
@@ -188,14 +270,16 @@ class _ProductRow extends StatelessWidget {
       child: ListTile(
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
         title: Text(p.name, style: const TextStyle().semiBold),
-        subtitle: Text([?p.category, if (p.barcode != null) p.barcode!, if (showCost) 'شرا ${money(p.costCents)}'].join(' • ')),
-        leading: p.trackStock && !p.serialized
-            ? IconButton.filledTonal(
-                tooltip: 'إضافة كمية وصلت',
-                icon: const Icon(Icons.add_rounded),
-                onPressed: () => showDialog<void>(context: context, builder: (_) => AddStockDialog(product: p)),
-              )
-            : null,
+        subtitle: Text([if ((p.category ?? '').isNotEmpty) visibleProductCategory(p.category), if (p.barcode != null) p.barcode!, if (showCost) 'شراء ${money(p.costCents)}'].join(' • ')),
+        leading: p.imageFileId != null
+            ? _ProductImageThumbnail(fileId: p.imageFileId!, size: 52)
+            : p.trackStock && !p.serialized
+                ? IconButton.filledTonal(
+                    tooltip: 'إضافة كمية واردة',
+                    icon: const Icon(Icons.add_rounded),
+                    onPressed: () => showDialog<void>(context: context, builder: (_) => AddStockDialog(product: p)),
+                  )
+                : null,
         trailing: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.end,
@@ -203,25 +287,269 @@ class _ProductRow extends StatelessWidget {
             Text(money(p.priceCents), style: TextStyle(color: scheme.primary).bold),
             if (p.trackStock)
               Text(
-                p.outOfStock ? 'خلصان' : 'متاح ${p.qty}',
+                p.outOfStock ? 'نفدت الكمية' : 'متاح ${p.qty}',
                 style: TextStyle(fontSize: 12, color: p.isLow ? scheme.error : scheme.onSurfaceVariant).semiBold,
               ),
           ],
         ),
         onTap: () => showDialog<void>(
           context: context,
-          builder: (_) => ProductDialog(product: p),
+          builder: (_) => ProductDialog(product: p, accessories: accessories),
         ),
       ),
     );
   }
 }
 
+
+typedef _PhoneTemplate = ({String brand, String series, String name});
+const _phoneTemplates = <_PhoneTemplate>[
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S26 Ultra'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S26+'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S26'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S25 Ultra'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S25+'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S25'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S25 FE'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S24 Ultra'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S24+'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S24'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S24 FE'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S23 Ultra'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S23+'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S23'),
+  (brand: 'Samsung', series: 'Galaxy S', name: 'Samsung Galaxy S23 FE'),
+  (brand: 'Samsung', series: 'Galaxy Note', name: 'Samsung Galaxy Note20 Ultra'),
+  (brand: 'Samsung', series: 'Galaxy Note', name: 'Samsung Galaxy Note20'),
+  (brand: 'Samsung', series: 'Galaxy Note', name: 'Samsung Galaxy Note10+'),
+  (brand: 'Samsung', series: 'Galaxy Note', name: 'Samsung Galaxy Note10'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A57'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A56 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A55 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A54 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A53 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A37'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A36 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A35 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A34 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A26 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A25 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A17 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A17 4G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A16 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A16 4G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A15 5G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A15 4G'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A07'),
+  (brand: 'Samsung', series: 'Galaxy A', name: 'Samsung Galaxy A06'),
+  (brand: 'Samsung', series: 'Galaxy Z', name: 'Samsung Galaxy Z Fold7'),
+  (brand: 'Samsung', series: 'Galaxy Z', name: 'Samsung Galaxy Z Flip7'),
+  (brand: 'Samsung', series: 'Galaxy Z', name: 'Samsung Galaxy Z Fold6'),
+  (brand: 'Samsung', series: 'Galaxy Z', name: 'Samsung Galaxy Z Flip6'),
+  (brand: 'Samsung', series: 'Galaxy Z', name: 'Samsung Galaxy Z Fold5'),
+  (brand: 'Samsung', series: 'Galaxy Z', name: 'Samsung Galaxy Z Flip5'),
+  (brand: 'Samsung', series: 'Galaxy M', name: 'Samsung Galaxy M56 5G'),
+  (brand: 'Samsung', series: 'Galaxy M', name: 'Samsung Galaxy M55 5G'),
+  (brand: 'Samsung', series: 'Galaxy M', name: 'Samsung Galaxy M35 5G'),
+  (brand: 'Samsung', series: 'Galaxy M', name: 'Samsung Galaxy M15 5G'),
+  (brand: 'Apple', series: 'iPhone 17', name: 'Apple iPhone 17 Pro Max'),
+  (brand: 'Apple', series: 'iPhone 17', name: 'Apple iPhone 17 Pro'),
+  (brand: 'Apple', series: 'iPhone 17', name: 'Apple iPhone 17 Plus'),
+  (brand: 'Apple', series: 'iPhone 17', name: 'Apple iPhone 17'),
+  (brand: 'Apple', series: 'iPhone 17', name: 'Apple iPhone 17 Air'),
+  (brand: 'Apple', series: 'iPhone 16', name: 'Apple iPhone 16 Pro Max'),
+  (brand: 'Apple', series: 'iPhone 16', name: 'Apple iPhone 16 Pro'),
+  (brand: 'Apple', series: 'iPhone 16', name: 'Apple iPhone 16 Plus'),
+  (brand: 'Apple', series: 'iPhone 16', name: 'Apple iPhone 16'),
+  (brand: 'Apple', series: 'iPhone 16', name: 'Apple iPhone 16e'),
+  (brand: 'Apple', series: 'iPhone 15', name: 'Apple iPhone 15 Pro Max'),
+  (brand: 'Apple', series: 'iPhone 15', name: 'Apple iPhone 15 Pro'),
+  (brand: 'Apple', series: 'iPhone 15', name: 'Apple iPhone 15 Plus'),
+  (brand: 'Apple', series: 'iPhone 15', name: 'Apple iPhone 15'),
+  (brand: 'Apple', series: 'iPhone 14', name: 'Apple iPhone 14 Pro Max'),
+  (brand: 'Apple', series: 'iPhone 14', name: 'Apple iPhone 14 Pro'),
+  (brand: 'Apple', series: 'iPhone 14', name: 'Apple iPhone 14 Plus'),
+  (brand: 'Apple', series: 'iPhone 14', name: 'Apple iPhone 14'),
+  (brand: 'Apple', series: 'iPhone 13', name: 'Apple iPhone 13 Pro Max'),
+  (brand: 'Apple', series: 'iPhone 13', name: 'Apple iPhone 13 Pro'),
+  (brand: 'Apple', series: 'iPhone 13', name: 'Apple iPhone 13'),
+  (brand: 'Apple', series: 'iPhone 13', name: 'Apple iPhone 13 mini'),
+  (brand: 'Apple', series: 'iPhone 12', name: 'Apple iPhone 12 Pro Max'),
+  (brand: 'Apple', series: 'iPhone 12', name: 'Apple iPhone 12 Pro'),
+  (brand: 'Apple', series: 'iPhone 12', name: 'Apple iPhone 12'),
+  (brand: 'Apple', series: 'iPhone 12', name: 'Apple iPhone 12 mini'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic8 Pro'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic8'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic7 Pro'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic7'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic6 Pro'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic V3'),
+  (brand: 'Honor', series: 'Magic', name: 'HONOR Magic V2'),
+  (brand: 'Honor', series: 'Number', name: 'HONOR 400 Pro'),
+  (brand: 'Honor', series: 'Number', name: 'HONOR 400'),
+  (brand: 'Honor', series: 'Number', name: 'HONOR 200 Pro'),
+  (brand: 'Honor', series: 'Number', name: 'HONOR 200'),
+  (brand: 'Honor', series: 'Number', name: 'HONOR 90'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X9d'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X9c'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X9b'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X8c'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X8b'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X7c'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X7b'),
+  (brand: 'Honor', series: 'X', name: 'HONOR X6b'),
+  (brand: 'Honor', series: 'Play', name: 'HONOR Play9T'),
+  (brand: 'Honor', series: 'Play', name: 'HONOR Play8T'),
+];
+
+const _customPhoneTemplatesKey = 'abdulmalik_custom_phone_templates_v1';
+
+Future<_PhoneTemplate?> _showPhoneTemplatePicker(BuildContext context) =>
+    showDialog<_PhoneTemplate>(context: context, builder: (_) => const _PhoneTemplatePicker());
+
+class _PhoneTemplatePicker extends StatefulWidget {
+  const _PhoneTemplatePicker();
+  @override
+  State<_PhoneTemplatePicker> createState() => _PhoneTemplatePickerState();
+}
+
+class _PhoneTemplatePickerState extends State<_PhoneTemplatePicker> {
+  final _search = TextEditingController();
+  String _brand = 'Samsung';
+  String? _series;
+  final List<_PhoneTemplate> _customTemplates = [];
+  bool _loadingCustom = true;
+  List<_PhoneTemplate> get _allTemplates => [..._phoneTemplates, ..._customTemplates];
+
+  @override
+  void initState() { super.initState(); _loadCustomTemplates(); }
+
+  Future<void> _loadCustomTemplates() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final raw = prefs.getString(_customPhoneTemplatesKey);
+      if (raw != null) {
+        final decoded = jsonDecode(raw) as List;
+        _customTemplates.addAll(decoded.map((item) {
+          final map = item as Map<String, dynamic>;
+          return (brand: map['brand'] as String, series: map['series'] as String, name: map['name'] as String);
+        }));
+      }
+    } catch (_) {}
+    if (mounted) setState(() => _loadingCustom = false);
+  }
+
+  Future<void> _addCustomTemplate() async {
+    final brand = TextEditingController(text: _brand);
+    final series = TextEditingController(text: _series ?? 'فئة مخصصة');
+    final name = TextEditingController();
+    final result = await showDialog<_PhoneTemplate>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('إضافة طراز هاتف جديد'),
+        content: SizedBox(width: 420, child: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(controller: brand, decoration: const InputDecoration(labelText: 'الشركة المصنعة')),
+          const SizedBox(height: 8),
+          TextField(controller: series, decoration: const InputDecoration(labelText: 'الفئة أو السلسلة')),
+          const SizedBox(height: 8),
+          TextField(controller: name, autofocus: true, decoration: const InputDecoration(labelText: 'اسم الطراز الكامل')),
+        ])),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(dialogContext), child: const Text('إلغاء')),
+          FilledButton(onPressed: () {
+            if (brand.text.trim().isEmpty || name.text.trim().isEmpty) return;
+            Navigator.pop(dialogContext, (
+              brand: brand.text.trim(),
+              series: series.text.trim().isEmpty ? 'فئة مخصصة' : series.text.trim(),
+              name: name.text.trim(),
+            ));
+          }, child: const Text('إضافة القالب')),
+        ],
+      ),
+    );
+    brand.dispose(); series.dispose(); name.dispose();
+    if (result == null) return;
+    if (_allTemplates.any((item) => item.name.toLowerCase() == result.name.toLowerCase())) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('هذا الطراز موجود بالفعل في القائمة')));
+      return;
+    }
+    setState(() { _customTemplates.add(result); _brand = result.brand; _series = result.series; _search.clear(); });
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_customPhoneTemplatesKey, jsonEncode(_customTemplates.map((item) => {
+      'brand': item.brand, 'series': item.series, 'name': item.name,
+    }).toList()));
+  }
+
+  @override
+  void dispose() { _search.dispose(); super.dispose(); }
+
+  @override
+  Widget build(BuildContext context) {
+    final templates = _allTemplates;
+    final brands = templates.map((e) => e.brand).toSet().toList()..sort();
+    final series = templates.where((e) => e.brand == _brand).map((e) => e.series).toSet().toList()..sort();
+    final q = _search.text.trim().toLowerCase();
+    final items = templates.where((e) => e.brand == _brand &&
+      (_series == null || e.series == _series) && (q.isEmpty || e.name.toLowerCase().contains(q))).toList();
+    return AlertDialog(
+      title: const Text('اختيار طراز الهاتف'),
+      content: SizedBox(width: 520, height: 540, child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        Wrap(spacing: 8, runSpacing: 6, children: [
+          for (final b in brands) ChoiceChip(label: Text(b), selected: _brand == b, onSelected: (_) => setState(() { _brand=b; _series=null; })),
+        ]),
+        const SizedBox(height: 10),
+        TextField(controller: _search, decoration: const InputDecoration(prefixIcon: Icon(Icons.search), hintText: 'ابحث عن اسم الطراز أو رقمه'), onChanged: (_) => setState(() {})),
+        const SizedBox(height: 10),
+        SizedBox(height: 42, child: ListView(scrollDirection: Axis.horizontal, children: [
+          Padding(padding: const EdgeInsetsDirectional.only(end: 6), child: ChoiceChip(label: const Text('كل الفئات'), selected: _series == null, onSelected: (_) => setState(() => _series=null))),
+          for (final s in series) Padding(padding: const EdgeInsetsDirectional.only(end: 6), child: ChoiceChip(label: Text(s), selected: _series == s, onSelected: (_) => setState(() => _series=s))),
+        ])),
+        const SizedBox(height: 8),
+        Expanded(child: _loadingCustom ? const Center(child: CircularProgressIndicator()) :
+          items.isEmpty ? const Center(child: Text('لا توجد نتائج مطابقة')) :
+          ListView.separated(
+            itemCount: items.length, separatorBuilder: (_, _) => const Divider(height: 1),
+            itemBuilder: (_, i) => ListTile(dense: true, leading: const Icon(Icons.phone_android_rounded),
+              title: Text(items[i].name), subtitle: Text(items[i].series),
+              trailing: _customTemplates.contains(items[i]) ? const Icon(Icons.bookmark_added_outlined, size: 18) : null,
+              onTap: () => Navigator.pop(context, items[i])),
+          )),
+        Text('${items.length} طرازاً في القائمة', textAlign: TextAlign.end, style: Theme.of(context).textTheme.bodySmall),
+      ])),
+      actions: [
+        TextButton.icon(onPressed: _addCustomTemplate, icon: const Icon(Icons.add), label: const Text('إضافة طراز جديد')),
+        TextButton(onPressed: () => Navigator.pop(context), child: const Text('إلغاء')),
+      ],
+    );
+  }
+}
+
 /// إضافة صنف أو تعديله، ومنه الجرد وحركة المخزون.
+class _ProductImageThumbnail extends ConsumerWidget {
+  const _ProductImageThumbnail({required this.fileId, this.size = 64});
+  final String fileId;
+  final double size;
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final api = ref.read(sessionProvider).value!.api!;
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(10),
+      child: Image.network(
+        '${api.baseUrl}/api/files/$fileId', width: size, height: size, fit: BoxFit.cover,
+        headers: {'authorization': 'Bearer ${api.token}'},
+        errorBuilder: (_, _, _) => Container(width: size, height: size,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
+          child: const Icon(Icons.broken_image_outlined)),
+      ),
+    );
+  }
+}
+
 class ProductDialog extends ConsumerStatefulWidget {
-  const ProductDialog({super.key, this.product, this.initialBarcode});
+  const ProductDialog({super.key, this.product, this.initialBarcode, this.accessories = false});
   final Product? product;
   final String? initialBarcode;
+  final bool accessories;
 
   @override
   ConsumerState<ProductDialog> createState() => _ProductDialogState();
@@ -232,7 +560,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
   late final p = widget.product;
   late final _name = TextEditingController(text: p?.name);
   late final _barcode = TextEditingController(text: p?.barcode ?? widget.initialBarcode);
-  late final _category = TextEditingController(text: p?.category);
+  late final _category = TextEditingController(text: widget.accessories ? visibleProductCategory(p?.category) : p?.category);
   late final _cost = TextEditingController(text: p == null ? '' : moneyInput(p!.costCents));
   late final _price = TextEditingController(text: p == null ? '' : moneyInput(p!.priceCents));
   late final _qty = TextEditingController(text: p == null ? '' : '${p!.qty}');
@@ -242,6 +570,11 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
   late final _warranty = TextEditingController(text: '${p?.warrantyMonths ?? 0}');
   bool _busy = false;
   String? _error;
+  String? _imageFileId;
+  bool _imageChanged = false;
+
+  @override
+  void initState() { super.initState(); _imageFileId = p?.imageFileId; }
 
   bool get _isNew => p == null;
 
@@ -260,6 +593,10 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
 
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
+    if (widget.accessories && _category.text.trim().isEmpty) {
+      setState(() => _error = 'يرجى تحديد تصنيف الملحق أولاً');
+      return;
+    }
     final isOwner = ref.read(sessionProvider).value!.user!.isOwner;
     setState(() {
       _busy = true;
@@ -270,13 +607,14 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
       final body = {
         'name': _name.text,
         'barcode': _barcode.text,
-        'category': _category.text,
+        'category': widget.accessories ? storedAccessoriesCategory(_category.text) : _category.text,
         if (isOwner || _isNew) 'costCents': parseMoney(_cost.text) ?? 0,
         'priceCents': parseMoney(_price.text) ?? 0,
         'lowStock': int.tryParse(latinDigits(_low.text)) ?? 0,
         'trackStock': _track,
         'serialized': _serialized,
         'warrantyMonths': int.tryParse(latinDigits(_warranty.text)) ?? 0,
+        if (_imageChanged) 'imageFileId': _imageFileId,
       };
       if (_isNew) {
         await api.post('/api/products', {...body, 'qty': int.tryParse(latinDigits(_qty.text)) ?? 0});
@@ -290,7 +628,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
       ref.invalidate(productsProvider);
       if (!mounted) return;
       Navigator.pop(context);
-      showMessage(context, _isNew ? 'اتضاف "${_name.text}"' : 'اتحفظ');
+      showMessage(context, _isNew ? 'تمت إضافة "${_name.text}"' : 'تم الحفظ');
     } catch (e) {
       if (mounted) setState(() => _error = errorText(e));
     } finally {
@@ -320,6 +658,47 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (_isNew)
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: Wrap(spacing: 8, runSpacing: 4, children: [
+                      TextButton.icon(
+                        onPressed: () async {
+                          final selected = await _showPhoneTemplatePicker(context);
+                          if (selected == null || !mounted) return;
+                          setState(() {
+                            _name.text = selected.name;
+                            _category.text = 'أجهزة محمولة';
+                            _serialized = true;
+                            _track = true;
+                            _warranty.text = '12';
+                            _qty.text = '0';
+                          });
+                        },
+                        icon: const Icon(Icons.phone_android_rounded, size: 18),
+                        label: const Text('قوالب الهواتف حسب الشركة'),
+                      ),
+                      PopupMenuButton<int>(
+                        tooltip: 'قوالب المنتجات العامة',
+                        onSelected: (index) {
+                          final t = _productTemplates[index];
+                          setState(() {
+                            _name.text = t.label; _category.text = t.category;
+                            _cost.text = (t.cost / 100).toStringAsFixed(2);
+                            _price.text = (t.price / 100).toStringAsFixed(2);
+                            _serialized = t.serialized; _track = true;
+                            _warranty.text = '${t.warranty}';
+                            if (t.serialized) _qty.text = '0';
+                          });
+                        },
+                        itemBuilder: (_) => [for (var i=0; i<_productTemplates.length; i++) PopupMenuItem(value:i, child:Text(_productTemplates[i].label))],
+                        child: const Padding(padding: EdgeInsets.symmetric(vertical: 8), child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.dashboard_customize_outlined, size: 18), SizedBox(width: 6),
+                          Text('قوالب المنتجات الأخرى'), Icon(Icons.arrow_drop_down),
+                        ])),
+                      ),
+                    ]),
+                  ),
                 TextFormField(
                   controller: _name,
                   autofocus: _isNew,
@@ -331,7 +710,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                   controller: _barcode,
                   textDirection: TextDirection.ltr,
                   decoration: InputDecoration(
-                    labelText: 'الباركود (امسحه بالسكانر أو سيبه فاضي)',
+                    labelText: 'الرمز الشريطي (امسحه بالقارئ أو اتركه فارغاً)',
                     suffixIcon: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -343,20 +722,56 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                               if (c != null) setState(() => _barcode.text = c);
                             },
                           ),
-                        IconButton(tooltip: 'اعمل باركود جديد', icon: const Icon(Icons.auto_awesome_rounded), onPressed: _generateBarcode),
+                        IconButton(tooltip: 'إنشاء رمز شريطي جديد', icon: const Icon(Icons.auto_awesome_rounded), onPressed: _generateBarcode),
                       ],
                     ),
                   ),
                 ),
                 const SizedBox(height: 12),
-                SuggestField(controller: _category, label: 'القسم (مثلاً: جرابات، شواحن)', options: () => categories),
+                const SizedBox(height: 12),
+                Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+                  if (_imageFileId != null)
+                    _ProductImageThumbnail(fileId: _imageFileId!, size: 88)
+                  else
+                    Container(width: 88, height: 88,
+                      decoration: BoxDecoration(color: Theme.of(context).colorScheme.surfaceContainerHighest, borderRadius: BorderRadius.circular(12)),
+                      child: const Icon(Icons.image_outlined, size: 34)),
+                  const SizedBox(width: 12),
+                  Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                    Text('صورة الصنف', style: Theme.of(context).textTheme.titleSmall),
+                    const SizedBox(height: 4),
+                    Text('اختر صورة من الجهاز أو التقطها. تُحفظ على خادم المحل.', style: Theme.of(context).textTheme.bodySmall),
+                    TextButton.icon(
+                      onPressed: _busy ? null : () async {
+                        try {
+                          final id = await captureAndUploadPhoto(context, ref, 'product');
+                          if (id != null && mounted) setState(() { _imageFileId = id; _imageChanged = true; });
+                        } catch (e) { if (context.mounted) showMessage(context, errorText(e)); }
+                      },
+                      icon: const Icon(Icons.add_a_photo_outlined),
+                      label: Text(_imageFileId == null ? 'إضافة صورة' : 'تغيير الصورة'),
+                    ),
+                    if (_imageFileId != null)
+                      TextButton.icon(
+                        onPressed: _busy ? null : () => setState(() { _imageFileId = null; _imageChanged = true; }),
+                        icon: const Icon(Icons.delete_outline), label: const Text('إزالة الصورة')),
+                  ])),
+                ]),
+                const SizedBox(height: 12),
+                SuggestField(
+                  controller: _category,
+                  label: widget.accessories ? 'تصنيف الأكسسوار' : 'القسم (مثلاً: أجهزة، قطع غيار)',
+                  options: () => widget.accessories
+                      ? accessoriesCategories
+                      : categories.where((c) => !isAccessoriesCategory(c)).toList(),
+                ),
                 const SizedBox(height: 12),
                 Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     if (user.isOwner || _isNew) ...[
                       Expanded(
-                        child: MoneyField(controller: _cost, label: 'سعر الشرا'),
+                        child: MoneyField(controller: _cost, label: 'سعر الشراء'),
                       ),
                       const SizedBox(width: 12),
                     ],
@@ -368,21 +783,21 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                 const SizedBox(height: 12),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('موبايل / جهاز له IMEI'),
-                  subtitle: const Text('كل جهاز بيتسجل ويتباع بالـ IMEI بتاعه'),
+                  title: const Text('هاتف أو جهاز برقم IMEI'),
+                  subtitle: const Text('يُسجّل كل جهاز ويُباع باستخدام رقم IMEI الخاص به'),
                   value: _serialized,
                   onChanged: p?.serialized == true ? null : (v) => setState(() => _serialized = v),
                 ),
                 TextFormField(
                   controller: _warranty,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'الضمان بالشهور (0 = من غير ضمان)'),
+                  decoration: const InputDecoration(labelText: 'الضمان بالشهور (0 = دون ضمان)'),
                 ),
                 if (!_serialized)
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('متابعة الكمية في المخزون'),
-                    subtitle: const Text('اقفلها للخدمات أو الحاجات اللي مالهاش عدد'),
+                    subtitle: const Text('عطّلها للخدمات أو الأصناف التي لا تُتابع كميتها'),
                     value: _track,
                     onChanged: (v) => setState(() => _track = v),
                   ),
@@ -414,7 +829,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                         child: TextFormField(
                           controller: _low,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'نبّهني لما يوصل لـ'),
+                          decoration: const InputDecoration(labelText: 'نبّهني عند وصول الكمية إلى'),
                         ),
                       ),
                     ],
@@ -562,7 +977,7 @@ class _AddStockDialogState extends ConsumerState<AddStockDialog> {
           ),
           if (isOwner) ...[
             const SizedBox(height: 10),
-            MoneyField(controller: _cost, label: 'دفعت فيهم كام؟ (اختياري، عشان سعر الشرا يتحدث)'),
+            MoneyField(controller: _cost, label: 'كم دفعت؟ (اختياري، لتحديث سعر الشراء)'),
           ],
           if (_error != null) ...[const SizedBox(height: 10), ErrorBanner(_error!)],
         ]),
@@ -579,7 +994,7 @@ const _moveReasons = {
   'initial': 'رصيد أول المدة',
   'sale': 'بيع',
   'return': 'مرتجع من عميل',
-  'purchase': 'شرا / وارد',
+  'purchase': 'شراء / وارد',
   'count': 'جرد',
   'damaged': 'تالف',
   'lost': 'فاقد',
@@ -609,7 +1024,7 @@ class _MovesDialog extends ConsumerWidget {
             if (snap.hasError) return ErrorBanner(errorText(snap.error!));
             if (!snap.hasData) return const Center(child: CircularProgressIndicator());
             final moves = (snap.data!['moves'] as List).cast<Map<String, dynamic>>();
-            if (moves.isEmpty) return const Center(child: Text('مفيش حركة'));
+            if (moves.isEmpty) return const Center(child: Text('لا توجد حركات'));
             return ListView.separated(
               itemCount: moves.length,
               separatorBuilder: (_, _) => const Divider(height: 1),
@@ -669,7 +1084,7 @@ class _LabelsDialogState extends ConsumerState<_LabelsDialog> {
               onSelectionChanged: (s) => setState(() => _a4 = s.first),
             ),
             const SizedBox(height: 8),
-            if (widget.products.isEmpty) const Expanded(child: Center(child: Text('مفيش أصناف ليها باركود في القايمة'))),
+            if (widget.products.isEmpty) const Expanded(child: Center(child: Text('لا توجد أصناف لها رموز شريطية في القائمة'))),
             Expanded(
               child: ListView(
                 children: [
@@ -716,7 +1131,7 @@ class _LabelsDialogState extends ConsumerState<_LabelsDialog> {
   }
 }
 
-/// بيستخدم في الكاشير لما باركود مش متسجل: يفتح شاشة صنف جديد بالباركود ده.
+/// يُستخدم في شاشة نقطة البيع عند مسح رمز شريطي غير مسجل؛ لفتح شاشة إضافة صنف جديد بهذا الرمز.
 Future<void> addProductWithBarcode(BuildContext context, String barcode) => showDialog<void>(
   context: context,
   builder: (_) => ProductDialog(initialBarcode: barcode),

@@ -66,7 +66,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     try {
       final raw = await file.readAsBytes();
       final fileName = file.name;
-      // ملف Excel كبير بياخد وقت في القراءة، فبيتقري في Isolate لوحده عشان الشاشة ما تقفش
+      // قد يستغرق ملف Excel كبير وقتاً أطول للقراءة؛ لذلك تتم معالجته في Isolate منفصل حتى تظل الشاشة مستجيبة.
       final rows = await Isolate.run(() => SpreadsheetReader.read(raw, fileName));
       if (rows.isEmpty) throw const FormatException('الملف فاضي');
       setState(() {
@@ -77,7 +77,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     } on FormatException catch (e) {
       setState(() => _error = e.message);
     } catch (e) {
-      setState(() => _error = 'مش قادر أقرا الملف: $e');
+      setState(() => _error = 'تعذّرت قراءة الملف: $e');
     }
   }
 
@@ -88,7 +88,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
     if (_rows.isEmpty) return;
     final header = _rows.first.map((h) => h.trim().toLowerCase()).toList();
     final used = <int>{};
-    // الأطول الأول عشان "سعر الشرا" مايتاخدش على إنه "سعر"
+    // تُفحص العناوين الأطول أولاً حتى لا يُطابق "سعر الشراء" مع "السعر".
     final pairs = [
       for (final e in _guesses.entries)
         for (final w in e.value) (field: e.key, word: w),
@@ -167,7 +167,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
         padding: const EdgeInsets.fromLTRB(20, 4, 20, 24),
         children: [
           SectionCard(
-            title: '1. اختار الملف',
+            title: '1. اختر الملف',
             icon: Icons.upload_file_rounded,
             children: [
               const Text('من برنامجك القديم، طلّع الأصناف في ملف Excel (xlsx) أو CSV، وبعدين اختاره هنا.\n'
@@ -191,7 +191,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                   controlAffinity: ListTileControlAffinity.leading,
                   value: _hasHeader,
                   onChanged: (v) => setState(() => _hasHeader = v ?? true),
-                  title: const Text('أول صف فيه أسماء الأعمدة (مش صنف)'),
+                  title: const Text('يحتوي الصف الأول على أسماء الأعمدة (وليس بيانات صنف)'),
                 ),
                 LayoutBuilder(builder: (context, c) {
                   final w = c.maxWidth >= 700 ? (c.maxWidth - 24) / 3 : c.maxWidth >= 460 ? (c.maxWidth - 12) / 2 : c.maxWidth;
@@ -204,7 +204,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                           isExpanded: true,
                           decoration: InputDecoration(labelText: f.value),
                           items: [
-                            const DropdownMenuItem(value: null, child: Text('— مش موجود —')),
+                            const DropdownMenuItem(value: null, child: Text('— غير موجود —')),
                             for (var i = 0; i < _columns; i++)
                               DropdownMenuItem(
                                 value: i,
@@ -253,7 +253,7 @@ class _ImportScreenState extends ConsumerState<ImportScreen> {
                     ],
                   ),
                 ),
-                if (_map.values.every((v) => v == null)) Text('اختار الأعمدة من فوق', style: TextStyle(color: scheme.onSurfaceVariant)),
+                if (_map.values.every((v) => v == null)) Text('اختر الأعمدة من الأعلى', style: TextStyle(color: scheme.onSurfaceVariant)),
               ],
             ),
             const SizedBox(height: 16),

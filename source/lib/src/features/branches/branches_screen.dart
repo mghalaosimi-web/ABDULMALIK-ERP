@@ -24,7 +24,7 @@ final _transfersProvider = FutureProvider.autoDispose<Map<String, dynamic>>((ref
   return apiOf(ref).get('/api/org/transfers');
 });
 
-/// الفروع: ربط فروع المحل، وملخص كل فرع، والمخزون في الفروع التانية، والتحويلات.
+/// الفروع: ربط فروع المحل، وعرض ملخص كل فرع، ومخزون الفروع الأخرى، والتحويلات.
 class BranchesScreen extends ConsumerWidget {
   const BranchesScreen({super.key});
 
@@ -80,7 +80,7 @@ class _NotLinkedState extends ConsumerState<_NotLinked> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.isOwner) return const EmptyState(icon: Icons.store_mall_directory_outlined, message: 'الفرع ده مش مربوط بفروع تانية. الربط بيعمله صاحب المحل.');
+    if (!widget.isOwner) return const EmptyState(icon: Icons.store_mall_directory_outlined, message: 'هذا الفرع غير مرتبط بفروع أخرى. يتولى مالك المحل إعداد الربط.');
     return ListView(padding: const EdgeInsets.fromLTRB(20, 4, 20, 24), children: [
       Center(
         child: ConstrainedBox(
@@ -89,8 +89,8 @@ class _NotLinkedState extends ConsumerState<_NotLinked> {
             const Card(
               child: Padding(
                 padding: EdgeInsets.all(16),
-                child: Text('لو عندك أكتر من فرع، اربطهم ببعض عشان:\n'
-                    '• تشوف مبيعات وأرباح كل فرع من أي مكان\n'
+                child: Text('إذا كان لديك أكثر من فرع، فاربطها معاً لتتمكن من:\n'
+                    '• عرض مبيعات وأرباح كل فرع من أي مكان\n'
                     '• تعرف الصنف موجود في أنهي فرع\n'
                     '• تحوّل بضاعة من فرع لفرع\n\n'
                     'كل فرع بيفضل شغال لوحده حتى لو النت فصل، والربط بيتحدّث لما النت يرجع.'),
@@ -104,7 +104,7 @@ class _NotLinkedState extends ConsumerState<_NotLinked> {
             ]),
             const SizedBox(height: 12),
             SectionCard(title: 'فرع تاني', icon: Icons.link_rounded, children: [
-              const Text('لو فيه مجموعة معمولة بالفعل: من الفرع الأول دوس "كود ربط فرع جديد"، واكتب الكود هنا.'),
+              const Text('إذا كانت هناك مجموعة فروع مُعدّة مسبقاً: من الفرع الأول اضغط على "رمز ربط فرع جديد"، ثم أدخل الرمز هنا.'),
               const SizedBox(height: 12),
               TextField(
                 controller: _code,
@@ -158,7 +158,7 @@ class _Linked extends ConsumerWidget {
                   final ok = await showDialog<bool>(
                     context: context,
                     builder: (c) => AlertDialog(
-                      content: const Text('فصل الفرع ده عن المجموعة؟ بياناته هنا مش هتتمسح.'),
+                      content: const Text('هل تريد فصل هذا الفرع عن المجموعة؟ لن تُحذف بياناته من هذا الجهاز.'),
                       actions: [
                         TextButton(onPressed: () => Navigator.pop(c, false), child: const Text('إلغاء')),
                         FilledButton(onPressed: () => Navigator.pop(c, true), child: const Text('فصل')),
@@ -338,7 +338,7 @@ class _TransfersCard extends ConsumerWidget {
                     ),
                   ),
                 ),
-              if (incoming.isEmpty && history.isEmpty) const Text('مفيش تحويلات لسه'),
+              if (incoming.isEmpty && history.isEmpty) const Text('لا توجد تحويلات حتى الآن'),
               for (final t in history.take(10))
                 ListTile(
                   dense: true,
@@ -498,7 +498,7 @@ class _StockLookupCardState extends ConsumerState<_StockLookupCard> {
           _debounce = Timer(const Duration(milliseconds: 500), () => _search(v));
         },
       ),
-      if (_results != null && _results!.isEmpty) const Padding(padding: EdgeInsets.only(top: 8), child: Text('مش موجود في الفروع التانية')),
+      if (_results != null && _results!.isEmpty) const Padding(padding: EdgeInsets.only(top: 8), child: Text('غير موجود في الفروع الأخرى')),
       for (final r in _results ?? const <Map<String, dynamic>>[])
         ListTile(
           dense: true,

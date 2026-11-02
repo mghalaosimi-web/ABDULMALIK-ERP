@@ -20,7 +20,7 @@ import '../messages/message_dialog.dart';
 import '../receipts/print_service.dart';
 import 'providers.dart';
 
-/// استلام جهاز جديد من العميل. لما يتحفظ بيرجع رقم الـ id بتاع الجهاز.
+/// تسجيل جهاز جديد عند استلامه من العميل. بعد الحفظ، يُعرض المعرّف الخاص بالجهاز.
 class IntakeScreen extends ConsumerStatefulWidget {
   const IntakeScreen({super.key});
 
@@ -108,7 +108,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
         }
       });
     } catch (_) {
-      // البحث عن العميل مش ضروري، لو فشل نكمّل عادي
+      // البحث عن العميل اختياري؛ إذا تعذّر، يمكن متابعة العملية.
     } finally {
       if (mounted) setState(() => _lookingUp = false);
     }
@@ -123,7 +123,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
   Future<void> _submit() async {
     final valid = _form.currentState!.validate();
     if (_problems.isEmpty && _problemDesc.text.trim().isEmpty) {
-      setState(() => _error = 'لازم تحدد المشكلة: اختار من القايمة أو اكتب وصف');
+      setState(() => _error = 'يرجى تحديد المشكلة: اختر من القائمة أو أدخل وصفاً لها.');
       return;
     }
     if (!valid) {
@@ -131,7 +131,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
       return;
     }
     if (_lockType != LockType.none && _lockSecret == null) {
-      setState(() => _error = _lockType == LockType.pattern ? 'ارسم الباترن أو اختار "مفيش"' : 'اكتب رمز فتح الشاشة أو اختار "مفيش"');
+      setState(() => _error = _lockType == LockType.pattern ? 'ارسم نمط القفل أو اختر "بدون قفل"' : 'أدخل رمز فتح الشاشة أو اختر "بدون رمز"');
       return;
     }
     final estimated = parseMoney(_estimated.text)!;
@@ -227,14 +227,14 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
           keyboardType: TextInputType.phone,
           inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[0-9٠-٩+\s-]'))],
           decoration: InputDecoration(
-            labelText: 'رقم التليفون *',
+            labelText: 'رقم الهاتف *',
             prefixIcon: const Icon(Icons.call_rounded),
             suffixIcon: _lookingUp ? const Padding(padding: EdgeInsets.all(14), child: SizedBox(width: 16, height: 16, child: CircularProgressIndicator(strokeWidth: 2))) : null,
           ),
           onChanged: _onPhoneChanged,
           validator: (v) {
             final d = normalizePhone(v ?? '');
-            return d.length < 6 || d.length > 15 ? 'رقم التليفون مش صحيح' : null;
+            return d.length < 6 || d.length > 15 ? 'رقم الهاتف غير صحيح' : null;
           },
         ),
         for (final w in _warrantyTickets) ...[
@@ -253,7 +253,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
                 if (v == true && _estimated.text.trim().isEmpty) _estimated.text = '0';
               }),
               title: Text('${w.deviceName} عليه ضمان من وصل #${w.number} لحد ${formatDate(w.warrantyUntil!)}'),
-              subtitle: const Text('علّم هنا لو ده مرتجع ضمان على نفس الإصلاح'),
+              subtitle: const Text('حدد هذا الخيار إذا كان الجهاز مرتجعاً ضمن ضمان الإصلاح نفسه'),
             ),
           ),
         ],
@@ -386,7 +386,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
           controller: _problemDesc,
           maxLines: 3,
           minLines: 2,
-          decoration: const InputDecoration(labelText: 'وصف المشكلة', hintText: 'مثلاً: الشاشة بتنور بس مفيش صورة، وقع من إيده امبارح'),
+          decoration: const InputDecoration(labelText: 'وصف المشكلة', hintText: 'مثال: تضيء الشاشة دون ظهور صورة، أو سقط الجهاز أمس.'),
         ),
       ],
     );
@@ -403,7 +403,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
           segments: const [
             ButtonSegment(value: true, label: Text('بيفتح')),
             ButtonSegment(value: false, label: Text('مبيفتحش')),
-            ButtonSegment(value: null, label: Text('مش معروف')),
+            ButtonSegment(value: null, label: Text('غير معروف')),
           ],
           selected: {_powersOn},
           onSelectionChanged: (s) => setState(() => _powersOn = s.first),
@@ -430,7 +430,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
       title: 'قفل الشاشة',
       icon: Icons.lock_rounded,
       trailing: Tooltip(
-        message: 'الرمز بيتخزن متشفر، ومحدش بيشوفه غير الفني المسؤول وصاحب المحل، وبيتمسح لوحده بعد التسليم',
+        message: 'يُخزّن الرمز بصورة مشفّرة، ولا يمكن الاطلاع عليه إلا للفني المسؤول ومالك المحل، ويُحذف تلقائياً بعد التسليم.',
         child: Icon(Icons.shield_rounded, color: Theme.of(context).colorScheme.primary, size: 20),
       ),
       children: [
@@ -509,7 +509,7 @@ class _IntakeScreenState extends ConsumerState<IntakeScreen> {
           initialValue: _technicianId,
           decoration: const InputDecoration(labelText: 'الفني المسؤول', prefixIcon: Icon(Icons.engineering_rounded)),
           items: [
-            const DropdownMenuItem(value: null, child: Text('لسه محددتش')),
+            const DropdownMenuItem(value: null, child: Text('لم يتم التحديد بعد')),
             for (final s in staff.where((s) => s.role != Role.reception))
               DropdownMenuItem(value: s.id, child: Text('${s.name}${s.id == me.id ? ' (إنت)' : ''}')),
           ],
@@ -544,7 +544,7 @@ class _IntakeDoneDialog extends ConsumerWidget {
             ],
           ),
           const SizedBox(height: 12),
-          Text('قول للعميل على كود الاستلام، أو اطبعله الوصل. من غيره مش هيقدر يستلم الجهاز.',
+          Text('أبلغ العميل برمز الاستلام أو اطبع له الإيصال؛ إذ لن يتمكن من استلام الجهاز من دونه.',
               textAlign: TextAlign.center, style: text.bodySmall),
         ],
       ),

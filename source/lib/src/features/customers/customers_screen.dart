@@ -52,7 +52,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
                 _debounce?.cancel();
                 _debounce = Timer(const Duration(milliseconds: 350), () => setState(() => _query = v.trim()));
               },
-              decoration: const InputDecoration(hintText: 'دوّر بالاسم أو رقم التليفون', prefixIcon: Icon(Icons.search_rounded)),
+              decoration: const InputDecoration(hintText: 'ابحث بالاسم أو رقم الهاتف', prefixIcon: Icon(Icons.search_rounded)),
             ),
           ),
           Expanded(
@@ -64,7 +64,7 @@ class _CustomersScreenState extends ConsumerState<CustomersScreen> {
               data: (list) => list.isEmpty
                   ? EmptyState(
                       icon: Icons.people_outline_rounded,
-                      message: _query.isEmpty ? 'لسه مفيش عملاء. العملاء بيتسجلوا لوحدهم مع أول جهاز.' : 'مفيش عميل بالاسم أو الرقم ده',
+                      message: _query.isEmpty ? 'لا يوجد عملاء حتى الآن. ستُسجّل بيانات العملاء تلقائياً عند تسجيل أول جهاز.' : 'لا يوجد عميل بهذا الاسم أو الرقم',
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
@@ -277,7 +277,7 @@ class _EditCustomerDialogState extends ConsumerState<_EditCustomerDialog> {
               validator: (v) => (v ?? '').trim().isEmpty ? 'لازم تكتب الاسم' : null,
             ),
             const SizedBox(height: 12),
-            TextFormField(controller: _phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'التليفون')),
+            TextFormField(controller: _phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'رقم الهاتف')),
             const SizedBox(height: 12),
             TextFormField(controller: _whatsapp, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'الواتساب')),
             const SizedBox(height: 12),
@@ -294,7 +294,7 @@ class _EditCustomerDialogState extends ConsumerState<_EditCustomerDialog> {
   }
 }
 
-/// كشف حساب العميل: فواتير آجل، وأجهزة صيانة عليها باقي، والمبالغ اللي سددها.
+/// كشف حساب العميل: فواتير البيع الآجل، وأجهزة الصيانة ذات المبالغ المستحقة، والمبالغ التي سددها العميل.
 class _LedgerSection extends ConsumerWidget {
   const _LedgerSection({required this.customerId});
   final String customerId;
@@ -364,7 +364,7 @@ class _CollectDialogState extends ConsumerState<_CollectDialog> {
       if (!mounted) return;
       Navigator.pop(context);
       final left = res['balanceCents'] as int;
-      showMessage(context, left > 0 ? 'اتسجل التحصيل. لسه عليه ${money(left)}' : 'اتسجل التحصيل، والحساب خالص ✅');
+      showMessage(context, left > 0 ? 'تم تسجيل التحصيل. المبلغ المتبقي عليه ${money(left)}' : 'تم تسجيل التحصيل، وأصبح الحساب مسدداً بالكامل ✅');
     } catch (e) {
       if (mounted) setState(() => _error = errorText(e));
     } finally {

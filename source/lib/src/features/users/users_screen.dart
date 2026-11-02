@@ -24,7 +24,7 @@ class UsersScreen extends ConsumerWidget {
     final me = ref.watch(sessionProvider).value!.user!;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('الموظفين')),
+      appBar: AppBar(title: const Text('الموظفون')),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showDialog<void>(context: context, builder: (_) => const UserDialog()),
         icon: const Icon(Icons.person_add_alt_1_rounded),
@@ -213,7 +213,7 @@ class _UserDialogState extends ConsumerState<UserDialog> {
                   controller: _password,
                   obscureText: true,
                   decoration: InputDecoration(
-                    labelText: _isNew ? 'كلمة السر' : 'كلمة سر جديدة (سيبها فاضية لو مش عايز تغيرها)',
+                    labelText: _isNew ? 'كلمة السر' : 'كلمة مرور جديدة (اتركها فارغة إذا لم ترغب في تغييرها)',
                   ),
                   validator: (v) {
                     final value = v ?? '';
@@ -232,9 +232,9 @@ class _UserDialogState extends ConsumerState<UserDialog> {
                 const SizedBox(height: 6),
                 Text(
                   switch (_role) {
-                    Role.owner => 'كل الصلاحيات: التقارير والفلوس والإعدادات والموظفين.',
+                    Role.owner => 'جميع الصلاحيات: التقارير، والعمليات المالية، والإعدادات، وإدارة الموظفين.',
                     Role.reception => 'استلام وتسليم الأجهزة، وطباعة الوصولات، وتحصيل الفلوس.',
-                    Role.technician => 'يشوف الأجهزة اللي عليه بس، ويحدّث حالة الإصلاح.',
+                    Role.technician => 'يمكنه الاطلاع على الأجهزة المسندة إليه فقط وتحديث حالة الإصلاح.',
                   },
                   style: Theme.of(context).textTheme.bodySmall,
                 ),
@@ -268,7 +268,7 @@ class _UserDialogState extends ConsumerState<UserDialog> {
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('الحساب شغال'),
-                    subtitle: const Text('لو وقفته، الموظف هيخرج من كل الأجهزة ومش هيقدر يدخل'),
+                    subtitle: const Text('عند إيقافه، سيتم تسجيل خروج الموظف من جميع الأجهزة ولن يتمكن من تسجيل الدخول.'),
                     value: _active,
                     onChanged: (v) => setState(() => _active = v),
                   ),

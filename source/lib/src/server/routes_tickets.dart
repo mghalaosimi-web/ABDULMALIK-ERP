@@ -118,7 +118,7 @@ extension _TicketRoutes on FixTrackServer {
 
   Object? _getCustomer(Request req, AuthUser u) {
     final row = db.selectOne('SELECT * FROM customers WHERE id = ?', [req.params['id']]);
-    if (row == null) throw ApiError(404, 'العميل ده مش موجود');
+    if (row == null) throw ApiError(404, 'هذا العميل غير موجود');
     final tickets = db.select('$_ticketSelect WHERE t.customer_id = ? ORDER BY t.created_at DESC', [row['id']]);
     return {
       'customer': {..._customerJson(row), 'balanceCents': _customerBalance(row['id'] as String)},
@@ -129,7 +129,7 @@ extension _TicketRoutes on FixTrackServer {
   Future<Object?> _updateCustomer(Request req, AuthUser u) async {
     final id = req.params['id']!;
     final row = db.selectOne('SELECT * FROM customers WHERE id = ?', [id]);
-    if (row == null) throw ApiError(404, 'العميل ده مش موجود');
+    if (row == null) throw ApiError(404, 'هذا العميل غير موجود');
     final body = await _body(req);
     final name = body.containsKey('name') ? _requiredText(body, 'name', 'اسم العميل') : row['name'] as String;
     final phone = body.containsKey('phone') ? _validPhone(body['phone']) : row['phone'] as String;
@@ -159,7 +159,7 @@ extension _TicketRoutes on FixTrackServer {
   String _validPhone(Object? raw) {
     final v = (raw as String? ?? '').trim();
     final digits = normalizePhone(v);
-    if (digits.length < 6 || digits.length > 15) throw ApiError(400, 'رقم التليفون مش صحيح');
+    if (digits.length < 6 || digits.length > 15) throw ApiError(400, 'رقم الهاتف غير صحيح');
     return v;
   }
 
@@ -245,7 +245,7 @@ extension _TicketRoutes on FixTrackServer {
         where.add('t.status IN ($open) AND t.due_at IS NOT NULL AND t.due_at < ?');
         params.add(nowIso());
       default:
-        if (TicketStatus.tryParse(scope) == null) throw ApiError(400, 'فلتر مش معروف');
+        if (TicketStatus.tryParse(scope) == null) throw ApiError(400, 'المرشح غير معروف');
         where.add('t.status = ?');
         params.add(scope);
     }
@@ -290,9 +290,9 @@ extension _TicketRoutes on FixTrackServer {
 
   Map<String, Object?> _loadTicket(String id, AuthUser u) {
     final row = db.selectOne('$_ticketSelect WHERE t.id = ?', [id]);
-    if (row == null) throw ApiError(404, 'الجهاز ده مش موجود');
+    if (row == null) throw ApiError(404, 'هذا الجهاز غير موجود');
     if (u.role == 'technician' && row['technician_id'] != u.id) {
-      throw ApiError(403, 'الجهاز ده مش متسلملك');
+      throw ApiError(403, 'هذا الجهاز غير مسند إليك');
     }
     return row;
   }
@@ -371,9 +371,9 @@ extension _TicketRoutes on FixTrackServer {
       throw ApiError(403, 'رمز فتح الشاشة بيظهر للفني المسؤول وصاحب المحل بس');
     }
     final sealed = r['lock_secret'] as String?;
-    if (sealed == null) throw ApiError(404, 'مفيش رمز متسجل للجهاز ده');
+    if (sealed == null) throw ApiError(404, 'لا يوجد رمز مسجل لهذا الجهاز');
     final secret = _secrets.open(sealed);
-    if (secret == null) throw ApiError(500, 'مش قادر أفك تشفير الرمز');
+    if (secret == null) throw ApiError(500, 'تعذّر فك تشفير الرمز');
     _audit(u.id, 'ticket.lock_view', 'ticket', r['id'] as String, '#${r['number']}');
     return {'lockType': r['lock_type'], 'secret': secret};
   }
@@ -409,7 +409,7 @@ extension _TicketRoutes on FixTrackServer {
       final existingId = customer['id'] as String?;
       if (existingId != null) {
         if (db.selectOne('SELECT id FROM customers WHERE id = ?', [existingId]) == null) {
-          throw ApiError(400, 'العميل ده مش موجود');
+          throw ApiError(400, 'هذا العميل غير موجود');
         }
         customerId = existingId;
         final updates = <String, Object?>{};
@@ -564,7 +564,7 @@ extension _TicketRoutes on FixTrackServer {
     final id = r['id'] as String;
     final body = await _body(req);
     final to = TicketStatus.tryParse(body['status'] as String?);
-    if (to == null) throw ApiError(400, 'المرحلة مش صحيحة');
+    if (to == null) throw ApiError(400, 'المرحلة غير صحيحة');
     if (to == TicketStatus.delivered) throw ApiError(400, 'التسليم بيتم من زرار "تسليم للعميل"');
     final from = TicketStatus.parse(r['status'] as String?);
     if (from == TicketStatus.delivered) throw ApiError(400, 'الجهاز اتسلم خلاص');
@@ -614,7 +614,7 @@ extension _TicketRoutes on FixTrackServer {
   Future<Object?> _deliver(Request req, AuthUser u) async {
     final r = _loadTicket(req.params['id']!, u);
     final id = r['id'] as String;
-    if (r['status'] == 'delivered') throw ApiError(400, 'الجهاز اتسلم قبل كده');
+    if (r['status'] == 'delivered') throw ApiError(400, 'سبق تسليم الجهاز');
     final body = await _body(req);
 
     final override = body['override'] == true;
@@ -632,10 +632,10 @@ extension _TicketRoutes on FixTrackServer {
     final remaining = finalCents - (r['paid_cents'] as int) - payNow;
     if (payNow > 0 && remaining < 0) throw ApiError(400, 'المبلغ أكبر من الباقي على العميل');
     if (remaining > 0 && body['allowDebt'] != true) {
-      throw ApiError(400, 'لسه فيه باقي ${_money(remaining)} على العميل');
+      throw ApiError(400, 'لا يزال هناك مبلغ متبقٍ قدره ${_money(remaining)} على العميل');
     }
 
-    // مرتجع الضمان مالوش ضمان جديد؛ الضمان الأصلي هو اللي ماشي
+    // لا ينشأ ضمان جديد لمرتجع الضمان؛ بل يستمر الضمان الأصلي.
     final warrantyDays = r['warranty_of'] != null
         ? 0
         : body['warrantyDays'] is int
@@ -685,7 +685,7 @@ extension _TicketRoutes on FixTrackServer {
 
   int _cents(Object? raw, String label) {
     final v = raw is int ? raw : (raw is double ? raw.round() : int.tryParse('$raw'));
-    if (v == null || v < 0) throw ApiError(400, '$label مش صحيح');
+    if (v == null || v < 0) throw ApiError(400, '$label غير صحيح');
     if (v > 100000000000) throw ApiError(400, '$label كبير جداً');
     return v;
   }
@@ -705,14 +705,14 @@ extension _TicketRoutes on FixTrackServer {
   String? _validTechnician(Object? raw) {
     if (raw == null || raw == '') return null;
     final row = db.selectOne('SELECT id FROM users WHERE id = ? AND active = 1', [raw]);
-    if (row == null) throw ApiError(400, 'الفني ده مش موجود');
+    if (row == null) throw ApiError(400, 'هذا الفني غير موجود');
     return raw as String;
   }
 
   String? _validDate(Object? raw) {
     if (raw == null || raw == '') return null;
     final d = DateTime.tryParse('$raw');
-    if (d == null) throw ApiError(400, 'التاريخ مش صحيح');
+    if (d == null) throw ApiError(400, 'التاريخ غير صحيح');
     return d.toUtc().toIso8601String();
   }
 

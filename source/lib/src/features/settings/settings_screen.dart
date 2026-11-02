@@ -71,7 +71,7 @@ class SettingsScreen extends ConsumerWidget {
               ListTile(
                 leading: Icon(isServer ? Icons.dns_rounded : Icons.wifi_rounded),
                 title: Text(isServer ? (ar ? 'الجهاز ده هو سيرفر المحل' : 'This PC is the shop server') : (ar ? 'متصل بسيرفر المحل' : 'Connected to shop server')),
-                subtitle: Text(isServer ? (ar ? 'لازم البرنامج يفضل مفتوح على الجهاز ده عشان الأجهزة التانية تشتغل' : 'Keep this app running on this PC so other devices can connect') : session.api!.baseUrl,
+                subtitle: Text(isServer ? (ar ? 'يجب إبقاء البرنامج مفتوحاً على هذا الجهاز حتى تتمكن الأجهزة الأخرى من الاتصال' : 'Keep this app running on this PC so other devices can connect') : session.api!.baseUrl,
                     textDirection: isServer ? null : TextDirection.ltr, textAlign: TextAlign.right),
               ),
               if (isServer) ...[
@@ -82,12 +82,12 @@ class SettingsScreen extends ConsumerWidget {
               ListTile(
                 leading: const Icon(Icons.swap_horiz_rounded),
                 title: Text(isServer ? (ar ? 'تغيير طريقة تشغيل الجهاز' : 'Change device mode') : (ar ? 'تغيير السيرفر' : 'Change server')),
-                subtitle: isServer ? Text(ar ? 'بيانات المحل مش هتتمسح من الجهاز' : 'Shop data will remain on this PC') : null,
+                subtitle: isServer ? Text(ar ? 'ستبقى بيانات المحل محفوظة على هذا الجهاز' : 'Shop data will remain on this PC') : null,
                 onTap: () async {
                   final ok = await _confirm(context,
                       isServer
-                          ? 'لو غيرت، الأجهزة المتصلة بالكمبيوتر ده هتفصل لحد ما ترجع تختاره سيرفر تاني. متأكد؟'
-                          : 'هتخرج من الحساب وترجع لشاشة اختيار السيرفر. متأكد؟');
+                          ? 'إذا غيّرت هذا الإعداد، فستنقطع الأجهزة المتصلة بهذا الكمبيوتر حتى تختار خادماً آخر. هل أنت متأكد؟'
+                          : 'سيتم تسجيل خروجك والعودة إلى شاشة اختيار الخادم. هل أنت متأكد؟');
                   if (ok) await ref.read(sessionProvider.notifier).resetConnection();
                 },
               ),
@@ -130,7 +130,7 @@ class SettingsScreen extends ConsumerWidget {
                 ListTile(
                   leading: const Icon(Icons.storefront_rounded),
                   title: Text(ar ? 'بيانات المحل والوصل' : 'Shop and receipt settings'),
-                  subtitle: Text(ar ? 'اللوجو، والتليفون، والعنوان، ومقاس الورق، والشروط' : 'Logo, phone, address, paper size and receipt terms'),
+                  subtitle: Text(ar ? 'الشعار، ورقم الهاتف، والعنوان، ومقاس الورق، والشروط' : 'Logo, phone, address, paper size and receipt terms'),
                   trailing: const Icon(Icons.chevron_left_rounded),
                   onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const ShopSettingsScreen())),
                 ),
@@ -208,7 +208,7 @@ class SettingsScreen extends ConsumerWidget {
             child: ListTile(
               leading: const Icon(Icons.bug_report_outlined),
               title: Text(ar ? 'سجل المشاكل' : 'Diagnostic log'),
-              subtitle: Text(ar ? 'لو البرنامج علّق أو ظهر خطأ، من هنا تبعت التفاصيل لصاحب البرنامج' : 'Review app errors and diagnostic details'),
+              subtitle: Text(ar ? 'إذا توقف البرنامج عن الاستجابة أو ظهر خطأ، يمكنك إرسال التفاصيل إلى مطوّر البرنامج من هنا' : 'Review app errors and diagnostic details'),
               trailing: const Icon(Icons.chevron_left_rounded),
               onTap: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const LogsScreen())),
             ),
@@ -219,7 +219,7 @@ class SettingsScreen extends ConsumerWidget {
               child: ListTile(
                 leading: const Icon(Icons.menu_book_rounded),
                 title: const Text('دليل الاستخدام'),
-                subtitle: const Text('شرح كل حاجة في البرنامج خطوة بخطوة'),
+                subtitle: const Text('شرح جميع وظائف البرنامج خطوة بخطوة'),
                 trailing: const Icon(Icons.open_in_new_rounded),
                 onTap: () => launchUrl(Uri.parse('$trackingSiteUrl/guide'), mode: LaunchMode.externalApplication),
               ),
@@ -263,9 +263,9 @@ class _ServerAddresses extends ConsumerWidget {
         children: [
           Text('عنوان السيرفر للأجهزة التانية', style: text.titleSmall?.bold),
           const SizedBox(height: 4),
-          Text('الموبايلات بتلاقي السيرفر لوحدها. لو ما لقيتوش، اكتب العنوان ده في الموبايل:', style: text.bodySmall),
+          Text('تعثر الأجهزة المحمولة على الخادم تلقائياً. إذا لم يظهر، فأدخل العنوان التالي في الجهاز المحمول:', style: text.bodySmall),
           const SizedBox(height: 8),
-          if (ips.isEmpty) const Text('الجهاز مش متوصل بشبكة'),
+          if (ips.isEmpty) const Text('الجهاز غير متصل بالشبكة'),
           for (final ip in ips)
             Padding(
               padding: const EdgeInsets.only(bottom: 4),
@@ -357,7 +357,7 @@ class _ChangePasswordDialogState extends ConsumerState<_ChangePasswordDialog> {
                 controller: _confirm,
                 obscureText: true,
                 decoration: const InputDecoration(labelText: 'تأكيد كلمة السر الجديدة'),
-                validator: (v) => v != _new.text ? 'مش زي اللي فوق' : null,
+                validator: (v) => v != _new.text ? 'القيمتان غير متطابقتين' : null,
               ),
               if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],
             ],
@@ -395,8 +395,8 @@ class _DeviceSettingsCardState extends ConsumerState<_DeviceSettingsCard> {
           subtitle: Text(printer != null
               ? 'بيطبع على طول على: $printer'
               : AppConfig.canHostServer
-                  ? 'مش محددة، هيسألك كل مرة'
-                  : 'بيستخدم شاشة الطباعة بتاعة الموبايل (للطابعات البلوتوث سطّب تطبيق طباعة زي RawBT)'),
+                  ? 'غير محددة؛ سيُطلب منك الاختيار في كل مرة'
+                  : 'يستخدم شاشة الطباعة في الجهاز المحمول. لطابعات Bluetooth، ثبّت تطبيقاً للطباعة مثل RawBT.'),
           trailing: AppConfig.canHostServer
               ? Wrap(children: [
                   if (printer != null)
@@ -424,8 +424,8 @@ class _DeviceSettingsCardState extends ConsumerState<_DeviceSettingsCard> {
             title: const Text('بوابة SMS'),
             subtitle: Text(gateway.active
                 ? 'الموبايل ده بيبعت رسائل العملاء من شريحته • اتبعت ${gateway.sent}${gateway.failed > 0 ? ' • فشل ${gateway.failed}' : ''}'
-                    '${gateway.lastError != null ? '\nآخر خطأ: ${gateway.lastError}' : ''}\nسيب التطبيق مفتوح عشان يفضل يبعت.'
-                : 'فعّلها على موبايل واحد في المحل عشان رسائل الـ SMS الأوتوماتيك تتبعت منه'),
+                    '${gateway.lastError != null ? '\nآخر خطأ: ${gateway.lastError}' : ''}\nيُرجى إبقاء التطبيق مفتوحاً لمتابعة الإرسال.'
+                : 'فعّلها على جهاز محمول واحد في المحل ليكون مسؤولاً عن إرسال الرسائل النصية تلقائياً'),
             isThreeLine: gateway.active,
             value: gateway.active,
             onChanged: (v) async {
@@ -475,12 +475,12 @@ class _CloudStatusTileState extends ConsumerState<_CloudStatusTile> {
       leading: Icon(Icons.cloud_sync_rounded, color: error != null ? scheme.error : const Color(0xFF16A34A)),
       title: const Text('صفحة متابعة العملاء (QR)'),
       subtitle: Text([
-        if (error != null) 'آخر محاولة: $error' else if (last != null) 'آخر مزامنة ${timeAgo(last)}' else 'لسه ما حصلتش مزامنة',
+        if (error != null) 'آخر محاولة: $error' else if (last != null) 'آخر مزامنة ${timeAgo(last)}' else 'لم تتم المزامنة بعد',
         if ((shop?.cloudPending ?? 0) > 0) 'مستني يتبعت: ${shop!.cloudPending} جهاز',
       ].join(' • ')),
       trailing: _busy
           ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2))
-          : IconButton(tooltip: 'مزامنة دلوقتي', icon: const Icon(Icons.sync_rounded), onPressed: _sync),
+          : IconButton(tooltip: 'مزامنة الآن', icon: const Icon(Icons.sync_rounded), onPressed: _sync),
     );
   }
 }

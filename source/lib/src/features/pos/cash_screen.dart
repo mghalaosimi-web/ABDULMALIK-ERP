@@ -102,7 +102,7 @@ class _CurrentSession extends StatelessWidget {
             child: Wrap(spacing: 20, runSpacing: 8, children: [
               for (final e in s.byMethod.entries.where((e) => e.value != 0))
                 Text('${e.key.label}: ${money(e.value)}', style: const TextStyle().semiBold),
-              if (s.byMethod.values.every((v) => v == 0)) const Text('لسه مفيش حركة في الوردية دي'),
+              if (s.byMethod.values.every((v) => v == 0)) const Text('لا توجد حركات في هذه الوردية حتى الآن'),
             ]),
           ),
         ),
@@ -131,9 +131,9 @@ class _CurrentSession extends StatelessWidget {
           ),
         ]),
         const SectionTitle('الحركة'),
-        if (s.moves.isEmpty) const Text('مفيش حركة'),
+        if (s.moves.isEmpty) const Text('لا توجد حركات'),
         if (s.movesCount > s.moves.length)
-          Text('ظاهر آخر ${s.moves.length} حركة من ${s.movesCount}. قفّل اليوم عشان تبدأ يوم جديد.',
+          Text('يُعرض آخر ${s.moves.length} حركة من أصل ${s.movesCount}. أغلق اليوم لبدء يوم جديد.',
               style: TextStyle(color: scheme.onSurfaceVariant)),
         for (final m in s.moves)
           ListTile(
@@ -315,7 +315,7 @@ class _CloseDialogState extends ConsumerState<_CloseDialog> {
           const SizedBox(height: 12),
           MoneyField(controller: _counted, label: 'الكاش اللي في الدرج', autofocus: true),
           const SizedBox(height: 12),
-          MoneyField(controller: _kept, label: 'هيفضل كام في الدرج لبكرة (فكة)؟'),
+          MoneyField(controller: _kept, label: 'كم سيبقى في الصندوق للغد (مبلغ الفكة)؟'),
           const SizedBox(height: 12),
           TextField(controller: _note, decoration: const InputDecoration(labelText: 'ملاحظة')),
           if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],

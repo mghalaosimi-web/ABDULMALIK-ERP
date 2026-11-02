@@ -1,6 +1,6 @@
 part of 'api_server.dart';
 
-/// الموردين، وفواتير الشرا، والأجهزة بالـ IMEI، وشرا الموبايلات المستعملة، والملفات (صور البطايق).
+/// الموردون، وفواتير الشراء، والأجهزة بأرقام IMEI، وشراء الأجهزة المستعملة، والملفات (صور الهويات).
 extension _StockRoutes on FixTrackServer {
   void _registerStockRoutes(Router r) {
     r.get('/api/suppliers', _authed(_listSuppliers, only: _cashStaff));
@@ -60,7 +60,7 @@ extension _StockRoutes on FixTrackServer {
   Future<Object?> _updateSupplier(Request req, AuthUser u) async {
     final id = req.params['id']!;
     final s = db.selectOne('SELECT * FROM suppliers WHERE id = ?', [id]);
-    if (s == null) throw ApiError(404, 'المورد ده مش موجود');
+    if (s == null) throw ApiError(404, 'هذا المورد غير موجود');
     final body = await _body(req);
     db.execute(
       'UPDATE suppliers SET name = ?, phone = ?, notes = ?, active = ?, updated_at = ? WHERE id = ?',
@@ -80,7 +80,7 @@ extension _StockRoutes on FixTrackServer {
   Object? _getSupplier(Request req, AuthUser u) {
     final id = req.params['id']!;
     final s = db.selectOne('SELECT * FROM suppliers WHERE id = ?', [id]);
-    if (s == null) throw ApiError(404, 'المورد ده مش موجود');
+    if (s == null) throw ApiError(404, 'هذا المورد غير موجود');
     final purchases = db.select('$_purchaseSelect WHERE p.supplier_id = ? ORDER BY p.created_at DESC LIMIT 200', [id]);
     final payments = db.select(
       'SELECT sp.*, u.name AS user_name FROM supplier_payments sp LEFT JOIN users u ON u.id = sp.user_id WHERE sp.supplier_id = ? ORDER BY sp.created_at DESC',
@@ -98,7 +98,7 @@ extension _StockRoutes on FixTrackServer {
   Future<Object?> _paySupplier(Request req, AuthUser u) async {
     final id = req.params['id']!;
     final s = db.selectOne('SELECT * FROM suppliers WHERE id = ?', [id]);
-    if (s == null) throw ApiError(404, 'المورد ده مش موجود');
+    if (s == null) throw ApiError(404, 'هذا المورد غير موجود');
     final body = await _body(req);
     final amount = _cents(body['amountCents'], 'المبلغ');
     if (amount <= 0) throw ApiError(400, 'اكتب المبلغ');
@@ -144,7 +144,7 @@ extension _StockRoutes on FixTrackServer {
 
   Object? _getPurchase(Request req, AuthUser u) {
     final p = db.selectOne('$_purchaseSelect WHERE p.id = ?', [req.params['id']]);
-    if (p == null) throw ApiError(404, 'الفاتورة دي مش موجودة');
+    if (p == null) throw ApiError(404, 'هذه الفاتورة غير موجودة');
     final items = db.select('SELECT * FROM purchase_items WHERE purchase_id = ? ORDER BY rowid', [p['id']]);
     final units = db.select('SELECT product_id, imei, color, storage FROM units WHERE purchase_id = ?', [p['id']]);
     return {
@@ -161,13 +161,13 @@ extension _StockRoutes on FixTrackServer {
     };
   }
 
-  /// فاتورة شرا من مورد: البضاعة بتدخل المخزون، والأجهزة بتتسجل بالـ IMEI، والمدفوع بيطلع من الخزنة.
+  /// فاتورة شراء من مورد: تُضاف البضاعة إلى المخزون، وتُسجّل الأجهزة بأرقام IMEI، ويُخصم المبلغ المدفوع من الصندوق.
   Future<Object?> _createPurchase(Request req, AuthUser u) async {
     await _requireLicense();
     final body = await _body(req);
     final supplierId = body['supplierId'] as String?;
     if (supplierId != null && db.selectOne('SELECT id FROM suppliers WHERE id = ?', [supplierId]) == null) {
-      throw ApiError(400, 'المورد ده مش موجود');
+      throw ApiError(400, 'هذا المورد غير موجود');
     }
     final items = body['items'];
     if (items is! List || items.isEmpty) throw ApiError(400, 'الفاتورة فاضية');
@@ -179,11 +179,11 @@ extension _StockRoutes on FixTrackServer {
     for (final it in items) {
       if (it is! Map) continue;
       final p = db.selectOne('SELECT * FROM products WHERE id = ?', [it['productId']]);
-      if (p == null) throw ApiError(400, 'فيه صنف مش موجود');
-      final cost = _cents(it['unitCostCents'], 'سعر الشرا');
+      if (p == null) throw ApiError(400, 'يوجد صنف غير موجود');
+      final cost = _cents(it['unitCostCents'], 'سعر الشراء');
       final units = (it['units'] as List? ?? const []).whereType<Map>().toList();
       final qty = p['serialized'] == 1 ? units.length : (it['qty'] is int ? it['qty'] as int : 0);
-      if (qty <= 0) throw ApiError(400, p['serialized'] == 1 ? 'سجّل الـ IMEI لكل جهاز من "${p['name']}"' : 'الكمية مش صحيحة');
+      if (qty <= 0) throw ApiError(400, p['serialized'] == 1 ? 'سجّل الـ IMEI لكل جهاز من "${p['name']}"' : 'الكمية غير صحيحة');
       for (final unit in units) {
         final imei = _validImei(unit['imei']);
         if (!seenImeis.add(imei)) throw ApiError(400, 'الـ IMEI $imei متكرر في الفاتورة');
@@ -196,7 +196,7 @@ extension _StockRoutes on FixTrackServer {
     }
     final paid = body['paidCents'] == null ? total : _cents(body['paidCents'], 'المدفوع');
     if (paid > total) throw ApiError(400, 'المدفوع أكبر من الفاتورة');
-    if (paid < total && supplierId == null) throw ApiError(400, 'الشرا الآجل لازم يكون من مورد');
+    if (paid < total && supplierId == null) throw ApiError(400, 'يجب ربط الشراء الآجل بمورد');
     final method = PaymentMethod.parse(body['method'] as String?);
 
     final id = _uuid.v4();
@@ -216,11 +216,11 @@ extension _StockRoutes on FixTrackServer {
         for (final unit in line.units) {
           _insertUnit(p, unit, cost: line.cost, source: 'supplier', purchaseId: id, supplierId: supplierId, userId: u.id);
         }
-        _moveStock(p['id'] as String, line.qty, 'purchase', refType: 'purchase', refId: id, userId: u.id, note: 'فاتورة شرا #$number');
+        _moveStock(p['id'] as String, line.qty, 'purchase', refType: 'purchase', refId: id, userId: u.id, note: 'فاتورة شراء رقم $number');
         if (updateCost) db.execute('UPDATE products SET cost_cents = ? WHERE id = ?', [line.cost, p['id']]);
       }
       if (paid > 0) {
-        _cashMove('purchase_payment', -paid, method, userId: u.id, refType: 'purchase', refId: id, note: 'شرا #$number');
+        _cashMove('purchase_payment', -paid, method, userId: u.id, refType: 'purchase', refId: id, note: 'شراء رقم $number');
       }
       return number;
     });
@@ -236,7 +236,7 @@ extension _StockRoutes on FixTrackServer {
 
   String _validImei(Object? raw) {
     final v = latinDigits((raw as String? ?? '').trim()).replaceAll(RegExp(r'[\s-]'), '');
-    if (!RegExp(r'^[0-9A-Za-z]{8,20}$').hasMatch(v)) throw ApiError(400, 'الـ IMEI أو السيريال "$raw" مش صحيح');
+    if (!RegExp(r'^[0-9A-Za-z]{8,20}$').hasMatch(v)) throw ApiError(400, 'الـ IMEI أو السيريال "$raw" غير صحيح');
     return v;
   }
 
@@ -334,16 +334,16 @@ extension _StockRoutes on FixTrackServer {
     return {'units': rows.map((x) => _unitJson(x, showCost: u.isOwner, showSeller: u.role != 'technician')).toList()};
   }
 
-  /// إضافة أجهزة للمخزون من غير فاتورة شرا (مثلاً رصيد أول المدة).
+  /// إضافة أجهزة إلى المخزون دون فاتورة شراء (مثل رصيد أول المدة).
   Future<Object?> _addUnits(Request req, AuthUser u) async {
     await _requireLicense();
     final body = await _body(req);
     final p = db.selectOne('SELECT * FROM products WHERE id = ?', [body['productId']]);
-    if (p == null) throw ApiError(400, 'الصنف ده مش موجود');
-    if (p['serialized'] != 1) throw ApiError(400, 'الصنف ده مش متسجل كجهاز بـ IMEI');
+    if (p == null) throw ApiError(400, 'هذا الصنف غير موجود');
+    if (p['serialized'] != 1) throw ApiError(400, 'الصنف ده غير مسجل كجهاز ذي رقم IMEI');
     final units = (body['units'] as List? ?? const []).whereType<Map>().toList();
-    if (units.isEmpty) throw ApiError(400, 'سجّل IMEI جهاز واحد على الأقل');
-    final cost = body['costCents'] == null ? p['cost_cents'] as int : _cents(body['costCents'], 'سعر الشرا');
+    if (units.isEmpty) throw ApiError(400, 'سجّل رقم IMEI لجهاز واحد على الأقل');
+    final cost = body['costCents'] == null ? p['cost_cents'] as int : _cents(body['costCents'], 'سعر الشراء');
     final ids = db.transaction(() {
       final ids = <String>[];
       for (final unit in units) {
@@ -383,8 +383,8 @@ extension _StockRoutes on FixTrackServer {
     return {'unit': _unitJson(db.selectOne('$_unitSelect WHERE x.id = ?', [id])!, showCost: u.isOwner, showSeller: true)};
   }
 
-  /// كل حاجة البرنامج يعرفها عن IMEI: اتشرا من مين، واتباع لمين، ودخل صيانة إمتى.
-  /// بتتعرض قبل شرا موبايل مستعمل عشان تحمي المحل من الأجهزة المسروقة.
+  /// جميع المعلومات المسجلة عن رقم IMEI: ممن تم الشراء، ولمن تم البيع، ومتى دخل الجهاز للصيانة.
+  /// تُعرض هذه المعلومات قبل شراء جهاز مستعمل للمساعدة في تجنب شراء الأجهزة المسروقة.
   Object? _imeiHistory(Request req, AuthUser u) {
     final imei = latinDigits(req.params['imei']!.trim());
     final units = db.select(
@@ -423,7 +423,7 @@ extension _StockRoutes on FixTrackServer {
     };
   }
 
-  /// شرا موبايل مستعمل من زبون: بيانات البائع وصورة بطاقته، والفلوس بتطلع من الخزنة، والجهاز يدخل المخزون.
+  /// شراء جهاز مستعمل من عميل: بيانات البائع وصورة هويته، ويُصرف المبلغ من الصندوق، ثم يُضاف الجهاز إلى المخزون.
   Future<Object?> _buyUsed(Request req, AuthUser u) async {
     await _requireLicense();
     final body = await _body(req);
@@ -439,15 +439,15 @@ extension _StockRoutes on FixTrackServer {
     if (db.selectOne("SELECT id FROM units WHERE (imei = ? OR imei2 = ?) AND status = 'in_stock'", [imei, imei]) != null) {
       throw ApiError(409, 'الجهاز ده موجود في المخزون بالفعل');
     }
-    final cost = _cents(body['costCents'], 'سعر الشرا');
-    if (cost <= 0) throw ApiError(400, 'اكتب المبلغ اللي هتدفعه للبائع');
+    final cost = _cents(body['costCents'], 'سعر الشراء');
+    if (cost <= 0) throw ApiError(400, 'أدخل المبلغ الذي ستدفعه للبائع');
     final method = PaymentMethod.parse(body['method'] as String?);
 
     // الموديل: صنف موجود، أو صنف جديد بيتعمل (مستعمل وله IMEI)
     Map<String, Object?>? product;
     if (body['productId'] != null) {
       product = db.selectOne('SELECT * FROM products WHERE id = ?', [body['productId']]);
-      if (product == null) throw ApiError(400, 'الموديل ده مش موجود');
+      if (product == null) throw ApiError(400, 'هذا الطراز غير موجود');
     }
     final id = db.transaction(() {
       if (product == null) {
@@ -456,7 +456,7 @@ extension _StockRoutes on FixTrackServer {
         db.execute(
           'INSERT INTO products(id, name, category, cost_cents, price_cents, qty, low_stock, track_stock, serialized, created_at, updated_at) '
           "VALUES(?, ?, ?, ?, ?, 0, 0, 1, 1, ?, ?)",
-          [pid, _requiredText(body, 'model', 'موديل الجهاز'), 'موبايلات مستعملة', cost,
+          [pid, _requiredText(body, 'model', 'موديل الجهاز'), 'أجهزة مستعملة', cost,
            body['priceCents'] is int ? body['priceCents'] : cost, now, now],
         );
         product = db.selectOne('SELECT * FROM products WHERE id = ?', [pid]);
@@ -471,7 +471,7 @@ extension _StockRoutes on FixTrackServer {
         userId: u.id,
         seller: {'name': sellerName, 'phone': sellerPhone, 'nationalId': nationalId, 'idPhoto': photo},
       );
-      _moveStock(product!['id'] as String, 1, 'purchase', refType: 'unit', refId: unitId, userId: u.id, note: 'شرا مستعمل من $sellerName');
+      _moveStock(product!['id'] as String, 1, 'purchase', refType: 'unit', refId: unitId, userId: u.id, note: 'شراء جهاز مستعمل من $sellerName');
       _cashMove('used_purchase', -cost, method, userId: u.id, refType: 'unit', refId: unitId, note: '${product!['name']} من $sellerName');
       return unitId;
     });
@@ -490,7 +490,7 @@ extension _StockRoutes on FixTrackServer {
     try {
       bytes = base64.decode(body['data'] as String? ?? '');
     } catch (_) {
-      throw ApiError(400, 'الملف مش صحيح');
+      throw ApiError(400, 'الملف غير صحيح');
     }
     if (bytes.isEmpty) throw ApiError(400, 'الملف فاضي');
     if (bytes.length > 4 * 1024 * 1024) throw ApiError(400, 'الصورة كبيرة جداً');

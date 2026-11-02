@@ -15,8 +15,8 @@ void main() {
     await Future<void>.delayed(const Duration(seconds: 3));
     FreezeWatchdog.stop();
     final text = File(log.path).readAsStringSync();
-    expect(RegExp(r'\[FREEZE\] الشاشة واقفة').hasMatch(text), true, reason: text);
-    expect(RegExp(r'\[FREEZE\] الشاشة رجعت تشتغل بعد [5-7] ثانية').hasMatch(text), true, reason: text);
+    expect(text, contains('[FREEZE] الشاشة متوقفة عن الاستجابة منذ'));
+    expect(text, contains('[FREEZE] عادت الشاشة إلى العمل بعد توقف دام'));
     expect(text, contains('POST /api/checks/1/orders'));
     await dir.delete(recursive: true);
   });

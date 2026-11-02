@@ -156,7 +156,7 @@ class _EditTicketDialogState extends ConsumerState<EditTicketDialog> with _Submi
                     initialValue: staff.any((s) => s.id == _technicianId) ? _technicianId : null,
                     decoration: const InputDecoration(labelText: 'الفني المسؤول'),
                     items: [
-                      const DropdownMenuItem(value: null, child: Text('لسه محددتش')),
+                      const DropdownMenuItem(value: null, child: Text('لم يتم التحديد بعد')),
                       for (final s in staff.where((s) => s.role != Role.reception))
                         DropdownMenuItem(value: s.id, child: Text(s.name)),
                     ],
@@ -334,7 +334,7 @@ class _DeliverDialogState extends ConsumerState<DeliverDialog> with _Submitting 
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(color: brandOrange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
-                    child: Text('الجهاز لسه في مرحلة "${t.status.label}". متأكد إن العميل عايز ياخده؟'),
+                    child: Text('لا يزال الجهاز في مرحلة "${t.status.label}". هل أنت متأكد من رغبة العميل في استلامه؟'),
                   ),
                 ],
                 if (t.accessories.isNotEmpty) ...[
@@ -376,9 +376,9 @@ class _DeliverDialogState extends ConsumerState<DeliverDialog> with _Submitting 
                 ],
                 MoneyField(controller: _final, label: 'التكلفة النهائية', onChanged: (_) => setState(() {})),
                 const SizedBox(height: 8),
-                Text('مدفوع قبل كده: ${money(t.paidCents)}', style: text.bodySmall),
+                Text('المبلغ المدفوع سابقاً: ${money(t.paidCents)}', style: text.bodySmall),
                 const SizedBox(height: 12),
-                MoneyField(controller: _pay, label: 'المبلغ اللي هيتدفع دلوقتي', onChanged: (_) => setState(() {})),
+                MoneyField(controller: _pay, label: 'المبلغ المراد دفعه الآن', onChanged: (_) => setState(() {})),
                 const SizedBox(height: 8),
                 if (_payCents > 0)
                   Wrap(spacing: 8, runSpacing: 8, children: [
@@ -392,7 +392,7 @@ class _DeliverDialogState extends ConsumerState<DeliverDialog> with _Submitting 
                     controlAffinity: ListTileControlAffinity.leading,
                     value: _allowDebt,
                     onChanged: (v) => setState(() => _allowDebt = v ?? false),
-                    title: Text('هيفضل على العميل ${money(_remainingAfter)} (آجل)'),
+                    title: Text('سيتبقى على العميل ${money(_remainingAfter)} (آجل)'),
                   )
                 else if (_remainingAfter < 0)
                   Text(_payCents > 0 ? 'المبلغ أكبر من الباقي بـ ${money(-_remainingAfter)}' : 'المدفوع أكبر من التكلفة بـ ${money(-_remainingAfter)}. سجّل مرتجع بالفرق من كارت "الحساب" الأول', style: TextStyle(color: scheme.error).semiBold)
@@ -471,8 +471,8 @@ class _ApprovalRequestDialogState extends ConsumerState<ApprovalRequestDialog> w
                 autofocus: true,
                 minLines: 2,
                 maxLines: 4,
-                decoration: const InputDecoration(labelText: 'إيه اللي لقيته؟', hintText: 'مثلاً: الفلاتة كمان محتاجة تتغير'),
-                validator: (v) => (v ?? '').trim().isEmpty ? 'اكتب السبب عشان العميل يفهم' : null,
+                decoration: const InputDecoration(labelText: 'ما المشكلة التي اكتشفتها؟', hintText: 'مثال: يلزم استبدال كابل التوصيل أيضاً'),
+                validator: (v) => (v ?? '').trim().isEmpty ? 'يرجى توضيح السبب ليتمكن العميل من فهمه' : null,
               ),
               const SizedBox(height: 12),
               MoneyField(
@@ -481,7 +481,7 @@ class _ApprovalRequestDialogState extends ConsumerState<ApprovalRequestDialog> w
                 validator: (c) => (c ?? 0) <= 0 ? 'اكتب التكلفة الجديدة' : null,
               ),
               const SizedBox(height: 8),
-              const Text('العميل هيقدر يوافق أو يرفض من صفحة التتبع، أو تسجل رده بنفسك لو رد في التليفون.',
+              const Text('يمكن للعميل الموافقة أو الرفض من صفحة التتبع، أو تسجل رده بنفسك لو رد في التليفون.',
                   style: TextStyle(fontSize: 12)),
               if (error != null) ...[const SizedBox(height: 12), ErrorBanner(error!)],
             ],
@@ -526,7 +526,7 @@ class _PickupDialogState extends ConsumerState<PickupDialog> with _Submitting {
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text('العميل هييجي يستلم إمتى؟'),
+            const Text('متى سيحضر العميل لاستلام الجهاز؟'),
             const SizedBox(height: 12),
             DuePicker(value: _at, onChanged: (d) => setState(() => _at = d)),
             if (error != null) ...[const SizedBox(height: 12), ErrorBanner(error!)],

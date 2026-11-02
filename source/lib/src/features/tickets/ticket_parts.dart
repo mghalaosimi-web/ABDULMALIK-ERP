@@ -68,7 +68,7 @@ class PartsCard extends ConsumerWidget {
             )
           : null,
       children: [
-        if (parts.isEmpty) Text('مفيش قطع اتركبت لسه', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
+        if (parts.isEmpty) Text('لم تُسجّل أي قطع غيار مستخدمة حتى الآن', style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant)),
         for (final p in parts)
           ListTile(
             dense: true,
@@ -192,7 +192,7 @@ class _AddPartDialogState extends ConsumerState<AddPartDialog> {
                 controlAffinity: ListTileControlAffinity.leading,
                 value: _addToBill,
                 onChanged: (v) => setState(() => _addToBill = v ?? false),
-                title: Text('ضيف سعرها على حساب العميل (+${money((picked['priceCents'] as int) * _qty)})'),
+                title: Text('أضف تكلفتها إلى حساب العميل (+${money((picked['priceCents'] as int) * _qty)})'),
               ),
           ],
           if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],

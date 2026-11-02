@@ -195,7 +195,7 @@ class _HeaderCard extends ConsumerWidget {
                 _InfoItem(icon: Icons.person_rounded, label: 'العميل', value: t.customerName),
                 _InfoItem(
                   icon: Icons.call_rounded,
-                  label: 'التليفون',
+                  label: 'رقم الهاتف',
                   value: t.customerPhone,
                   ltr: true,
                   onTap: () {
@@ -203,11 +203,11 @@ class _HeaderCard extends ConsumerWidget {
                     showMessage(context, 'اتنسخ الرقم');
                   },
                 ),
-                _InfoItem(icon: Icons.engineering_rounded, label: 'الفني', value: t.technicianName ?? 'لسه محددش'),
+                _InfoItem(icon: Icons.engineering_rounded, label: 'الفني', value: t.technicianName ?? 'لم يُحدّد بعد'),
                 _InfoItem(
                   icon: t.overdue ? Icons.warning_amber_rounded : Icons.schedule_rounded,
                   label: 'الموعد المتوقع',
-                  value: t.dueAt == null ? 'مش محدد' : formatDateTime(t.dueAt!),
+                  value: t.dueAt == null ? 'غير محدد' : formatDateTime(t.dueAt!),
                   color: t.overdue ? scheme.error : null,
                 ),
                 _InfoItem(icon: Icons.move_to_inbox_rounded, label: 'اتسلم', value: formatDateTime(t.createdAt)),
@@ -241,7 +241,7 @@ class _HeaderCard extends ConsumerWidget {
                 borderRadius: BorderRadius.circular(10),
                 onTap: () {
                   Clipboard.setData(ClipboardData(text: link));
-                  showMessage(context, 'اتنسخ لينك المتابعة، تقدر تبعته للعميل');
+                  showMessage(context, 'تم نسخ رابط المتابعة؛ يمكنك إرساله إلى العميل.');
                 },
                 child: Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4),
@@ -417,7 +417,7 @@ class _ProgressCardState extends ConsumerState<_ProgressCard> {
               child: TextButton.icon(
                 onPressed: () => showDialog<void>(context: context, builder: (_) => DeliverDialog(ticket: t, user: widget.user)),
                 icon: const Icon(Icons.handshake_outlined, size: 18),
-                label: const Text('العميل عايز ياخد الجهاز دلوقتي؟ تسليم'),
+                label: const Text('هل يرغب العميل في استلام الجهاز الآن؟ تسليم'),
               ),
             ),
           ],
@@ -500,14 +500,14 @@ class _DetailsCard extends ConsumerWidget {
             if (t.problemDesc != null) Padding(padding: const EdgeInsets.only(top: 6), child: Text(t.problemDesc!)),
           ],
         )),
-        row('بيفتح؟', Text(switch (t.powersOn) { true => 'أيوه', false => 'لأ', null => 'مش معروف' })),
+        row('هل يعمل؟', Text(switch (t.powersOn) { true => 'نعم', false => 'لا', null => 'غير معروف' })),
         row('ملاحظات الشكل', chips(t.conditionFlags)),
         if (t.conditionNotes != null) row('ملاحظات تانية', Text(t.conditionNotes!)),
         row('مع الجهاز', chips(t.accessories)),
         if (t.imei != null) row('IMEI', SelectableText(t.imei!, textDirection: TextDirection.ltr)),
         row('قفل الشاشة', Row(
           children: [
-            Text(t.hasLockSecret ? t.lockType.label : 'مفيش'),
+            Text(t.hasLockSecret ? t.lockType.label : 'لا يوجد'),
             if (t.canRevealLock) ...[
               const SizedBox(width: 8),
               TextButton.icon(
@@ -545,7 +545,7 @@ class _LockDialog extends ConsumerWidget {
             return Column(mainAxisSize: MainAxisSize.min, children: [
               PatternPad(initial: PatternPad.decode(secret), onChanged: (_) {}, readOnly: true, size: 200),
               const SizedBox(height: 8),
-              Text('الدايرة اللي عليها حلقة هي البداية • $secret', textDirection: TextDirection.rtl),
+              Text('الدائرة المحاطة بحلقة هي نقطة البداية • $secret', textDirection: TextDirection.rtl),
             ]);
           }
           return Column(mainAxisSize: MainAxisSize.min, children: [
@@ -666,7 +666,7 @@ class _TimelineCardState extends ConsumerState<_TimelineCard> {
           minLines: 1,
           maxLines: 4,
           decoration: InputDecoration(
-            hintText: 'اكتب ملاحظة للفنيين (العميل مش بيشوفها)',
+            hintText: 'أدخل ملاحظة للفنيين (لن تظهر للعميل)',
             suffixIcon: IconButton(
               icon: _busy ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(strokeWidth: 2)) : const Icon(Icons.send_rounded),
               onPressed: _busy ? null : _addNote,
@@ -773,7 +773,7 @@ class _MessagesCard extends StatelessWidget {
                           'sending' => 'بتتبعت',
                           'sent' => 'اتبعتت ✓',
                           'failed' => 'فشلت',
-                          _ => 'اتفتح واتساب',
+                          _ => 'تم فتح واتساب',
                         }}',
                         style: TextStyle(color: m.status == 'failed' ? scheme.error : null).semiBold,
                       ),
@@ -843,7 +843,7 @@ class _ApprovalCardState extends ConsumerState<_ApprovalCard> {
           const SizedBox(height: 4),
           Text('التكلفة الجديدة: ${money(t.approvalCents ?? 0)} (بدل ${money(t.totalCents)})', style: const TextStyle().semiBold),
           const SizedBox(height: 4),
-          const Text('العميل يقدر يرد من صفحة التتبع، والرد بيوصل هنا لوحده.', style: TextStyle(fontSize: 12)),
+          const Text('يمكن للعميل الرد من صفحة التتبع، وستظهر رسالته هنا تلقائياً.', style: TextStyle(fontSize: 12)),
           if (widget.isStaff) ...[
             const SizedBox(height: 12),
             Wrap(spacing: 8, runSpacing: 8, children: [
