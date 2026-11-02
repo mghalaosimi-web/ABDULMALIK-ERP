@@ -300,7 +300,7 @@ class _CompanyProfileCard extends StatelessWidget {
             Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text('M.GH.AL', textDirection: TextDirection.ltr,
                 style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w900, letterSpacing: 1.4)),
-              Text(ar ? 'للبرمجيات والأنظمة والتطبيقات' : 'Software, Systems & Applications',
+              Text(ar ? 'شركة للبرمجيات والأنظمة والتطبيقات' : 'Software, Systems & Applications Company',
                 style: theme.textTheme.titleSmall?.copyWith(fontWeight: FontWeight.bold)),
             ])),
           ]),
@@ -322,8 +322,8 @@ class _CompanyProfileCard extends StatelessWidget {
           ),
           const SizedBox(height: 14),
           Text(ar
-              ? 'M.GH.AL للبرمجيات والأنظمة والتطبيقات جهة تقنية متخصصة في تصميم وتطوير الحلول الرقمية، وبناء الأنظمة الإدارية والتشغيلية، وتطوير تطبيقات الأعمال، وأتمتة الإجراءات وسير العمل. ترتكز أعمالها على تحويل احتياجات المؤسسات والمنشآت إلى منتجات تقنية عملية تجمع بين هندسة البرمجيات، وتنظيم البيانات، وتجربة المستخدم، والتكامل بين الأنظمة.'
-              : 'M.GH.AL Software, Systems & Applications is a technology brand focused on designing and developing digital solutions, business and operational systems, business applications, and workflow automation. Its approach turns organizational needs into practical technology products through software engineering, structured data, user experience, and system integration.',
+              ? 'شركة M.GH.AL للبرمجيات والأنظمة والتطبيقات جهة تقنية متخصصة في تصميم وتطوير الحلول الرقمية، وبناء الأنظمة الإدارية والتشغيلية، وتطوير تطبيقات الأعمال، وأتمتة الإجراءات وسير العمل. ترتكز أعمالها على تحويل احتياجات المؤسسات والمنشآت إلى منتجات تقنية عملية تجمع بين هندسة البرمجيات، وتنظيم البيانات، وتجربة المستخدم، والتكامل بين الأنظمة.'
+              : 'M.GH.AL Software, Systems & Applications is a software and technology company focused on designing and developing digital solutions, business and operational systems, business applications, and workflow automation. Its approach turns organizational needs into practical technology products through software engineering, structured data, user experience, and system integration.',
             style: theme.textTheme.bodyMedium),
           const SizedBox(height: 10),
           Text(ar ? 'مجالات العمل' : 'Areas of Practice',
