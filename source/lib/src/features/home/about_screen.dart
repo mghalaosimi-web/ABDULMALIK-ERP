@@ -87,9 +87,11 @@ class AboutScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(title: Text(ar ? 'عن المشروع والفريق' : 'About the Project and Team')),
-      body: ListView(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
-        children: [
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
           Card(
             clipBehavior: Clip.antiAlias,
             child: Container(
@@ -144,7 +146,8 @@ class AboutScreen extends StatelessWidget {
             textAlign: TextAlign.center,
           ),
           const SizedBox(height: 24),
-        ],
+          ],
+        ),
       ),
     );
   }
