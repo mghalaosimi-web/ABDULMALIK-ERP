@@ -15,23 +15,13 @@ void main() {
     expect(find.text('عن المشروع والفريق'), findsOneWidget);
     expect(find.text('الإشراف والمراجعة العلمية'), findsOneWidget);
 
-    final names = [
-      'الأستاذ الدكتور أحمد الناشري',
-      'الأستاذ الدكتور عبد الرزاق الأهدل',
-      'الدكتور ضياء القدمي',
-      'الأستاذ الدكتور عبده شويه',
-      'الأستاذة سمر',
-      'محمد غالب العصيمي',
-      'رمزي محمد حزام السرابي',
-      'عرفات الكاملي',
-    ];
-    for (final name in names) {
-      await tester.scrollUntilVisible(
-        find.text(name),
-        350,
-        scrollable: find.byType(Scrollable).first,
-      );
-      expect(find.text(name), findsOneWidget);
-    }
+    expect(find.text('الأستاذ الدكتور أحمد الناشري'), findsOneWidget);
+    expect(find.text('الأستاذ الدكتور عبد الرزاق الأهدل'), findsOneWidget);
+    expect(find.text('الدكتور ضياء القدمي'), findsOneWidget);
+    expect(find.text('الأستاذ الدكتور عبده شويه'), findsOneWidget);
+    expect(find.text('الأستاذة سمر'), findsOneWidget);
+    expect(find.text('محمد غالب العصيمي'), findsOneWidget);
+    expect(find.text('رمزي محمد حزام السرابي'), findsOneWidget);
+    expect(find.text('عرفات الكاملي'), findsOneWidget);
   });
 }
