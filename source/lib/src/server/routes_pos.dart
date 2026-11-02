@@ -84,6 +84,12 @@ extension _PosRoutes on FixTrackServer {
       where.add('category = ?');
       params.add(qp['category']);
     }
+    // افصل الأكسسوارات عن المخزون العام دون تغيير بنية قاعدة البيانات أو كسر الأصناف القديمة.
+    if (qp['section'] == 'accessories') {
+      where.add("category LIKE 'الأكسسوارات::%'");
+    } else if (qp['section'] == 'general') {
+      where.add("(category IS NULL OR category NOT LIKE 'الأكسسوارات::%')");
+    }
     if (qp['low'] == '1') where.add('track_stock = 1 AND qty <= low_stock');
     if (qp['inactive'] == '1') where[0] = 'active = 0';
     final limit = (int.tryParse(qp['limit'] ?? '') ?? 100).clamp(1, 500);
@@ -92,9 +98,16 @@ extension _PosRoutes on FixTrackServer {
       'SELECT * FROM products WHERE ${where.join(' AND ')} ORDER BY name COLLATE NOCASE LIMIT ? OFFSET ?',
       [...params, limit, offset],
     );
+    final summaryWhere = <String>['active = 1'];
+    if (qp['section'] == 'accessories') {
+      summaryWhere.add("category LIKE 'الأكسسوارات::%'");
+    } else if (qp['section'] == 'general') {
+      summaryWhere.add("(category IS NULL OR category NOT LIKE 'الأكسسوارات::%')");
+    }
     final totals = db.selectOne(
       'SELECT COUNT(*) AS c, COALESCE(SUM(CASE WHEN track_stock = 1 AND qty > 0 THEN qty * cost_cents ELSE 0 END), 0) AS value, '
-      'COALESCE(SUM(CASE WHEN track_stock = 1 AND qty <= low_stock THEN 1 ELSE 0 END), 0) AS low FROM products WHERE active = 1',
+      'COALESCE(SUM(CASE WHEN track_stock = 1 AND qty <= low_stock THEN 1 ELSE 0 END), 0) AS low '
+      'FROM products WHERE ${summaryWhere.join(' AND ')}',
     )!;
     return {
       'products': rows.map(_productJson).toList(),
