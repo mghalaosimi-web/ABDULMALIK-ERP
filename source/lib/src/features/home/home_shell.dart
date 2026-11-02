@@ -21,6 +21,7 @@ import '../settings/settings_screen.dart';
 import '../tickets/tickets_screen.dart';
 import '../users/users_screen.dart';
 import 'dashboard_screen.dart';
+import 'about_screen.dart';
 
 class _Destination {
   const _Destination(
@@ -138,6 +139,12 @@ List<_Destination> _destinations(bool ar) => [
     Icons.badge_rounded,
     () => const UsersScreen(),
     roles: {Role.owner},
+  ),
+  _Destination(
+    ar ? 'عن المشروع والفريق' : 'About and Team',
+    Icons.info_outline_rounded,
+    Icons.info_rounded,
+    () => const AboutScreen(),
   ),
   _Destination(
     ar ? 'الإعدادات' : 'Settings',

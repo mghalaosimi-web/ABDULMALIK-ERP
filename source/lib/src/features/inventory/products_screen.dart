@@ -105,6 +105,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       if (mounted) showMessage(context, 'تمت إضافة $added منتج تجريبي. يمكنك البحث عن «عينة تجريبية» لإدارتها.');
     } catch (e) {
       ref.invalidate(productsProvider);
+      ref.invalidate(categoriesProvider);
       if (mounted) showMessage(context, 'تمت إضافة $added من ${_demoProducts.length}؛ تعذرت متابعة البقية: ${errorText(e)}');
     }
   }

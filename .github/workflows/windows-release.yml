@@ -11,6 +11,12 @@ on:
       - 'source/**'
       - '.github/workflows/windows-release.yml'
   workflow_dispatch:
+    inputs:
+      build_windows:
+        description: 'Build and package the Windows installer after validation has passed'
+        required: true
+        type: boolean
+        default: false
 
 permissions:
   contents: read
@@ -43,6 +49,7 @@ jobs:
 
   windows:
     needs: validate
+    if: github.event_name == 'workflow_dispatch' && inputs.build_windows == true
     runs-on: windows-2022
     timeout-minutes: 45
     steps:
