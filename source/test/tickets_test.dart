@@ -196,7 +196,7 @@ void main() {
     final res = await owner.post('/api/tickets/${t['id']}/deliver', {'override': true, 'allowDebt': true});
     expect(res['ticket']['status'], 'delivered');
     final last = (res['events'] as List).last;
-    expect(last['note'], contains('بدون كود'));
+    expect(last['note'], contains('دون رمز الاستلام'));
   });
 
   test('payments and refunds', () async {

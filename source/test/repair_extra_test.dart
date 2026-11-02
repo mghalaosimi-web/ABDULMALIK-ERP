@@ -98,7 +98,7 @@ void main() {
     expect(due.single['daysWaiting'], 4);
 
     final msg = await api.get('/api/tickets/${t['id']}/message', query: {'event': 'reminder'});
-    expect(msg['body'], contains('من 4 يوم'));
+    expect(msg['body'], contains('منذ 4 يوماً'));
     await api.post('/api/tickets/${t['id']}/messages', {'channel': 'whatsapp', 'event': 'reminder', 'body': msg['body']});
     expect((await api.get('/api/reminders'))['tickets'], isEmpty);
 
