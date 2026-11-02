@@ -37,7 +37,7 @@ class TicketsScreen extends ConsumerStatefulWidget {
 
   final String initialScope;
 
-  /// لو الشاشة مفتوحة لوحدها (مش تاب في الشاشة الرئيسية) بيظهر زرار رجوع.
+  /// عند فتح الشاشة بصورة مستقلة (وليس ضمن تبويب الشاشة الرئيسية)، يظهر زر الرجوع.
   final bool standalone;
 
   @override
@@ -66,7 +66,7 @@ class _TicketsScreenState extends ConsumerState<TicketsScreen> {
   Widget build(BuildContext context) {
     final user = ref.watch(sessionProvider).value!.user!;
     final canIntake = user.role != Role.technician;
-    // لو فيه بحث، بندوّر في كل الأجهزة مش في الفلتر الحالي بس
+    // عند البحث، يشمل نطاق البحث جميع الأجهزة وليس الأجهزة المعروضة في المرشح الحالي فقط.
     final query = (scope: _query.isNotEmpty ? 'all' : _scope, q: _query);
     final tickets = ref.watch(ticketsProvider(query));
 
@@ -90,7 +90,7 @@ class _TicketsScreenState extends ConsumerState<TicketsScreen> {
               controller: _search,
               onChanged: _onSearch,
               decoration: InputDecoration(
-                hintText: 'دوّر برقم الوصل، أو اسم العميل، أو التليفون، أو الموديل، أو IMEI',
+                hintText: 'ابحث برقم الإيصال، أو اسم العميل، أو رقم الهاتف، أو الطراز، أو رقم IMEI',
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: _search.text.isEmpty
                     ? null
@@ -135,10 +135,10 @@ class _TicketsScreenState extends ConsumerState<TicketsScreen> {
                   ? EmptyState(
                       icon: _query.isNotEmpty ? Icons.search_off_rounded : Icons.inbox_rounded,
                       message: _query.isNotEmpty
-                          ? 'مفيش نتايج لـ "$_query"'
+                          ? 'لا توجد نتائج لـ "$_query"'
                           : _scope == 'active' && canIntake
-                              ? 'مفيش أجهزة في المحل دلوقتي.\nدوس "استلام جهاز" عشان تسجل أول جهاز.'
-                              : 'مفيش أجهزة هنا',
+                              ? 'لا توجد أجهزة مسجلة في المحل حالياً.\nاضغط على "استلام جهاز" لتسجيل الجهاز الأول.'
+                              : 'لا توجد أجهزة هنا',
                     )
                   : RefreshIndicator(
                       onRefresh: () => ref.refresh(ticketsProvider(query).future),
