@@ -4,6 +4,14 @@
 
 # ABDULMALIK ERP
 
+**A product in the M.GH.AL Software, Systems & Applications portfolio**  
+**منتج ضمن ملف أعمال شركة M.GH.AL للبرمجيات والأنظمة والتطبيقات**
+
+M.GH.AL focuses on custom software, business and ERP systems, web and mobile applications, workflow automation, database engineering, system integration, reporting, and digital transformation. Its approach combines requirements analysis, software architecture, user experience, engineering, quality assurance, and continuous improvement.
+
+> The M.GH.AL mark in the application is a brand and portfolio identifier. It is not a government registration or third-party certification.
+
+
 **Windows desktop ERP for one phone repair and retail shop**
 
 نظام إدارة محل صيانة وبيع الهواتف: الصيانة، الكاشير، المخزون، الفواتير، العملاء، التقارير والنسخ الاحتياطي.
