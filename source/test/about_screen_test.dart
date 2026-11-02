@@ -14,7 +14,7 @@ void main() {
 
     expect(find.text('عن المشروع والفريق'), findsOneWidget);
     expect(find.text('M.GH.AL'), findsOneWidget);
-    expect(find.text('للبرمجيات والأنظمة والتطبيقات'), findsOneWidget);
+    expect(find.text('شركة للبرمجيات والأنظمة والتطبيقات'), findsOneWidget);
     expect(find.textContaining('شارة توثيق تعريفية للمشروع'), findsOneWidget);
     expect(find.text('فريق العمل والهيكل الأكاديمي والتقني للمشروع'), findsOneWidget);
     expect(find.text('أولاً: اللجنة الأكاديمية والاستشارية'), findsOneWidget);
