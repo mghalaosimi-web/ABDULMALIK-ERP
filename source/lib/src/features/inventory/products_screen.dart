@@ -79,7 +79,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => showDialog<void>(context: context, builder: (_) => ProductDialog(accessories: widget.accessories)),
         icon: const Icon(Icons.add_rounded),
-        label: Text(widget.accessories ? 'إضافة أكسسوار' : 'صنف جديد'),
+        label: Text(widget.accessories ? 'إضافة ملحق' : 'صنف جديد'),
       ),
       body: Column(
         children: [
@@ -94,7 +94,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                   if (r.lowCount > 0)
                     InkWell(
                       onTap: () => setState(() => _lowOnly = !_lowOnly),
-                      child: Text('${r.lowCount} قرّب يخلص', style: TextStyle(color: scheme.error).semiBold),
+                      child: Text('${r.lowCount} أوشك على النفاد', style: TextStyle(color: scheme.error).semiBold),
                     ),
                   if (r.stockValueCents != null) Text('قيمة البضاعة (بسعر الشرا): ${money(r.stockValueCents!)}'),
                 ],
@@ -105,7 +105,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
             child: TextField(
               controller: _search,
               decoration: InputDecoration(
-                hintText: 'دوّر بالاسم أو الباركود',
+                hintText: 'ابحث بالاسم أو الرمز الشريطي',
                 prefixIcon: const Icon(Icons.search_rounded),
                 suffixIcon: cameraScanSupported
                     ? IconButton(
@@ -134,7 +134,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
               children: [
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 6),
-                  child: FilterChip(label: const Text('قرّب يخلص'), selected: _lowOnly, onSelected: (v) => setState(() => _lowOnly = v)),
+                  child: FilterChip(label: const Text('أوشك على النفاد'), selected: _lowOnly, onSelected: (v) => setState(() => _lowOnly = v)),
                 ),
                 Padding(
                   padding: const EdgeInsetsDirectional.only(end: 6),
@@ -164,8 +164,8 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                   ? EmptyState(
                       icon: Icons.inventory_2_outlined,
                       message: _query.isEmpty && _category == null && !_lowOnly
-                          ? (widget.accessories ? 'لسه مفيش أكسسوارات.\nابدأ بإضافة أول أكسسوار وتصنيفه.' : 'لسه مفيش أصناف.\nضيف صنف جديد، أو استورد الأصناف من ملف Excel من برنامجك القديم.')
-                          : 'مفيش أصناف هنا',
+                          ? (widget.accessories ? 'لا توجد أكسسوارات حتى الآن.\nابدأ بإضافة أول ملحق وتحديد تصنيفه.' : 'لا توجد أصناف حتى الآن.\nأضف صنفاً جديداً، أو استورد الأصناف من ملف Excel من برنامجك السابق.')
+                          : 'لا توجد أصناف هنا',
                     )
                   : ListView.separated(
                       padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
@@ -199,7 +199,7 @@ class _ProductRow extends StatelessWidget {
         subtitle: Text([if ((p.category ?? '').isNotEmpty) visibleProductCategory(p.category), if (p.barcode != null) p.barcode!, if (showCost) 'شرا ${money(p.costCents)}'].join(' • ')),
         leading: p.trackStock && !p.serialized
             ? IconButton.filledTonal(
-                tooltip: 'إضافة كمية وصلت',
+                tooltip: 'إضافة كمية واردة',
                 icon: const Icon(Icons.add_rounded),
                 onPressed: () => showDialog<void>(context: context, builder: (_) => AddStockDialog(product: p)),
               )
@@ -211,7 +211,7 @@ class _ProductRow extends StatelessWidget {
             Text(money(p.priceCents), style: TextStyle(color: scheme.primary).bold),
             if (p.trackStock)
               Text(
-                p.outOfStock ? 'خلصان' : 'متاح ${p.qty}',
+                p.outOfStock ? 'نفدت الكمية' : 'متاح ${p.qty}',
                 style: TextStyle(fontSize: 12, color: p.isLow ? scheme.error : scheme.onSurfaceVariant).semiBold,
               ),
           ],
@@ -270,7 +270,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
   Future<void> _save() async {
     if (!_form.currentState!.validate()) return;
     if (widget.accessories && _category.text.trim().isEmpty) {
-      setState(() => _error = 'اختر تصنيف الأكسسوار أولاً');
+      setState(() => _error = 'يرجى تحديد تصنيف الملحق أولاً');
       return;
     }
     final isOwner = ref.read(sessionProvider).value!.user!.isOwner;
@@ -303,7 +303,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
       ref.invalidate(productsProvider);
       if (!mounted) return;
       Navigator.pop(context);
-      showMessage(context, _isNew ? 'اتضاف "${_name.text}"' : 'اتحفظ');
+      showMessage(context, _isNew ? 'تمت إضافة "${_name.text}"' : 'تم الحفظ');
     } catch (e) {
       if (mounted) setState(() => _error = errorText(e));
     } finally {
@@ -388,7 +388,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
                   title: const Text('موبايل / جهاز له IMEI'),
-                  subtitle: const Text('كل جهاز بيتسجل ويتباع بالـ IMEI بتاعه'),
+                  subtitle: const Text('يُسجّل كل جهاز ويُباع باستخدام رقم IMEI الخاص به'),
                   value: _serialized,
                   onChanged: p?.serialized == true ? null : (v) => setState(() => _serialized = v),
                 ),
@@ -433,7 +433,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                         child: TextFormField(
                           controller: _low,
                           keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(labelText: 'نبّهني لما يوصل لـ'),
+                          decoration: const InputDecoration(labelText: 'نبّهني عند وصول الكمية إلى'),
                         ),
                       ),
                     ],
@@ -581,7 +581,7 @@ class _AddStockDialogState extends ConsumerState<AddStockDialog> {
           ),
           if (isOwner) ...[
             const SizedBox(height: 10),
-            MoneyField(controller: _cost, label: 'دفعت فيهم كام؟ (اختياري، عشان سعر الشرا يتحدث)'),
+            MoneyField(controller: _cost, label: 'كم دفعت؟ (اختياري، لتحديث سعر الشراء)'),
           ],
           if (_error != null) ...[const SizedBox(height: 10), ErrorBanner(_error!)],
         ]),
@@ -628,7 +628,7 @@ class _MovesDialog extends ConsumerWidget {
             if (snap.hasError) return ErrorBanner(errorText(snap.error!));
             if (!snap.hasData) return const Center(child: CircularProgressIndicator());
             final moves = (snap.data!['moves'] as List).cast<Map<String, dynamic>>();
-            if (moves.isEmpty) return const Center(child: Text('مفيش حركة'));
+            if (moves.isEmpty) return const Center(child: Text('لا توجد حركات'));
             return ListView.separated(
               itemCount: moves.length,
               separatorBuilder: (_, _) => const Divider(height: 1),
@@ -688,7 +688,7 @@ class _LabelsDialogState extends ConsumerState<_LabelsDialog> {
               onSelectionChanged: (s) => setState(() => _a4 = s.first),
             ),
             const SizedBox(height: 8),
-            if (widget.products.isEmpty) const Expanded(child: Center(child: Text('مفيش أصناف ليها باركود في القايمة'))),
+            if (widget.products.isEmpty) const Expanded(child: Center(child: Text('لا توجد أصناف لها رموز شريطية في القائمة'))),
             Expanded(
               child: ListView(
                 children: [
