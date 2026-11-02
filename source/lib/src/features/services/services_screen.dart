@@ -51,7 +51,7 @@ class ServicesScreen extends ConsumerWidget {
         data: (d) => d.wallets.isEmpty
             ? EmptyState(
                 icon: Icons.account_balance_wallet_outlined,
-                message: isOwner ? 'ضيف محافظ المحل (فودافون كاش، إنستاباي، فوري...) عشان تسجل عليها العمليات والعمولات.' : 'صاحب المحل لسه ما ضافش محافظ.',
+                message: isOwner ? 'أضف محافظ المحل (فودافون كاش، إنستاباي، فوري...) لتسجيل العمليات والعمولات عليها.' : 'لم يضف مالك المحل أي محافظ حتى الآن.',
               )
             : ListView(padding: const EdgeInsets.fromLTRB(20, 4, 20, 24), children: [
                 Card(
@@ -178,8 +178,8 @@ class _TxnDialogState extends ConsumerState<_TxnDialog> {
       'cash_in' => 'العميل هيدفعلك كاش ${money(amount + commission)}، وإنت تحوّل ${money(amount)} على محفظته',
       'cash_out' => 'العميل يحوّل ${money(amount)} على محفظتك، وإنت تديله كاش ${money(amount - commission)}',
       'recharge' || 'bill' => 'العميل هيدفعلك ${money(amount + commission)} كاش',
-      'topup' => 'هتاخد ${money(amount)} من الدرج وتحطها في المحفظة',
-      _ => 'هتسحب ${money(amount)} من المحفظة للدرج',
+      'topup' => 'ستُخصم ${money(amount)} من الصندوق وتُضاف إلى المحفظة',
+      _ => 'سيُحوّل مبلغ ${money(amount)} من المحفظة إلى الصندوق',
     };
     return AlertDialog(
       title: Text('${walletTxnLabels[widget.type]} • ${widget.wallet.name}'),
@@ -232,7 +232,7 @@ class _TxnsDialog extends ConsumerWidget {
             if (snap.hasError) return ErrorBanner(errorText(snap.error!));
             if (!snap.hasData) return const Center(child: CircularProgressIndicator());
             final txns = (snap.data!['txns'] as List).cast<Map<String, dynamic>>();
-            if (txns.isEmpty) return const Center(child: Text('مفيش عمليات'));
+            if (txns.isEmpty) return const Center(child: Text('لا توجد عمليات'));
             return ListView.separated(
               itemCount: txns.length,
               separatorBuilder: (_, _) => const Divider(height: 1),
@@ -319,7 +319,7 @@ class _NewWalletDialogState extends ConsumerState<_NewWalletDialog> {
           const SizedBox(height: 12),
           TextField(controller: _phone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'رقم المحفظة')),
           const SizedBox(height: 12),
-          MoneyField(controller: _balance, label: 'الرصيد اللي فيها دلوقتي'),
+          MoneyField(controller: _balance, label: 'الرصيد الحالي'),
           if (_error != null) ...[const SizedBox(height: 12), ErrorBanner(_error!)],
         ]),
       ),
