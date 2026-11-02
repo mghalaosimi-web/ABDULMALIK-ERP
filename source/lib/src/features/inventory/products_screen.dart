@@ -57,7 +57,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       appBar: AppBar(
         title: Text(widget.accessories ? 'الأكسسوارات' : 'المخزون'),
         actions: [
-          if (user.isOwner)
+          if (user.isOwner && !widget.accessories)
             TextButton.icon(
               onPressed: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const ImportScreen())),
               icon: const Icon(Icons.upload_file_rounded),
