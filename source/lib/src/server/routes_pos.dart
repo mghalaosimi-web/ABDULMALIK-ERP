@@ -16,14 +16,14 @@ const cashMoveTypes = {
   'deposit': 'إيداع في الخزنة',
   'withdraw': 'سحب من الخزنة',
   'supplier_payment': 'دفعة لمورد',
-  'purchase_payment': 'فاتورة شرا',
-  'used_purchase': 'شرا موبايل مستعمل',
+  'purchase_payment': 'فاتورة شراء',
+  'used_purchase': 'شراء جهاز مستعمل',
   'service': 'خدمات ومحافظ',
   'wallet_topup': 'تغذية محفظة',
   'wallet_withdraw': 'سحب من محفظة',
 };
 
-const defaultExpenseCategories = ['إيجار', 'كهرباء', 'مرتبات', 'بضاعة', 'أكل وشرب', 'مواصلات', 'نت وتليفون', 'تصليحات للمحل', 'أخرى'];
+const defaultExpenseCategories = ['إيجار', 'كهرباء', 'مرتبات', 'بضاعة', 'أكل وشرب', 'مواصلات', 'إنترنت وهاتف', 'تصليحات للمحل', 'أخرى'];
 
 extension _PosRoutes on FixTrackServer {
   void _registerPosRoutes(Router r) {
@@ -117,7 +117,7 @@ extension _PosRoutes on FixTrackServer {
     };
   }
 
-  /// باركود صنف، أو IMEI جهاز موجود في المخزون (مسح IMEI الموبايل في الكاشير بيضيفه على طول).
+  /// الرمز الشريطي لصنف، أو رقم IMEI لجهاز موجود في المخزون (يؤدي مسح رقم IMEI في نقطة البيع إلى إضافته مباشرة).
   Object? _lookupProduct(Request req, AuthUser u) {
     final code = latinDigits((req.url.queryParameters['barcode'] ?? '').trim());
     if (code.isEmpty) return {'product': null};
@@ -156,7 +156,7 @@ extension _PosRoutes on FixTrackServer {
       final code = '$body${(10 - sum % 10) % 10}';
       if (db.selectOne('SELECT id FROM products WHERE barcode = ?', [code]) == null) return code;
     }
-    throw ApiError(500, 'مش قادر أعمل باركود جديد');
+    throw ApiError(500, 'تعذّر إنشاء رمز شريطي جديد');
   }
 
   Future<Object?> _createProduct(Request req, AuthUser u) async {
@@ -172,7 +172,7 @@ extension _PosRoutes on FixTrackServer {
         'VALUES(?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)',
         [
           id, _requiredText(body, 'name', 'اسم الصنف'), _validBarcode(body['barcode']), _optionalText(body, 'category'),
-          body['costCents'] == null ? 0 : _cents(body['costCents'], 'سعر الشرا'),
+          body['costCents'] == null ? 0 : _cents(body['costCents'], 'سعر الشراء'),
           body['priceCents'] == null ? 0 : _cents(body['priceCents'], 'سعر البيع'),
           body['lowStock'] is int ? (body['lowStock'] as int).clamp(0, 100000) : 0,
           serialized || body['trackStock'] != false ? 1 : 0,
@@ -191,21 +191,21 @@ extension _PosRoutes on FixTrackServer {
   Future<Object?> _updateProduct(Request req, AuthUser u) async {
     final id = req.params['id']!;
     final p = db.selectOne('SELECT * FROM products WHERE id = ?', [id]);
-    if (p == null) throw ApiError(404, 'الصنف ده مش موجود');
+    if (p == null) throw ApiError(404, 'هذا الصنف غير موجود');
     final body = await _body(req);
-    // سعر الشرا بيبان لصاحب المحل بس، فالاستقبال مايقدرش يغيّره
-    if (!u.isOwner && body.containsKey('costCents')) throw ApiError(403, 'سعر الشرا بيتعدل من صاحب المحل بس');
+    // سعر الشراء بيبان لصاحب المحل بس، فالاستقبال مايقدرش يغيّره
+    if (!u.isOwner && body.containsKey('costCents')) throw ApiError(403, 'سعر الشراء بيتعدل من صاحب المحل بس');
     final sets = <String, Object?>{};
     if (body.containsKey('name')) sets['name'] = _requiredText(body, 'name', 'اسم الصنف');
     if (body.containsKey('barcode')) sets['barcode'] = _validBarcode(body['barcode'], exceptId: id);
     if (body.containsKey('category')) sets['category'] = _optionalText(body, 'category');
-    if (body.containsKey('costCents')) sets['cost_cents'] = _cents(body['costCents'], 'سعر الشرا');
+    if (body.containsKey('costCents')) sets['cost_cents'] = _cents(body['costCents'], 'سعر الشراء');
     if (body.containsKey('priceCents')) sets['price_cents'] = _cents(body['priceCents'], 'سعر البيع');
     if (body.containsKey('lowStock')) sets['low_stock'] = (body['lowStock'] as int? ?? 0).clamp(0, 100000);
     if (body.containsKey('trackStock') && p['serialized'] != 1) sets['track_stock'] = body['trackStock'] == false ? 0 : 1;
     if (body['warrantyMonths'] is int) sets['warranty_months'] = (body['warrantyMonths'] as int).clamp(0, 120);
     if (body['serialized'] == true && p['serialized'] != 1) {
-      if ((p['qty'] as int) != 0) throw ApiError(400, 'صفّر كمية الصنف الأول، وبعدين ضيف الأجهزة بالـ IMEI');
+      if ((p['qty'] as int) != 0) throw ApiError(400, 'اجعل كمية الصنف صفراً أولاً، ثم أضف الأجهزة باستخدام أرقام IMEI');
       sets['serialized'] = 1;
       sets['track_stock'] = 1;
     }
@@ -224,7 +224,7 @@ extension _PosRoutes on FixTrackServer {
   /// كل تغيير في الكمية بيعدي من هنا عشان يتسجل في حركة المخزون.
   int _moveStock(String productId, int change, String reason, {String? refType, String? refId, String? note, String? userId}) {
     final p = db.selectOne('SELECT qty, track_stock FROM products WHERE id = ?', [productId]);
-    if (p == null) throw ApiError(400, 'صنف مش موجود');
+    if (p == null) throw ApiError(400, 'الصنف غير موجود');
     if (p['track_stock'] != 1) return p['qty'] as int;
     final after = (p['qty'] as int) + change;
     db.execute('UPDATE products SET qty = ?, updated_at = ? WHERE id = ?', [after, nowIso(), productId]);
@@ -238,7 +238,7 @@ extension _PosRoutes on FixTrackServer {
   Future<Object?> _adjustStock(Request req, AuthUser u) async {
     final id = req.params['id']!;
     final p = db.selectOne('SELECT * FROM products WHERE id = ?', [id]);
-    if (p == null) throw ApiError(404, 'الصنف ده مش موجود');
+    if (p == null) throw ApiError(404, 'هذا الصنف غير موجود');
     final body = await _body(req);
     int change;
     if (body['setQty'] is int) {
@@ -249,14 +249,14 @@ extension _PosRoutes on FixTrackServer {
       throw ApiError(400, 'اكتب الكمية');
     }
     if (change == 0) return {'product': _productJson(p)};
-    if (p['serialized'] == 1) throw ApiError(400, 'الأجهزة بالـ IMEI بتتضاف وبتتشال جهاز جهاز، مش بالجرد');
+    if (p['serialized'] == 1) throw ApiError(400, 'تُضاف الأجهزة المسجلة بأرقام IMEI وتُحذف بصورة فردية، ولا تُدار من خلال الجرد');
     final reason = const {'purchase', 'count', 'damaged', 'lost', 'return_supplier', 'other'}.contains(body['reason']) ? body['reason'] as String : 'other';
     // الاستقبال يقدر يضيف بضاعة وصلت بس، والجرد والتالف لصاحب المحل
-    if (!u.isOwner && (reason != 'purchase' || change <= 0)) throw ApiError(403, 'تعديل الجرد لصاحب المحل بس. تقدر تضيف كمية وصلت');
+    if (!u.isOwner && (reason != 'purchase' || change <= 0)) throw ApiError(403, 'لا يمكن تعديل الجرد إلا من قِبل مالك المحل. يمكنك إضافة كمية واردة');
     final paid = u.isOwner && body['costCents'] is int && (body['costCents'] as int) > 0 && change > 0 ? body['costCents'] as int : null;
     db.transaction(() {
       if (paid != null) {
-        // سعر الشرا الجديد = متوسط القديم والجديد
+        // سعر الشراء الجديد = متوسط القديم والجديد
         final oldQty = (p['qty'] as int) < 0 ? 0 : p['qty'] as int;
         final newCost = ((oldQty * (p['cost_cents'] as int) + paid) / (oldQty + change)).round();
         db.execute('UPDATE products SET cost_cents = ?, updated_at = ? WHERE id = ?', [newCost, nowIso(), id]);
@@ -289,12 +289,12 @@ extension _PosRoutes on FixTrackServer {
     };
   }
 
-  /// استيراد الأصناف من البرنامج القديم (الصفوف جاية من Excel بعد ما المستخدم اختار الأعمدة).
+  /// استيراد الأصناف من البرنامج السابق (الصفوف مستخرجة من Excel بعد تحديد المستخدم للأعمدة).
   /// لو الباركود أو الاسم موجود بيتحدّث، وإلا بيتضاف.
   Future<Object?> _importProducts(Request req, AuthUser u) async {
     final body = await _body(req);
     final rows = body['rows'];
-    if (rows is! List || rows.isEmpty) throw ApiError(400, 'مفيش بيانات');
+    if (rows is! List || rows.isEmpty) throw ApiError(400, 'لا توجد بيانات');
     if (rows.length > 5000) throw ApiError(400, 'الدفعة كبيرة، ابعت 5000 صنف بالكتير في المرة');
     final updateQty = body['updateQty'] != false;
     var created = 0, updated = 0;
@@ -361,7 +361,7 @@ extension _PosRoutes on FixTrackServer {
     return {'customer': _customerJson(db.selectOne('SELECT * FROM customers WHERE id = ?', [id])!)};
   }
 
-  /// اللي على العميل: فواتير آجل + أجهزة صيانة اتسلمت وعليها باقي − اللي سدده.
+  /// المبالغ المستحقة على العميل: فواتير البيع الآجل + أجهزة الصيانة المسلّمة ذات المبالغ المتبقية − المبالغ المسددة.
   int _customerBalance(String customerId) {
     final sales = db.selectOne(
       'SELECT COALESCE(SUM(total_cents - returned_cents - paid_cents), 0) AS s FROM sales WHERE customer_id = ?', [customerId])!['s'] as int;
