@@ -4,7 +4,7 @@ import '../../core/pos_models.dart';
 import '../../core/realtime.dart';
 import '../tickets/providers.dart';
 
-typedef ProductQuery = ({String q, String? category, bool low});
+typedef ProductQuery = ({String q, String? category, bool low, String section});
 
 final productsProvider = FutureProvider.autoDispose.family<({List<Product> items, int count, int lowCount, int? stockValueCents}), ProductQuery>(
   (ref, query) async {
@@ -13,6 +13,7 @@ final productsProvider = FutureProvider.autoDispose.family<({List<Product> items
       if (query.q.isNotEmpty) 'q': query.q,
       'category': ?query.category,
       if (query.low) 'low': '1',
+      'section': query.section,
       'limit': '500',
     });
     return (
