@@ -22,7 +22,7 @@ import '../../widgets/ticket_widgets.dart';
 import '../pos/providers.dart';
 import '../receipts/print_service.dart';
 
-/// الموبايلات الجديدة والمستعملة اللي في المحل، كل جهاز بالـ IMEI بتاعه.
+/// الأجهزة المحمولة الجديدة والمستعملة اللي في المحل، كل جهاز بالـ IMEI بتاعه.
 class PhonesScreen extends ConsumerStatefulWidget {
   const PhonesScreen({super.key});
 
@@ -48,7 +48,7 @@ class _PhonesScreenState extends ConsumerState<PhonesScreen> {
     final isOwner = ref.watch(sessionProvider).value!.user!.isOwner;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('الموبايلات'),
+        title: const Text('الأجهزة المحمولة'),
         actions: [
           TextButton.icon(
             onPressed: () => showDialog<void>(context: context, builder: (_) => const ImeiCheckDialog()),
@@ -99,7 +99,7 @@ class _PhonesScreenState extends ConsumerState<PhonesScreen> {
             data: (list) => list.isEmpty
                 ? const EmptyState(
                     icon: Icons.phone_iphone_rounded,
-                    message: 'مفيش موبايلات هنا.\nالموبايلات الجديدة بتدخل من "المشتريات"، والمستعملة من زرار "شرا موبايل مستعمل".',
+                    message: 'مفيش موبايلات هنا.\nالأجهزة المحمولة الجديدة بتدخل من "المشتريات"، والمستعملة من زرار "شرا موبايل مستعمل".',
                   )
                 : ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 96),
@@ -158,7 +158,7 @@ class _UnitPickerDialogState extends ConsumerState<UnitPickerDialog> {
   Widget build(BuildContext context) {
     final units = ref.watch(unitsProvider((status: 'in_stock', condition: null, q: _q, productId: widget.product.id)));
     return AlertDialog(
-      title: Text('اختار الجهاز: ${widget.product.name}'),
+      title: Text('اختر الجهاز: ${widget.product.name}'),
       content: SizedBox(
         width: 460,
         height: 420,
@@ -190,7 +190,7 @@ class _UnitPickerDialogState extends ConsumerState<UnitPickerDialog> {
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => ErrorBanner(errorText(e)),
               data: (list) => list.isEmpty
-                  ? const Center(child: Text('مفيش أجهزة من الموديل ده في المحل'))
+                  ? const Center(child: Text('لا توجد أجهزة من هذا الطراز في المحل'))
                   : ListView(children: [
                       for (final u in list)
                         ListTile(
@@ -209,7 +209,7 @@ class _UnitPickerDialogState extends ConsumerState<UnitPickerDialog> {
   }
 }
 
-/// كل حاجة البرنامج يعرفها عن IMEI معين. مهم قبل شرا موبايل مستعمل.
+/// جميع المعلومات المسجلة عن رقم IMEI محدد. يُرجى مراجعتها قبل شراء جهاز مستعمل.
 class ImeiCheckDialog extends ConsumerStatefulWidget {
   const ImeiCheckDialog({super.key, this.initialImei});
   final String? initialImei;
@@ -297,11 +297,11 @@ class _ImeiCheckDialogState extends ConsumerState<ImeiCheckDialog> {
                 Container(
                   padding: const EdgeInsets.all(10),
                   decoration: BoxDecoration(color: brandOrange.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(10)),
-                  child: const Text('⚠ الرقم ده مش IMEI صحيح (المفروض 15 رقم وآخر رقم بيطابق). اتأكد إنك كتبته صح.'),
+                  child: const Text('⚠ رقم IMEI غير صحيح؛ يجب أن يتكون من 15 رقماً وأن يتطابق رقم التحقق. يرجى التأكد من إدخاله بشكل صحيح.'),
                 ),
               if (units.isEmpty && tickets.isEmpty) ...[
                 const SizedBox(height: 8),
-                const Text('الجهاز ده ما عداش على المحل قبل كده.'),
+                const Text('لم يسبق تسجيل هذا الجهاز في المحل.'),
               ],
               for (final u in units)
                 Card(
@@ -365,7 +365,7 @@ class _PhotoDialog extends ConsumerWidget {
           child: Image.network(
             '${api.baseUrl}/api/files/$fileId',
             headers: {'authorization': 'Bearer ${api.token}'},
-            errorBuilder: (_, _, _) => const Padding(padding: EdgeInsets.all(40), child: Text('مش قادر أفتح الصورة')),
+            errorBuilder: (_, _, _) => const Padding(padding: EdgeInsets.all(40), child: Text('تعذّر فتح الصورة')),
           ),
         ),
       ),
@@ -400,7 +400,7 @@ Future<String?> captureAndUploadPhoto(BuildContext context, WidgetRef ref, Strin
     final resized = decoded.width > 1400 ? img.copyResize(decoded, width: 1400) : decoded;
     return img.encodeJpg(resized, quality: 75);
   });
-  if (bytes == null) throw Exception('الملف ده مش صورة');
+  if (bytes == null) throw Exception('هذا الملف ليس صورة');
   final res = await ref.read(sessionProvider).value!.api!.post('/api/files', {'data': base64.encode(bytes), 'kind': kind});
   return res['id'] as String;
 }
@@ -556,10 +556,10 @@ class _BuyUsedScreenState extends ConsumerState<BuyUsedScreen> {
           child: Row(children: [
             Expanded(
               child: Text(info['validImei'] != true
-                  ? '⚠ الـ IMEI ده مش صحيح، راجعه'
+                  ? '⚠ رقم IMEI غير صحيح؛ يرجى مراجعته'
                   : history > 0
-                      ? '⚠ الجهاز ده عدّى على المحل قبل كده ($history مرة)'
-                      : '✓ الجهاز ما عداش على المحل قبل كده'),
+                      ? '⚠ سبق تسجيل هذا الجهاز في المحل ($history مرة)'
+                      : '✓ لم يسبق تسجيل هذا الجهاز في المحل'),
             ),
             if (history > 0)
               TextButton(
@@ -576,12 +576,12 @@ class _BuyUsedScreenState extends ConsumerState<BuyUsedScreen> {
         Expanded(child: TextFormField(controller: _storage, decoration: const InputDecoration(labelText: 'المساحة'))),
       ]),
       const SizedBox(height: 12),
-      TextFormField(controller: _notes, maxLines: 2, decoration: const InputDecoration(labelText: 'حالة الجهاز (البطارية، الخدوش، اتفتح قبل كده...)')),
+      TextFormField(controller: _notes, maxLines: 2, decoration: const InputDecoration(labelText: 'حالة الجهاز (البطارية، الخدوش، وهل سبق فتحه...)')),
     ]);
     final seller = SectionCard(title: 'البائع', icon: Icons.badge_rounded, children: [
       TextFormField(controller: _sellerName, decoration: const InputDecoration(labelText: 'الاسم (زي البطاقة) *'), validator: (v) => (v ?? '').trim().isEmpty ? 'اكتب الاسم' : null),
       const SizedBox(height: 12),
-      TextFormField(controller: _sellerPhone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'التليفون *'), validator: (v) => normalizePhone(v ?? '').length < 10 ? 'اكتب رقم صحيح' : null),
+      TextFormField(controller: _sellerPhone, keyboardType: TextInputType.phone, decoration: const InputDecoration(labelText: 'رقم الهاتف *'), validator: (v) => normalizePhone(v ?? '').length < 10 ? 'اكتب رقم صحيح' : null),
       const SizedBox(height: 12),
       TextFormField(
         controller: _nationalId,
@@ -602,9 +602,9 @@ class _BuyUsedScreenState extends ConsumerState<BuyUsedScreen> {
     ]);
     final price = SectionCard(title: 'السعر', icon: Icons.payments_rounded, children: [
       Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
-        Expanded(child: MoneyField(controller: _cost, label: 'هتدفع للبائع *', validator: (c) => (c ?? 0) <= 0 ? 'اكتب المبلغ' : null)),
+        Expanded(child: MoneyField(controller: _cost, label: 'المبلغ المستحق للبائع *', validator: (c) => (c ?? 0) <= 0 ? 'اكتب المبلغ' : null)),
         const SizedBox(width: 12),
-        Expanded(child: MoneyField(controller: _price, label: 'هتبيعه بكام؟')),
+        Expanded(child: MoneyField(controller: _price, label: 'سعر البيع')),
       ]),
       const SizedBox(height: 12),
       Wrap(spacing: 8, children: [
@@ -694,7 +694,7 @@ class _AddUnitsDialogState extends ConsumerState<AddUnitsDialog> {
       content: SizedBox(
         width: 440,
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          const Text('امسح الـ IMEI بتاع كل جهاز (من على العلبة) واحد ورا التاني.'),
+          const Text('امسح رمز IMEI لكل جهاز (الموجود على العلبة) بالتتابع.'),
           const SizedBox(height: 8),
           TextField(
             controller: _imei,
