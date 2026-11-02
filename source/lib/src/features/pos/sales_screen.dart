@@ -62,7 +62,7 @@ class _SalesScreenState extends ConsumerState<SalesScreen> {
             loading: () => const Center(child: CircularProgressIndicator()),
             error: (e, _) => Center(child: Padding(padding: const EdgeInsets.all(20), child: ErrorBanner(errorText(e)))),
             data: (list) => list.isEmpty
-                ? const EmptyState(icon: Icons.receipt_long_outlined, message: 'مفيش فواتير')
+                ? const EmptyState(icon: Icons.receipt_long_outlined, message: 'لا توجد فواتير')
                 : ListView.separated(
                     padding: const EdgeInsets.fromLTRB(20, 8, 20, 24),
                     itemCount: list.length,
@@ -212,7 +212,7 @@ class _ReturnDialogState extends ConsumerState<_ReturnDialog> {
       content: SizedBox(
         width: 440,
         child: Column(mainAxisSize: MainAxisSize.min, crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-          const Text('اختار الكمية اللي راجعة من كل صنف. البضاعة هترجع للمخزون.'),
+          const Text('حدد الكمية المرتجعة من كل صنف، وستُضاف البضاعة إلى المخزون.'),
           const SizedBox(height: 8),
           for (final i in items)
             ListTile(
@@ -227,7 +227,7 @@ class _ReturnDialogState extends ConsumerState<_ReturnDialog> {
               ]),
             ),
           const SizedBox(height: 8),
-          const Text('الفلوس هترجع بـ:'),
+          const Text('طريقة رد المبلغ:'),
           const SizedBox(height: 6),
           Wrap(spacing: 8, children: [
             for (final m in PaymentMethod.values.where((m) => m != PaymentMethod.other))
