@@ -1,5 +1,6 @@
 import 'package:abdulmalik_erp/src/features/home/about_screen.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -7,6 +8,7 @@ void main() {
     await tester.pumpWidget(const MaterialApp(
       locale: Locale('ar'),
       supportedLocales: [Locale('ar')],
+      localizationsDelegates: GlobalMaterialLocalizations.delegates,
       home: AboutScreen(),
     ));
 
