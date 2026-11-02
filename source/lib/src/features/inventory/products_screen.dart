@@ -147,7 +147,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 for (final c in categories)
                   Padding(
                     padding: const EdgeInsetsDirectional.only(end: 6),
-                    child: ChoiceChip(label: Text(c), selected: _category == c, onSelected: (_) => setState(() => _category = c)),
+                    child: ChoiceChip(label: Text(c), selected: (widget.accessories ? visibleProductCategory(_category) : _category) == c, onSelected: (_) => setState(() => _category = widget.accessories ? storedAccessoriesCategory(c) : c)),
                   ),
               ],
             ),
