@@ -530,7 +530,7 @@ class _PaymentDialogState extends ConsumerState<_PaymentDialog> {
                 ]),
                 const SizedBox(height: 16),
                 if (!_credit && _method == PaymentMethod.cash) ...[
-                  MoneyField(controller: _received, label: 'الزبون دفع كام؟ (اختياري)', autofocus: true, onChanged: (_) => setState(() {})),
+                  MoneyField(controller: _received, label: 'المبلغ المدفوع من العميل (اختياري)', autofocus: true, onChanged: (_) => setState(() {})),
                   const SizedBox(height: 8),
                   if (received > 0)
                     Text(
@@ -617,7 +617,7 @@ class _CustomerPickerDialogState extends ConsumerState<CustomerPickerDialog> {
             TextField(
               controller: _q,
               autofocus: true,
-              decoration: const InputDecoration(hintText: 'اسم العميل أو رقم تليفونه', prefixIcon: Icon(Icons.search_rounded)),
+              decoration: const InputDecoration(hintText: 'اسم العميل أو رقم هاتفه', prefixIcon: Icon(Icons.search_rounded)),
               onChanged: (v) {
                 _debounce?.cancel();
                 _debounce = Timer(const Duration(milliseconds: 300), () => _search(v));
@@ -640,7 +640,7 @@ class _CustomerPickerDialogState extends ConsumerState<CustomerPickerDialog> {
                   ),
                 if (_adding) ...[
                   const SizedBox(height: 8),
-                  Text('رقم التليفون: ${_q.text}', style: const TextStyle().semiBold),
+                  Text('رقم الهاتف: ${_q.text}', style: const TextStyle().semiBold),
                   const SizedBox(height: 8),
                   TextField(controller: _name, autofocus: true, decoration: const InputDecoration(labelText: 'اسم العميل'), onSubmitted: (_) => _add()),
                   const SizedBox(height: 8),
