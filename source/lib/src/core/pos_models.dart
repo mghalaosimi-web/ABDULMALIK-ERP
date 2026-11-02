@@ -14,7 +14,8 @@ class Product {
         trackStock = j['trackStock'] as bool? ?? true,
         serialized = j['serialized'] as bool? ?? false,
         warrantyMonths = j['warrantyMonths'] as int? ?? 0,
-        notes = j['notes'] as String?;
+        notes = j['notes'] as String?,
+        imageFileId = j['imageFileId'] as String?;
 
   final String id;
   final String name;
@@ -28,6 +29,7 @@ class Product {
   final bool serialized;
   final int warrantyMonths;
   final String? notes;
+  final String? imageFileId;
 
   bool get isLow => trackStock && qty <= lowStock;
   bool get outOfStock => trackStock && qty <= 0;
