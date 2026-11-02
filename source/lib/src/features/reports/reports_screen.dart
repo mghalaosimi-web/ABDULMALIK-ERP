@@ -171,7 +171,7 @@ class _ReportBody extends StatelessWidget {
           for (final p in (sales['topProducts'] as List).cast<Map<String, dynamic>>())
             [p['name'] as String, '${p['qty']}', money(p['revenue'] as int), money(p['profit'] as int)],
         ],
-        empty: 'مفيش مبيعات في الفترة دي',
+        empty: 'لا توجد مبيعات خلال هذه الفترة',
       ),
       const SizedBox(height: 12),
       _TableCard(
@@ -189,7 +189,7 @@ class _ReportBody extends StatelessWidget {
               '${t['avgHours']} ساعة',
             ],
         ],
-        empty: 'مفيش أجهزة اتسلمت في الفترة دي',
+        empty: 'لا توجد أجهزة تم تسليمها خلال هذه الفترة',
       ),
       const SizedBox(height: 12),
       LayoutBuilder(builder: (context, c) {
@@ -218,7 +218,7 @@ class _ReportBody extends StatelessWidget {
         icon: Icons.money_off_rounded,
         headers: const ['البند', 'المبلغ'],
         rows: [for (final e in (expenses['byCategory'] as List).cast<Map<String, dynamic>>()) [e['name'] as String, money(e['total'] as int)]],
-        empty: 'مفيش مصروفات',
+        empty: 'لا توجد مصروفات',
       ),
       const SizedBox(height: 12),
       _TableCard(
@@ -226,18 +226,18 @@ class _ReportBody extends StatelessWidget {
         icon: Icons.account_balance_rounded,
         headers: const ['المحفظة', 'عمليات', 'العمولة'],
         rows: [for (final w in (services['byWallet'] as List).cast<Map<String, dynamic>>()) [w['name'] as String, '${w['count']}', money(w['commission'] as int)]],
-        empty: 'مفيش عمليات',
+        empty: 'لا توجد عمليات',
       ),
-      const SectionTitle('دلوقتي'),
+      const SectionTitle('حالياً'),
       _TableCard(
         title: 'فلوس ليك برا (ديون العملاء): ${money(receivables['totalCents'] as int)}',
         icon: Icons.call_received_rounded,
-        headers: const ['العميل', 'التليفون', 'عليه'],
+        headers: const ['العميل', 'رقم الهاتف', 'عليه'],
         rows: [
           for (final c in (receivables['customers'] as List).cast<Map<String, dynamic>>())
             [c['name'] as String, c['phone'] as String? ?? '', money(c['balanceCents'] as int)],
         ],
-        empty: 'مفيش ديون على العملاء',
+        empty: 'لا توجد مبالغ مستحقة على العملاء',
       ),
       const SizedBox(height: 12),
       _TableCard(
@@ -245,7 +245,7 @@ class _ReportBody extends StatelessWidget {
         icon: Icons.call_made_rounded,
         headers: const ['المورد', 'ليه'],
         rows: [for (final s in (payables['suppliers'] as List).cast<Map<String, dynamic>>()) [s['name'] as String, money(s['balanceCents'] as int)]],
-        empty: 'مفيش فلوس عليك للموردين',
+        empty: 'لا توجد مبالغ مستحقة للموردين',
       ),
       const SizedBox(height: 12),
       _TableCard(
@@ -253,7 +253,7 @@ class _ReportBody extends StatelessWidget {
         icon: Icons.inventory_rounded,
         headers: const ['الصنف', 'الكمية', 'قيمتها'],
         rows: [for (final d in (stock['deadStock'] as List).cast<Map<String, dynamic>>()) [d['name'] as String, '${d['qty']}', money(d['value'] as int)]],
-        empty: 'مفيش بضاعة واقفة 👍',
+        empty: 'لا توجد بضائع راكدة 👍',
       ),
     ]);
   }
@@ -275,7 +275,7 @@ class _DailyBarsState extends State<_DailyBars> {
   Widget build(BuildContext context) {
     final days = widget.days;
     final scheme = Theme.of(context).colorScheme;
-    if (days.isEmpty) return Padding(padding: const EdgeInsets.all(20), child: Text('مفيش دخل في الفترة دي', style: TextStyle(color: scheme.onSurfaceVariant)));
+    if (days.isEmpty) return Padding(padding: const EdgeInsets.all(20), child: Text('لا توجد إيرادات خلال هذه الفترة', style: TextStyle(color: scheme.onSurfaceVariant)));
     final values = [for (final d in days) (d['sales'] as int? ?? 0) + (d['repairs'] as int? ?? 0)];
     final maxV = values.fold<int>(1, (m, v) => v > m ? v : m);
     final h = _hover;
