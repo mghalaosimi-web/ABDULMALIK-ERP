@@ -4,7 +4,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
-  testWidgets('about screen presents supervision and development contributors in Arabic', (tester) async {
+  testWidgets('about screen presents the complete project profile in Arabic', (tester) async {
     await tester.pumpWidget(const MaterialApp(
       locale: Locale('ar'),
       supportedLocales: [Locale('ar')],
@@ -13,15 +13,20 @@ void main() {
     ));
 
     expect(find.text('عن المشروع والفريق'), findsOneWidget);
-    expect(find.text('الإشراف والمراجعة العلمية'), findsOneWidget);
+    expect(find.text('فريق العمل والهيكل الأكاديمي والتقني للمشروع'), findsOneWidget);
+    expect(find.text('أولاً: اللجنة الأكاديمية والاستشارية'), findsOneWidget);
+    expect(find.text('ثانياً: فريق الهندسة والتطوير'), findsOneWidget);
+    expect(find.text('ثالثاً: الهيكل التنظيمي للمشروع'), findsOneWidget);
+    expect(find.text('رابعاً: منهجية تطوير المشروع'), findsOneWidget);
+    expect(find.text('رؤية المشروع'), findsOneWidget);
 
     expect(find.text('الأستاذ الدكتور أحمد الناشري'), findsOneWidget);
     expect(find.text('الأستاذ الدكتور عبد الرزاق الأهدل'), findsOneWidget);
-    expect(find.text('الدكتور ضياء القدمي'), findsOneWidget);
-    expect(find.text('الأستاذ الدكتور عبده شويه'), findsOneWidget);
+    expect(find.text('الدكتور ضياء الحق القدمي'), findsOneWidget);
+    expect(find.text('الدكتور عبده شويه'), findsOneWidget);
     expect(find.text('الأستاذة سمر'), findsOneWidget);
     expect(find.text('محمد غالب العصيمي'), findsOneWidget);
-    expect(find.text('رمزي محمد حزام السرابي'), findsOneWidget);
+    expect(find.text('رمزي محمد الصرابي'), findsOneWidget);
     expect(find.text('عرفات الكاملي'), findsOneWidget);
   });
 }
