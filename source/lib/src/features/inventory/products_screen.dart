@@ -18,6 +18,33 @@ import '../receipts/print_service.dart';
 import '../phones/phones_screen.dart';
 import 'import_screen.dart';
 
+
+const _productTemplates = <({String label, String category, int cost, int price, bool serialized, int warranty})>[
+  (label: 'هاتف ذكي', category: 'أجهزة محمولة', cost: 52000, price: 69900, serialized: true, warranty: 12),
+  (label: 'هاتف اقتصادي', category: 'أجهزة محمولة', cost: 35000, price: 46500, serialized: true, warranty: 12),
+  (label: 'شاحن سريع 25 واط', category: 'شواحن', cost: 5500, price: 9900, serialized: false, warranty: 3),
+  (label: 'سماعة لاسلكية', category: 'سماعات', cost: 8500, price: 15400, serialized: false, warranty: 3),
+  (label: 'كابل USB-C', category: 'كابلات', cost: 1200, price: 2500, serialized: false, warranty: 0),
+  (label: 'غطاء هاتف', category: 'أغطية وحافظات', cost: 2500, price: 5900, serialized: false, warranty: 0),
+  (label: 'واقي شاشة زجاجي', category: 'حماية الشاشة', cost: 1500, price: 4500, serialized: false, warranty: 0),
+  (label: 'بطارية هاتف', category: 'بطاريات وقطع', cost: 4500, price: 9500, serialized: false, warranty: 1),
+  (label: 'باور بانك 10000mAh', category: 'الأكسسوارات::أخرى', cost: 10500, price: 16000, serialized: false, warranty: 6),
+  (label: 'قطعة غيار شاشة', category: 'قطع غيار', cost: 9000, price: 14500, serialized: false, warranty: 1),
+];
+const _demoProducts = <({String name, String category, int cost, int price, int qty, bool serialized, int warranty})>[
+  (name: 'عينة تجريبية — Samsung Galaxy A17 4G 128GB', category: 'أجهزة محمولة', cost: 56000, price: 69900, qty: 0, serialized: true, warranty: 12),
+  (name: 'عينة تجريبية — Samsung Galaxy A07 64GB', category: 'أجهزة محمولة', cost: 37000, price: 46500, qty: 0, serialized: true, warranty: 12),
+  (name: 'عينة تجريبية — شاحن Samsung USB-C 25W', category: 'الأكسسوارات::شواحن', cost: 5500, price: 9900, qty: 3, serialized: false, warranty: 3),
+  (name: 'عينة تجريبية — سماعة Galaxy Buds Core', category: 'الأكسسوارات::سماعات', cost: 9000, price: 15400, qty: 2, serialized: false, warranty: 3),
+  (name: 'عينة تجريبية — سماعة سلكية USB-C', category: 'الأكسسوارات::سماعات', cost: 1800, price: 3100, qty: 4, serialized: false, warranty: 1),
+  (name: 'عينة تجريبية — كابل USB-C سريع 1 متر', category: 'الأكسسوارات::كابلات', cost: 1200, price: 2500, qty: 5, serialized: false, warranty: 0),
+  (name: 'عينة تجريبية — غطاء حماية شفاف', category: 'الأكسسوارات::أغطية وحافظات', cost: 2500, price: 5900, qty: 4, serialized: false, warranty: 0),
+  (name: 'عينة تجريبية — واقي شاشة زجاجي', category: 'الأكسسوارات::حماية الشاشة', cost: 1500, price: 4500, qty: 6, serialized: false, warranty: 0),
+  (name: 'عينة تجريبية — باور بانك 10000mAh', category: 'الأكسسوارات::أخرى', cost: 10500, price: 16000, qty: 2, serialized: false, warranty: 6),
+  (name: 'عينة تجريبية — بطارية هاتف', category: 'الأكسسوارات::بطاريات وقطع', cost: 4500, price: 9500, qty: 2, serialized: false, warranty: 1),
+  (name: 'عينة تجريبية — شاشة بديلة لهاتف', category: 'قطع غيار', cost: 9000, price: 14500, qty: 1, serialized: false, warranty: 1),
+  (name: 'عينة تجريبية — خدمة تركيب واقي شاشة', category: 'خدمات', cost: 0, price: 2500, qty: 0, serialized: false, warranty: 0),
+];
 class ProductsScreen extends ConsumerStatefulWidget {
   const ProductsScreen({super.key, this.accessories = false});
 
@@ -41,6 +68,45 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
     super.dispose();
   }
 
+  Future<void> _addDemoProducts() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('إضافة منتجات تجريبية'),
+        content: const Text('ستُضاف عينة من الهواتف والسماعات والشواحن والكابلات والحماية وقطع الغيار والخدمات، مع أسعار وكميات افتراضية. ستظهر باسم «عينة تجريبية»، ويمكنك تعديلها أو إيقافها لاحقاً.'),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('إلغاء')),
+          FilledButton(onPressed: () => Navigator.pop(context, true), child: const Text('إضافة العينات')),
+        ],
+      ),
+    );
+    if (confirmed != true || !mounted) return;
+    var added = 0;
+    final api = ref.read(sessionProvider).value!.api!;
+    try {
+      final existing = await api.get('/api/products', query: {'q': 'عينة تجريبية', 'limit': '500'});
+      final existingNames = ((existing['products'] as List?) ?? const [])
+          .map((item) => (item as Map)['name'] as String)
+          .toSet();
+      for (final item in _demoProducts) {
+        if (existingNames.contains(item.name)) continue;
+        await api.post('/api/products', {
+          'name': item.name, 'category': item.category, 'costCents': item.cost,
+          'priceCents': item.price, 'qty': item.qty, 'lowStock': 1,
+          'trackStock': true, 'serialized': item.serialized, 'warrantyMonths': item.warranty,
+          'notes': 'بيانات تجريبية — يمكن تعديلها أو إيقاف الصنف.',
+        });
+        added++;
+      }
+      ref.invalidate(productsProvider);
+      ref.invalidate(categoriesProvider);
+      if (mounted) showMessage(context, 'تمت إضافة $added منتج تجريبي. يمكنك البحث عن «عينة تجريبية» لإدارتها.');
+    } catch (e) {
+      ref.invalidate(productsProvider);
+      if (mounted) showMessage(context, 'تمت إضافة $added من ${_demoProducts.length}؛ تعذرت متابعة البقية: ${errorText(e)}');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = ref.watch(sessionProvider).value!.user!;
@@ -57,6 +123,12 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       appBar: AppBar(
         title: Text(widget.accessories ? 'الأكسسوارات' : 'المخزون'),
         actions: [
+          if (user.isOwner && !widget.accessories)
+            TextButton.icon(
+              onPressed: _addDemoProducts,
+              icon: const Icon(Icons.auto_awesome_rounded),
+              label: const Text('إضافة عينات تجريبية'),
+            ),
           if (user.isOwner && !widget.accessories)
             TextButton.icon(
               onPressed: () => Navigator.push(context, MaterialPageRoute<void>(builder: (_) => const ImportScreen())),
@@ -333,6 +405,39 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
+                if (_isNew)
+                  Align(
+                    alignment: AlignmentDirectional.centerStart,
+                    child: PopupMenuButton<int>(
+                      tooltip: 'اختيار قالب جاهز',
+                      onSelected: (index) {
+                        final t = _productTemplates[index];
+                        setState(() {
+                          _name.text = t.label;
+                          _category.text = t.category;
+                          _cost.text = (t.cost / 100).toStringAsFixed(2);
+                          _price.text = (t.price / 100).toStringAsFixed(2);
+                          _serialized = t.serialized;
+                          _track = true;
+                          _warranty.text = '${t.warranty}';
+                          if (t.serialized) _qty.text = '0';
+                        });
+                      },
+                      itemBuilder: (_) => [
+                        for (var i = 0; i < _productTemplates.length; i++)
+                          PopupMenuItem(value: i, child: Text(_productTemplates[i].label)),
+                      ],
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(vertical: 8),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
+                          Icon(Icons.dashboard_customize_outlined, size: 18),
+                          SizedBox(width: 8),
+                          Text('اختيار قالب جاهز'),
+                          Icon(Icons.arrow_drop_down),
+                        ]),
+                      ),
+                    ),
+                  ),
                 TextFormField(
                   controller: _name,
                   autofocus: _isNew,
@@ -356,7 +461,7 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                               if (c != null) setState(() => _barcode.text = c);
                             },
                           ),
-                        IconButton(tooltip: 'اعمل باركود جديد', icon: const Icon(Icons.auto_awesome_rounded), onPressed: _generateBarcode),
+                        IconButton(tooltip: 'إنشاء رمز شريطي جديد', icon: const Icon(Icons.auto_awesome_rounded), onPressed: _generateBarcode),
                       ],
                     ),
                   ),
@@ -395,13 +500,13 @@ class _ProductDialogState extends ConsumerState<ProductDialog> {
                 TextFormField(
                   controller: _warranty,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'الضمان بالشهور (0 = من غير ضمان)'),
+                  decoration: const InputDecoration(labelText: 'الضمان بالشهور (0 = دون ضمان)'),
                 ),
                 if (!_serialized)
                   SwitchListTile(
                     contentPadding: EdgeInsets.zero,
                     title: const Text('متابعة الكمية في المخزون'),
-                    subtitle: const Text('اقفلها للخدمات أو الحاجات اللي مالهاش عدد'),
+                    subtitle: const Text('عطّلها للخدمات أو الأصناف التي لا تُتابع كميتها'),
                     value: _track,
                     onChanged: (v) => setState(() => _track = v),
                   ),
